@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Portal & Management Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              DEFAULT: '#FF6B35',
+              hover: '#E05A2B',
+              light: 'rgba(255, 107, 53, 0.15)',
+            },
+            navy: {
+              DEFAULT: '#0A192F',
+              light: '#112240',
+              lighter: '#1D3557',
+              border: '#233554',
+            },
+            slate: {
+              light: '#E6F1FF',
+              muted: '#8892B0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbars for mobile sleekness */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0A192F;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #233554;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FF6B35;
+    }
+    
+    /* Smooth state transitions */
+    .view-section {
+      transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+    }
+    .badge-pulse {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+      animation: pulse-green 2s infinite;
+    }
+    @keyframes pulse-green {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    /* Touch active state response */
+    .touch-active:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
+          <i class="fa-solid fa-[#FF6B35] fa-wrench"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Portal</span>
+          </div>
+          <p class="text-xs text-[#8892B0] hidden xs:block">Peer DIY Mentorship Platform</p>
+        </div>
+      </div>
+
+      <!-- Role Switcher Toggle -->
+      <div class="bg-[#112240] p-1 rounded-xl border border-[#233554] flex items-center shadow-inner">
+        <button id="role-admin-btn" onclick="switchRole('admin')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center space-x-1.5 bg-[#FF6B35] text-white shadow-md">
+          <i class="fa-solid fa-user-shield text-xs"></i>
+          <span>Admin</span>
+        </button>
+        <button id="role-tutor-btn" onclick="switchRole('tutor')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#8892B0] hover:text-white transition-all duration-200 flex items-center space-x-1.5">
+          <i class="fa-solid fa-chalkboard-user text-xs"></i>
+          <span>Tutor</span>
+        </button>
+      </div>
+
+      <!-- Notifications & Profile -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button onclick="toggleNotificationsModal()" class="relative p-2.5 rounded-xl bg-[#112240] border border-[#233554] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/50 transition-colors touch-active">
+          <i class="fa-regular fa-bell text-base"></i>
+          <span id="notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF6B35] text-white text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+        </button>
+        
+        <div class="h-8 w-px bg-[#233554] hidden sm:block"></div>
+        
+        <div class="flex items-center space-x-2 pl-1">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-[#f99b75] p-0.5">
+            <div id="user-avatar" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white">
+              DH
+            </div>
+          </div>
+          <div class="hidden lg:block text-left">
+            <div id="user-name" class="text-xs font-semibold text-white leading-tight">Dom Hoggard</div>
+            <div id="user-role-label" class="text-[10px] text-[#FF6B35]">Super Administrator</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: ADMIN BACK-OFFICE PORTAL                                          -->
+    <!-- ========================================================================= -->
+    <section id="admin-view" class="view-section space-y-8">
+      
+      <!-- Welcome Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#FF6B35]/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="space-y-1 z-10">
+          <div class="flex items-center space-x-2">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Admin Back-Office</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">System Live</span>
+          </div>
+          <p class="text-sm text-[#8892B0]">Verify tutor DBS certifications, audit compliance, and manage platform job activity.</p>
+        </div>
+        <div class="flex items-center space-x-3 z-10">
+          <button onclick="triggerSystemAudit()" class="w-full sm:w-auto px-4 py-2.5 bg-[#0A192F] hover:bg-[#1D3557] border border-[#233554] text-xs font-semibold rounded-xl text-[#E6F1FF] flex items-center justify-center space-x-2 transition touch-active">
+            <i class="fa-solid fa-arrows-rotate text-[#FF6B35]"></i>
+            <span>Refresh Audit Logs</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Platform Overview Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg hover:border-[#FF6B35]/30 transition">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Total Tutors</span>
+            <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-total-tutors" class="text-2xl sm:text-3xl font-extrabold text-white">42</span>
+            <span class="text-xs text-emerald-400 font-semibold flex items-center">
+              <i class="fa-solid fa-arrow-up text-[10px] mr-1"></i>+12%
+            </span>
+          </div>
+          <p class="text-[11px] text-[#8892B0] mt-2">38 Verified & Active</p>
+        </div>
+
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg hover:border-[#FF6B35]/30 transition relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-2 h-full bg-amber-500"></div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Pending DBS</span>
+            <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-pending-dbs" class="text-2xl sm:text-3xl font-extrabold text-amber-400">3</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase">Needs Review</span>
+          </div>
+          <p class="text-[11px] text-[#8892B0] mt-2">Avg response: &lt; 4 hrs</p>
+        </div>
+
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg hover:border-[#FF6B35]/30 transition">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Active Mentorships</span>
+            <div class="w-9 h-9 rounded-xl bg-[#FF6B35]/10 text-[#FF6B35] flex items-center justify-center text-sm">
+              <i class="fa-solid fa-handshake-angle"></i>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-active-mentorships" class="text-2xl sm:text-3xl font-extrabold text-white">18</span>
+            <span class="text-xs text-emerald-400 font-semibold flex items-center">
+              <i class="fa-solid fa-circle text-[8px] mr-1 badge-pulse"></i>Live
+            </span>
+          </div>
+          <p class="text-[11px] text-[#8892B0] mt-2">Across 6 trade categories</p>
+        </div>
+
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg hover:border-[#FF6B35]/30 transition">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Completed Jobs</span>
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-[#10b981] fa-circle-check"></i>
+            </div>
+          </div>
+          <div class="flex items-baseline justify-between">
+            <span id="stat-completed-jobs" class="text-2xl sm:text-3xl font-extrabold text-white">284</span>
+            <span class="text-xs text-emerald-400 font-semibold flex items-center">
+              <i class="fa-solid fa-arrow-up text-[10px] mr-1"></i>+24 this week
+            </span>
+          </div>
+          <p class="text-[11px] text-[#8892B0] mt-2">4.9/5 Avg platform rating</p>
+        </div>
+
+      </div>
+
+      <!-- Pending Tutor Verification Queue -->
+      <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
+        <div class="p-5 sm:p-6 border-b border-[#233554] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-lg font-bold text-white">Pending Tutor Verification Queue</h2>
+              <span id="queue-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">3 Applicants</span>
+            </div>
+            <p class="text-xs text-[#8892B0] mt-1">Review applicant identity credentials and acknowledge Enhanced DBS Certificates before enabling public booking.</p>
+          </div>
+        </div>
+
+        <!-- Pending Tutors Container -->
+        <div id="pending-queue-list" class="divide-y divide-[#233554]">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+      <!-- Active Tutors Directory -->
+      <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl p-5 sm:p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Tutors & Mentors Directory</h2>
+            <p class="text-xs text-[#8892B0] mt-0.5">Manage onboarded trade tutors, check activity status, and audit permissions.</p>
+          </div>
+
+          <!-- Directory Filter Tabs -->
+          <div class="flex items-center space-x-1 bg-[#0A192F] p-1 rounded-xl border border-[#233554] overflow-x-auto">
+            <button onclick="filterTutors('all')" class="dir-filter-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#FF6B35] text-white transition">
+              All Tutors
+            </button>
+            <button onclick="filterTutors('Active')" class="dir-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#8892B0] hover:text-white transition">
+              Active / Live
+            </button>
+            <button onclick="filterTutors('Pending')" class="dir-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#8892B0] hover:text-white transition">
+              Pending
+            </button>
+            <button onclick="filterTutors('Suspended')" class="dir-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#8892B0] hover:text-white transition">
+              Suspended
+            </button>
+          </div>
+        </div>
+
+        <!-- Tutors Grid -->
+        <div id="tutors-directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: TUTOR JOB MANAGEMENT DASHBOARD                                   -->
+    <!-- ========================================================================= -->
+    <section id="tutor-view" class="view-section space-y-8 hidden">
+      
+      <!-- Tutor Header & Account Status Badge -->
+      <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-amber-600 p-1 flex-shrink-0 shadow-lg">
+            <div class="w-full h-full bg-[#0A192F] rounded-xl flex items-center justify-center text-white font-extrabold text-xl">
+              DH
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center space-x-3 flex-wrap gap-y-1">
+              <h1 class="text-xl sm:text-2xl font-extrabold text-white">Dom Hoggard</h1>
+              <!-- DBS Status Badge -->
+              <div id="tutor-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5">
+                <i class="fa-solid fa-shield-check text-xs"></i>
+                <span id="tutor-status-text">DBS Verified & Active</span>
+              </div>
+            </div>
+            <p class="text-xs text-[#8892B0] mt-1">Primary Specialties: <span class="text-white font-medium">Carpentry & Joinery • Home Plumbing</span></p>
+          </div>
+        </div>
+
+        <!-- Interactive Demo Status Switcher for Tutor Testing -->
+        <div class="flex items-center space-x-2 bg-[#0A192F] p-2 rounded-xl border border-[#233554] self-start md:self-auto">
+          <span class="text-xs text-[#8892B0] pl-2 font-medium">Demo Mode:</span>
+          <button onclick="toggleTutorVerificationState()" class="px-3 py-1.5 bg-[#112240] hover:bg-[#1D3557] border border-[#233554] text-xs text-white font-semibold rounded-lg transition touch-active">
+            <i class="fa-solid fa-toggle-on text-[#FF6B35] mr-1"></i> Toggle Status
+          </button>
+        </div>
+      </div>
+
+      <!-- Tutor Performance Quick Summary -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-[#112240] p-4 rounded-xl border border-[#233554]">
+          <span class="text-[11px] text-[#8892B0] font-medium block">Total Platform Earnings</span>
+          <span id="tutor-total-earnings" class="text-xl sm:text-2xl font-extrabold text-emerald-400 mt-1 block">£1,480.00</span>
+        </div>
+        <div class="bg-[#112240] p-4 rounded-xl border border-[#233554]">
+          <span class="text-[11px] text-[#8892B0] font-medium block">Accepted Jobs (Scheduled)</span>
+          <span id="tutor-accepted-count" class="text-xl sm:text-2xl font-extrabold text-white mt-1 block">2</span>
+        </div>
+        <div class="bg-[#112240] p-4 rounded-xl border border-[#233554]">
+          <span class="text-[11px] text-[#8892B0] font-medium block">Completed Mentorships</span>
+          <span id="tutor-completed-count" class="text-xl sm:text-2xl font-extrabold text-white mt-1 block">18</span>
+        </div>
+        <div class="bg-[#112240] p-4 rounded-xl border border-[#233554]">
+          <span class="text-[11px] text-[#8892B0] font-medium block">Tutor Satisfaction Rating</span>
+          <div class="flex items-center space-x-1.5 mt-1">
+            <span class="text-xl sm:text-2xl font-extrabold text-white">4.9</span>
+            <div class="flex text-amber-400 text-xs">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star-half-stroke"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column: Available Job Feed (2 Cols) -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                <span>Available Jobs Near You</span>
+                <span id="job-feed-count" class="px-2 py-0.5 rounded-full text-xs font-bold bg-[#FF6B35]/20 text-[#FF6B35]">4 Open</span>
+              </h2>
+              <p class="text-xs text-[#8892B0] mt-0.5">Real-time local DIY mentorship requests seeking guidance from verified trade experts.</p>
+            </div>
+          </div>
+
+          <!-- Pending Status Warning Notice (if tutor not verified) -->
+          <div id="unverified-warning" class="hidden p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start space-x-3">
+            <i class="fa-solid fa-triangle-exclamation text-base mt-0.5"></i>
+            <div>
+              <span class="font-bold">DBS Verification Pending:</span> Your account is currently awaiting administrator review of your uploaded Enhanced DBS Certificate. You can browse nearby jobs below, but accepting jobs is disabled until verified.
+            </div>
+          </div>
+
+          <!-- Available Jobs Feed Stack -->
+          <div id="available-jobs-container" class="space-y-4">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+        </div>
+
+        <!-- Right Column: My Schedule & Reviews Widget (1 Col) -->
+        <div class="space-y-6">
+          
+          <!-- My Accepted Jobs / Active Schedule -->
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between border-b border-[#233554] pb-3">
+              <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-check text-[#FF6B35]"></i>
+                <span>My Accepted Jobs</span>
+              </h3>
+              <span id="accepted-jobs-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-500/20 text-blue-400">2 Active</span>
+            </div>
+
+            <!-- Accepted Jobs Feed -->
+            <div id="accepted-jobs-container" class="space-y-3">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Earnings & Recent Reviews Widget -->
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 space-y-4 shadow-xl">
+            <h3 class="font-bold text-white text-base flex items-center space-x-2 border-b border-[#233554] pb-3">
+              <i class="fa-solid fa-[#FF6B35] fa-comments"></i>
+              <span>Recent Client Feedback</span>
+            </h3>
+
+            <div class="space-y-3">
+              <div class="p-3 rounded-xl bg-[#0A192F] border border-[#233554] text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-white">Gareth P. (Darlington)</span>
+                  <div class="flex text-amber-400 text-[10px]">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                  </div>
+                </div>
+                <p class="text-[#8892B0] italic">"Dom made learning how to isolate and drain down my radiator simple. Extremely patient!"</p>
+                <span class="text-[10px] text-slate-500 block">Plumbing Mentorship • Yesterday</span>
+              </div>
+
+              <div class="p-3 rounded-xl bg-[#0A192F] border border-[#233554] text-xs space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-white">Sarah T. (Durham)</span>
+                  <div class="flex text-amber-400 text-[10px]">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                  </div>
+                </div>
+                <p class="text-[#8892B0] italic">"Showed me the tricks of hanging an oak door straight. Saved me hundreds on a builder."</p>
+                <span class="text-[10px] text-slate-500 block">Carpentry • 4 days ago</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: DBS Certificate Document Inspector (Admin View) -->
+  <div id="dbs-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-[#112240] border border-[#233554] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-[#233554] flex items-center justify-between bg-[#0A192F]">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Enhanced DBS Inspection</h3>
+            <p id="modal-applicant-name" class="text-xs text-[#8892B0]">Applicant: Marcus Vance</p>
+          </div>
+        </div>
+        <button onclick="closeDbsModal()" class="w-8 h-8 rounded-lg bg-[#112240] hover:bg-[#233554] text-[#8892B0] hover:text-white flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Simulated Official Disclosure Certificate) -->
+      <div class="p-6 overflow-y-auto space-y-6">
+        
+        <!-- Verification Metadata Box -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-[#0A192F] p-4 rounded-xl border border-[#233554]">
+          <div>
+            <span class="text-[#8892B0] block text-[10px]">DISCLOSURE NO.</span>
+            <span id="modal-cert-num" class="font-mono font-bold text-white">001594839201</span>
+          </div>
+          <div>
+            <span class="text-[#8892B0] block text-[10px]">ISSUE DATE</span>
+            <span id="modal-issue-date" class="font-medium text-white">14 Jan 2026</span>
+          </div>
+          <div>
+            <span class="text-[#8892B0] block text-[10px]">ISSUING AUTHORITY</span>
+            <span class="font-medium text-white">DBS UK Gov</span>
+          </div>
+          <div>
+            <span class="text-[#8892B0] block text-[10px]">LEVEL</span>
+            <span class="font-bold text-emerald-400">Enhanced + Barred</span>
+          </div>
+        </div>
+
+        <!-- Document Viewer Box -->
+        <div class="border-2 border-dashed border-[#233554] rounded-2xl p-6 bg-[#081222] relative overflow-hidden text-center space-y-4">
+          <div class="absolute inset-0 bg-[radial-gradient(#233554_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
+          
+          <div class="relative z-10 space-y-3">
+            <div class="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl border border-emerald-500/30">
+              <i class="fa-solid fa-file-contract"></i>
+            </div>
+            
+            <div class="space-y-1">
+              <h4 class="text-sm font-bold text-white">Official Criminal Record Certificate</h4>
+              <p class="text-xs text-[#8892B0]">Automated Verification Check: <span class="text-emerald-400 font-semibold">NO DISCLOSURES RECORDED</span></p>
+            </div>
+
+            <!-- Simulated Certificate Document Card -->
+            <div class="max-w-md mx-auto p-4 bg-white/5 backdrop-blur rounded-xl border border-white/10 text-left text-xs space-y-2">
+              <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-[#8892B0]">Full Legal Name:</span>
+                <span id="modal-doc-fullname" class="text-white font-semibold">Marcus Vance</span>
+              </div>
+              <div class="flex justify-between border-b border-white/10 pb-2">
+                <span class="text-[#8892B0]">Primary Trade:</span>
+                <span id="modal-doc-trade" class="text-[#FF6B35] font-semibold">Carpentry & Joinery</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-[#8892B0]">Identity Verification:</span>
+                <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Passport Matched</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Audit Note Entry -->
+        <div class="space-y-2">
+          <label class="text-xs font-semibold text-white block">Administrator Verification Notes</label>
+          <input id="admin-audit-note" type="text" placeholder="e.g. Identity verified against UK passport. DBS check clean." class="w-full bg-[#0A192F] border border-[#233554] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#FF6B35]">
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-[#233554] bg-[#0A192F] flex flex-col sm:flex-row items-center justify-end gap-3">
+        <button onclick="rejectCurrentDbs()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs font-bold transition touch-active flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Reject Application</span>
+        </button>
+        <button onclick="approveCurrentDbs()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg touch-active flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-user-check"></i>
+          <span>Acknowledge & Verify DBS</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: Notifications Modal -->
+  <div id="notif-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+    <div class="bg-[#112240] border border-[#233554] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-4 border-b border-[#233554] flex items-center justify-between bg-[#0A192F]">
+        <h3 class="font-bold text-white text-sm flex items-center space-x-2">
+          <i class="fa-regular fa-bell text-[#FF6B35]"></i>
+          <span>Platform Notifications</span>
+        </h3>
+        <button onclick="toggleNotificationsModal()" class="text-[#8892B0] hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-4 divide-y divide-[#233554] max-h-80 overflow-y-auto">
+        <div class="py-3 text-xs space-y-1">
+          <div class="flex justify-between font-semibold text-white">
+            <span>New Tutor Application</span>
+            <span class="text-[10px] text-[#8892B0]">10m ago</span>
+          </div>
+          <p class="text-[#8892B0]">Marcus Vance uploaded Enhanced DBS Certificate for review.</p>
+        </div>
+        <div class="py-3 text-xs space-y-1">
+          <div class="flex justify-between font-semibold text-white">
+            <span>Job Completed</span>
+            <span class="text-[10px] text-[#8892B0]">1h ago</span>
+          </div>
+          <p class="text-[#8892B0]">Gareth P. marked Plumbing Mentorship as completed.</p>
+        </div>
+        <div class="py-3 text-xs space-y-1">
+          <div class="flex justify-between font-semibold text-white">
+            <span>System Audit</span>
+            <span class="text-[10px] text-[#8892B0]">3h ago</span>
+          </div>
+          <p class="text-[#8892B0]">Automated DBS renewal check executed successfully.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    /* =========================================================================
+       STATE MANAGEMENT & MOCK DATA
+       ========================================================================= */
+
+    // System State
+    let currentRole = 'admin'; // 'admin' or 'tutor'
+    let selectedPendingTutorId = null;
+    let isTutorVerified = true;
+
+    // Initial Pending DBS Queue Data
+    let pendingTutors = [
+      {
+        id: 'tut-101',
+        name: 'Marcus Vance',
+        trade: 'Carpentry & Joinery',
+        location: 'Darlington, DL1',
+        appliedDate: 'Today, 14:20',
+        dbsCertNum: '001594839201',
+        issueDate: '14 Jan 2026',
+        avatarBg: 'bg-orange-500',
+        initials: 'MV'
+      },
+      {
+        id: 'tut-102',
+        name: 'Sarah Jenkins',
+        trade: 'Plumbing & Pipework',
+        location: 'Durham, DH1',
+        appliedDate: 'Yesterday',
+        dbsCertNum: '002948103948',
+        issueDate: '02 Feb 2026',
+        avatarBg: 'bg-blue-500',
+        initials: 'SJ'
+      },
+      {
+        id: 'tut-103',
+        name: 'David Miller',
+        trade: 'Electrical & Smart Home',
+        location: 'Stockton-on-Tees, TS18',
+        appliedDate: '2 days ago',
+        dbsCertNum: '003819204918',
+        issueDate: '28 Jan 2026',
+        avatarBg: 'bg-emerald-500',
+        initials: 'DM'
+      }
+    ];
+
+    // Initial Onboarded Directory Tutors Data
+    let directoryTutors = [
+      { id: 'dir-1', name: 'Alan Croft', trade: 'Tiling & Bathrooms', location: 'Darlington', status: 'Active', rating: 5.0, jobsCount: 38, initials: 'AC' },
+      { id: 'dir-2', name: 'Emma Watson', trade: 'Decorating & Plastering', location: 'Durham', status: 'Active', rating: 4.9, jobsCount: 24, initials: 'EW' },
+      { id: 'dir-3', name: 'Tom Hiddleston', trade: 'Brickwork & Landscaping', location: 'Middlesbrough', status: 'Suspended', rating: 4.2, jobsCount: 9, initials: 'TH' }
+    ];
+
+    // Tutor Available Jobs Feed
+    let availableJobs = [
+      {
+        id: 'job-1',
+        title: 'Fixing Leaking Basin & Fitting Kitchen Tap',
+        clientName: 'Rebecca W.',
+        category: 'Plumbing',
+        location: 'Darlington (2.4 miles)',
+        datetime: 'Today, 6:00 PM',
+        payout: '£65.00',
+        description: 'Need hands-on guidance to replace a tap unit and seal under-sink trap pipes correctly.'
+      },
+      {
+        id: 'job-2',
+        title: 'Custom Floating Shelves Installation',
+        clientName: 'James G.',
+        category: 'Carpentry',
+        location: 'Newton Aycliffe (4.1 miles)',
+        datetime: 'Tomorrow, 10:00 AM',
+        payout: '£90.00',
+        description: 'Mounting heavy alcove oak shelves onto masonry wall. Needs stud finding and heavy duty fixings advice.'
+      },
+      {
+        id: 'job-3',
+        title: 'Replacing Light Switches & RCD Socket Check',
+        clientName: 'Liam K.',
+        category: 'Electrical',
+        location: 'Darlington (1.8 miles)',
+        datetime: 'Sat 4 Oct, 2:00 PM',
+        payout: '£85.00',
+        description: 'Upgrading brass light switch faceplates in hallway and checking socket grounding.'
+      },
+      {
+        id: 'job-4',
+        title: 'Bathroom Wall Tiling Repairs',
+        clientName: 'Chloe S.',
+        category: 'Tiling',
+        location: 'Durham (5.5 miles)',
+        datetime: 'Sun 5 Oct, 11:00 AM',
+        payout: '£110.00',
+        description: 'Re-grouting shower cubicle tiles and replacing 3 cracked ceramic wall tiles.'
+      }
+    ];
+
+    // Tutor Accepted Jobs / Schedule
+    let acceptedJobs = [
+      {
+        id: 'acc-1',
+        title: 'Fitting Internal Oak Door & Handles',
+        clientName: 'Oliver M.',
+        location: 'Darlington (1.2 miles)',
+        datetime: 'Tomorrow, 9:00 AM',
+        payout: '£95.00',
+        status: 'Upcoming'
+      },
+      {
+        id: 'acc-2',
+        title: 'Diagnosing Radiator Air Lock',
+        clientName: 'Gareth P.',
+        location: 'Darlington (3.0 miles)',
+        datetime: 'Today, 3:30 PM',
+        payout: '£55.00',
+        status: 'In Progress'
+      }
+    ];
+
+
+    // DOM Content Loaded Handler
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPendingQueue();
+      renderTutorsDirectory('all');
+      renderAvailableJobs();
+      renderAcceptedJobs();
+    });
+
+    // Switch Role Handler (Admin vs Tutor)
+    function switchRole(role) {
+      currentRole = role;
+      const adminView = document.getElementById('admin-view');
+      const tutorView = document.getElementById('tutor-view');
+      const adminBtn = document.getElementById('role-admin-btn');
+      const tutorBtn = document.getElementById('role-tutor-btn');
+      const userRoleLabel = document.getElementById('user-role-label');
+
+      if (role === 'admin') {
+        adminView.classList.remove('hidden');
+        tutorView.classList.add('hidden');
+        
+        adminBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center space-x-1.5 bg-[#FF6B35] text-white shadow-md";
+        tutorBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#8892B0] hover:text-white transition-all duration-200 flex items-center space-x-1.5";
+        userRoleLabel.textContent = "Super Administrator";
+
+        showToast('Switched to Admin Back-Office Portal', 'info');
+      } else {
+        adminView.classList.add('hidden');
+        tutorView.classList.remove('hidden');
+
+        tutorBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center space-x-1.5 bg-[#FF6B35] text-white shadow-md";
+        adminBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-[#8892B0] hover:text-white transition-all duration-200 flex items-center space-x-1.5";
+        userRoleLabel.textContent = "Verified DIY Tutor";
+
+        showToast('Switched to Tutor Dashboard', 'info');
+      }
+    }
+
+    // Render Pending DBS Queue
+    function renderPendingQueue() {
+      const container = document.getElementById('pending-queue-list');
+      const badge = document.getElementById('queue-count-badge');
+      const statPending = document.getElementById('stat-pending-dbs');
+
+      badge.textContent = `${pendingTutors.length} Applicants`;
+      statPending.textContent = pendingTutors.length;
+
+      if (pendingTutors.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center space-y-2">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-check-double"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white">Queue Cleared!</h3>
+            <p class="text-xs text-[#8892B0]">All tutor applications have been verified and processed.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = pendingTutors.map(tutor => `
+        <div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-[#112240]/50 transition">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 rounded-xl ${tutor.avatarBg} text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-md">
+              ${tutor.initials}
+            </div>
+            <div class="space-y-0.5">
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-white text-sm sm:text-base">${tutor.name}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">DBS Pending</span>
+              </div>
+              <p class="text-xs text-[#FF6B35] font-medium">${tutor.trade}</p>
+              <div class="flex items-center space-x-3 text-[11px] text-[#8892B0]">
+                <span><i class="fa-solid fa-location-dot mr-1"></i>${tutor.location}</span>
+                <span>•</span>
+                <span>Applied: ${tutor.appliedDate}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 self-end md:self-auto">
+            <button onclick="openDbsModal('${tutor.id}')" class="px-3.5 py-2 rounded-xl bg-[#0A192F] hover:bg-[#1D3557] border border-[#233554] text-xs font-semibold text-white transition touch-active flex items-center space-x-1.5">
+              <i class="fa-solid fa-file-shield text-amber-400"></i>
+              <span>Inspect DBS Cert</span>
+            </button>
+            <button onclick="quickApproveDbs('${tutor.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition touch-active flex items-center space-x-1">
+              <i class="fa-solid fa-check"></i>
+              <span class="hidden sm:inline">Verify</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Tutors Directory
+    function renderTutorsDirectory(filterStatus = 'all') {
+      const container = document.getElementById('tutors-directory-grid');
+      
+      let list = directoryTutors;
+      if (filterStatus !== 'all') {
+        list = directoryTutors.filter(t => t.status.toLowerCase() === filterStatus.toLowerCase());
+      }
+
+      container.innerHTML = list.map(tutor => `
+        <div class="p-4 rounded-xl bg-[#0A192F] border border-[#233554] space-y-3 relative">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-[#112240] text-white font-bold flex items-center justify-center text-xs border border-[#233554]">
+                ${tutor.initials}
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">${tutor.name}</h4>
+                <p class="text-[11px] text-[#FF6B35]">${tutor.trade}</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tutor.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : tutor.status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+              ${tutor.status}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-[#8892B0] border-t border-[#233554] pt-3">
+            <span><i class="fa-solid fa-location-dot mr-1"></i>${tutor.location}</span>
+            <div class="flex items-center space-x-1 text-white font-medium">
+              <i class="fa-solid fa-star text-amber-400 text-[10px]"></i>
+              <span>${tutor.rating}</span>
+              <span class="text-[#8892B0] text-[10px]">(${tutor.jobsCount} jobs)</span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 pt-1">
+            ${tutor.status === 'Active' ? `
+              <button onclick="toggleTutorStatus('${tutor.id}', 'Suspended')" class="w-full py-1.5 rounded-lg bg-[#112240] hover:bg-rose-500/10 text-xs font-semibold text-rose-400 border border-[#233554] hover:border-rose-500/30 transition">
+                Suspend Account
+              </button>
+            ` : `
+              <button onclick="toggleTutorStatus('${tutor.id}', 'Active')" class="w-full py-1.5 rounded-lg bg-[#112240] hover:bg-emerald-500/10 text-xs font-semibold text-emerald-400 border border-[#233554] hover:border-emerald-500/30 transition">
+                Reactivate
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter Directory Handler
+    function filterTutors(status) {
+      document.querySelectorAll('.dir-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-[#FF6B35]', 'text-white');
+        btn.classList.add('text-[#8892B0]');
+      });
+      event.target.classList.add('bg-[#FF6B35]', 'text-white');
+      event.target.classList.remove('text-[#8892B0]');
+      renderTutorsDirectory(status);
+    }
+
+    // Toggle Active/Suspended Tutor Status
+    function toggleTutorStatus(id, newStatus) {
+      const tutor = directoryTutors.find(t => t.id === id);
+      if (tutor) {
+        tutor.status = newStatus;
+        renderTutorsDirectory('all');
+        showToast(`${tutor.name} account set to ${newStatus}`, newStatus === 'Active' ? 'success' : 'warning');
+      }
+    }
+
+    // Open DBS Document Modal
+    function openDbsModal(id) {
+      const tutor = pendingTutors.find(t => t.id === id);
+      if (!tutor) return;
+
+      selectedPendingTutorId = id;
+      document.getElementById('modal-applicant-name').textContent = `Applicant: ${tutor.name}`;
+      document.getElementById('modal-cert-num').textContent = tutor.dbsCertNum;
+      document.getElementById('modal-issue-date').textContent = tutor.issueDate;
+      document.getElementById('modal-doc-fullname').textContent = tutor.name;
+      document.getElementById('modal-doc-trade').textContent = tutor.trade;
+
+      const modal = document.getElementById('dbs-modal');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    // Close DBS Document Modal
+    function closeDbsModal() {
+      const modal = document.getElementById('dbs-modal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+      selectedPendingTutorId = null;
+    }
+
+    // Approve DBS Application
+    function approveCurrentDbs() {
+      if (!selectedPendingTutorId) return;
+      quickApproveDbs(selectedPendingTutorId);
+      closeDbsModal();
+    }
+
+    // Quick Approve DBS directly from list
+    function quickApproveDbs(id) {
+      const index = pendingTutors.findIndex(t => t.id === id);
+      if (index === -1) return;
+
+      const approvedTutor = pendingTutors[index];
+      pendingTutors.splice(index, 1);
+
+      // Add to directory
+      directoryTutors.push({
+        id: `dir-${Date.now()}`,
+        name: approvedTutor.name,
+        trade: approvedTutor.trade,
+        location: approvedTutor.location.split(',')[0],
+        status: 'Active',
+        rating: 5.0,
+        jobsCount: 0,
+        initials: approvedTutor.initials
+      });
+
+      // Update Total Tutors count
+      const totalStat = document.getElementById('stat-total-tutors');
+      totalStat.textContent = parseInt(totalStat.textContent) + 1;
+
+      renderPendingQueue();
+      renderTutorsDirectory('all');
+
+      showToast(`DBS Verified! ${approvedTutor.name} is now Live on ToolTutors.`, 'success');
+    }
+
+    // Reject DBS Application
+    function rejectCurrentDbs() {
+      if (!selectedPendingTutorId) return;
+      const index = pendingTutors.findIndex(t => t.id === selectedPendingTutorId);
+      if (index !== -1) {
+        const rejected = pendingTutors[index];
+        pendingTutors.splice(index, 1);
+        renderPendingQueue();
+        showToast(`Application for ${rejected.name} rejected.`, 'warning');
+      }
+      closeDbsModal();
+    }
+
+
+    // Render Tutor Available Jobs Feed
+    function renderAvailableJobs() {
+      const container = document.getElementById('available-jobs-container');
+      const countBadge = document.getElementById('job-feed-count');
+
+      countBadge.textContent = `${availableJobs.length} Open`;
+
+      if (availableJobs.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 bg-[#112240] rounded-2xl border border-[#233554] text-center space-y-2">
+            <div class="w-12 h-12 rounded-full bg-blue-500/10 text-blue-400 mx-auto flex items-center justify-center text-xl">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <h3 class="text-sm font-bold text-white">No Open Requests Right Now</h3>
+            <p class="text-xs text-[#8892B0]">Check back shortly! New DIY mentorship requests appear in real time.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = availableJobs.map(job => `
+        <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 space-y-4 hover:border-[#FF6B35]/40 transition shadow-lg">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-[#FF6B35]/15 text-[#FF6B35] uppercase tracking-wider">${job.category}</span>
+              <h3 class="font-bold text-white text-base mt-1">${job.title}</h3>
+              <p class="text-xs text-[#8892B0] mt-1">${job.description}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="text-lg font-extrabold text-emerald-400 block">${job.payout}</span>
+              <span class="text-[10px] text-[#8892B0]">Guaranteed Fee</span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-[#8892B0] border-t border-[#233554] pt-3">
+            <span><i class="fa-regular fa-user mr-1 text-[#FF6B35]"></i>${job.clientName}</span>
+            <span><i class="fa-solid fa-location-dot mr-1 text-[#FF6B35]"></i>${job.location}</span>
+            <span><i class="fa-regular fa-clock mr-1 text-[#FF6B35]"></i>${job.datetime}</span>
+          </div>
+
+          <div class="flex items-center space-x-3 pt-1">
+            <button onclick="acceptJob('${job.id}')" ${!isTutorVerified ? 'disabled' : ''} class="flex-1 py-2.5 rounded-xl bg-[#FF6B35] hover:bg-[#E05A2B] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition touch-active flex items-center justify-center space-x-1.5 shadow-md">
+              <i class="fa-solid fa-check"></i>
+              <span>Accept Job</span>
+            </button>
+            <button onclick="declineJob('${job.id}')" class="px-4 py-2.5 rounded-xl bg-[#0A192F] hover:bg-[#1D3557] border border-[#233554] text-[#8892B0] hover:text-white text-xs font-semibold transition touch-active">
+              Decline
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Accepted Jobs / Schedule
+    function renderAcceptedJobs() {
+      const container = document.getElementById('accepted-jobs-container');
+      const badge = document.getElementById('accepted-jobs-badge');
+      const acceptedCountElem = document.getElementById('tutor-accepted-count');
+
+      badge.textContent = `${acceptedJobs.length} Active`;
+      acceptedCountElem.textContent = acceptedJobs.length;
+
+      if (acceptedJobs.length === 0) {
+        container.innerHTML = `
+          <p class="text-xs text-[#8892B0] text-center py-4">No upcoming scheduled jobs.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = acceptedJobs.map(job => `
+        <div class="p-3.5 rounded-xl bg-[#0A192F] border border-[#233554] space-y-2">
+          <div class="flex justify-between items-start">
+            <h4 class="font-bold text-white text-xs">${job.title}</h4>
+            <span class="text-xs font-extrabold text-emerald-400">${job.payout}</span>
+          </div>
+          <div class="text-[11px] text-[#8892B0] space-y-0.5">
+            <p><i class="fa-regular fa-user mr-1 text-[#FF6B35]"></i>${job.clientName}</p>
+            <p><i class="fa-regular fa-clock mr-1 text-[#FF6B35]"></i>${job.datetime}</p>
+          </div>
+          <div class="pt-2 flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${job.status === 'In Progress' ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'}">
+              ${job.status}
+            </span>
+            <button onclick="markJobComplete('${job.id}')" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold transition touch-active">
+              Mark Complete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Accept Job Handler
+    function acceptJob(id) {
+      if (!isTutorVerified) {
+        showToast('You must be DBS Verified to accept jobs', 'warning');
+        return;
+      }
+
+      const index = availableJobs.findIndex(j => j.id === id);
+      if (index === -1) return;
+
+      const job = availableJobs[index];
+      availableJobs.splice(index, 1);
+
+      acceptedJobs.push({
+        id: `acc-${Date.now()}`,
+        title: job.title,
+        clientName: job.clientName,
+        location: job.location,
+        datetime: job.datetime,
+        payout: job.payout,
+        status: 'Upcoming'
+      });
+
+      renderAvailableJobs();
+      renderAcceptedJobs();
+
+      showToast(`Job accepted! Added to your schedule: ${job.title}`, 'success');
+    }
+
+    // Decline Job Handler
+    function declineJob(id) {
+      const index = availableJobs.findIndex(j => j.id === id);
+      if (index !== -1) {
+        availableJobs.splice(index, 1);
+        renderAvailableJobs();
+        showToast('Job request dismissed.', 'info');
+      }
+    }
+
+    // Mark Job Complete
+    function markJobComplete(id) {
+      const index = acceptedJobs.findIndex(j => j.id === id);
+      if (index !== -1) {
+        const completed = acceptedJobs[index];
+        acceptedJobs.splice(index, 1);
+
+        // Update stats
+        const completedElem = document.getElementById('tutor-completed-count');
+        completedElem.textContent = parseInt(completedElem.textContent) + 1;
+
+        renderAcceptedJobs();
+        showToast(`Mentorship completed! Earnings released: ${completed.payout}`, 'success');
+      }
+    }
+
+    // Demo Toggle Tutor Verification State
+    function toggleTutorVerificationState() {
+      isTutorVerified = !isTutorVerified;
+      const badge = document.getElementById('tutor-status-badge');
+      const badgeText = document.getElementById('tutor-status-text');
+      const warning = document.getElementById('unverified-warning');
+
+      if (isTutorVerified) {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5";
+        badgeText.textContent = "DBS Verified & Active";
+        warning.classList.add('hidden');
+        showToast('Demo State: Tutor set to Verified', 'success');
+      } else {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center space-x-1.5";
+        badgeText.textContent = "Pending DBS Check";
+        warning.classList.remove('hidden');
+        showToast('Demo State: Tutor set to Pending DBS', 'warning');
+      }
+
+      renderAvailableJobs();
+    }
+
+
+    // Refresh System Audit Log
+    function triggerSystemAudit() {
+      showToast('System audit executed: All certificates up-to-date', 'info');
+    }
+
+    // Toggle Notifications Drawer Modal
+    function toggleNotificationsModal() {
+      const modal = document.getElementById('notif-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Custom Toast Notification Function
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let icon = 'fa-info-circle text-blue-400';
+      let border = 'border-blue-500/30';
+      
+      if (type === 'success') {
+        icon = 'fa-circle-check text-emerald-400';
+        border = 'border-emerald-500/30';
+      } else if (type === 'warning') {
+        icon = 'fa-triangle-exclamation text-amber-400';
+        border = 'border-amber-500/30';
+      }
+
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${border} text-white text-xs font-medium shadow-2xl flex items-center space-x-3 pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icon} text-base flex-shrink-0"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
