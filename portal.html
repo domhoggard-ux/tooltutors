@@ -36,12 +36,6 @@
     ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
     .view-section { transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out; }
-    .badge-pulse { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse-green 2s infinite; }
-    @keyframes pulse-green {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
     .touch-active:active { transform: scale(0.97); }
   </style>
 </head>
@@ -49,12 +43,12 @@
 
   <!-- Top Navigation Bar -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
       
       <!-- Brand Logo & Title -->
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
-          <i class="fa-solid fa-[#FF6B35] fa-wrench"></i>
+          <i class="fa-solid fa-wrench"></i>
         </div>
         <div>
           <div class="flex items-center space-x-2">
@@ -65,34 +59,28 @@
         </div>
       </div>
 
-      <!-- Action Buttons (Logout) -->
+      <!-- Profile & Sign Out Controls -->
       <div class="flex items-center space-x-3">
-        <button onclick="handleLogout()" class="px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all duration-200 flex items-center space-x-1.5 shadow-md">
-          <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-          <span class="hidden sm:inline">Sign Out</span>
-        </button>
-      </div>
-
-      <!-- Notifications & Profile -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <button onclick="toggleNotificationsModal()" class="relative p-2.5 rounded-xl bg-[#112240] border border-[#233554] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/50 transition-colors touch-active">
-          <i class="fa-regular fa-bell text-base"></i>
-          <span id="notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF6B35] text-white text-[10px] font-bold rounded-full flex items-center justify-center">1</span>
-        </button>
         
-        <div class="h-8 w-px bg-[#233554] hidden sm:block"></div>
-        
-        <div class="flex items-center space-x-2 pl-1">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-[#f99b75] p-0.5">
+        <!-- User Badge (Always Visible) -->
+        <div class="flex items-center space-x-2.5 bg-[#112240] border border-[#233554] px-3 py-1.5 rounded-xl">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF6B35] to-[#f99b75] p-0.5 flex-shrink-0">
             <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white">
               --
             </div>
           </div>
-          <div class="hidden lg:block text-left">
+          <div class="text-left">
             <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
-            <div id="header-user-role" class="text-[10px] text-[#FF6B35]">Authenticating</div>
+            <div id="header-user-role" class="text-[10px] text-[#FF6B35] font-medium">Authenticating</div>
           </div>
         </div>
+
+        <!-- Prominent Sign Out Button -->
+        <button onclick="handleLogout()" class="px-3.5 py-2 rounded-xl text-xs font-bold border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/60 transition-all duration-200 flex items-center space-x-1.5 shadow-md cursor-pointer touch-active">
+          <i class="fa-solid fa-right-from-bracket text-xs"></i>
+          <span class="inline">Sign Out</span>
+        </button>
+
       </div>
 
     </div>
@@ -187,7 +175,6 @@
           <div>
             <div class="flex items-center space-x-3 flex-wrap gap-y-1">
               <h1 id="tutor-dashboard-name" class="text-xl sm:text-2xl font-extrabold text-white">Loading...</h1>
-              <!-- DBS Status Badge -->
               <div id="tutor-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5">
                 <i class="fa-solid fa-shield-check text-xs"></i>
                 <span id="tutor-status-text">DBS Verified & Active</span>
@@ -228,11 +215,10 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DEFINE YOUR ADMIN EMAIL HERE (Must match the exact login email of the Admin)
+    // Change this to match your admin login email
     const ADMIN_EMAIL = 'admin@tooltutors.co.uk';
 
-    // Global state for mock job lists
-    let isTutorVerified = true;
+    // Mock data structures
     let pendingTutors = [
       { id: 'tut-101', name: 'Marcus Vance', trade: 'Carpentry', location: 'Darlington', appliedDate: 'Today', initials: 'MV' }
     ];
@@ -244,7 +230,7 @@
     ];
     let acceptedJobs = [];
 
-    // Authenticate and load on boot
+    // Authenticate and load profile on startup
     window.addEventListener('DOMContentLoaded', async () => {
       const { data: { session }, error } = await supabaseClient.auth.getSession();
       
@@ -255,36 +241,64 @@
       }
 
       const user = session.user;
-      const userEmail = user.email;
+      const userEmail = user.email || '';
       
-      // Determine Display Name (pulls from DB metadata, or defaults to email prefix)
-      const fullName = user.user_metadata?.full_name || userEmail.split('@')[0];
-      const initials = fullName.substring(0, 2).toUpperCase();
+      // Resolve Full Name (Metadata -> Database Profile -> Formatted Email)
+      let displayName = user.user_metadata?.full_name 
+                     || user.user_metadata?.name 
+                     || user.user_metadata?.display_name;
 
-      // Set Header Data
+      if (!displayName) {
+        try {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('full_name, name')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profile) displayName = profile.full_name || profile.name;
+        } catch (e) {
+          console.warn('Profile table check skipped:', e);
+        }
+      }
+
+      // Final fallback: turn email prefix into formatted name (e.g., "john.doe" -> "John Doe")
+      if (!displayName && userEmail) {
+        const prefix = userEmail.split('@')[0];
+        displayName = prefix
+          .split(/[._-]/)
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+      }
+
+      displayName = displayName || 'User';
+
+      // Compute Initials
+      const nameParts = displayName.trim().split(' ');
+      const initials = nameParts.length > 1 
+        ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+        : displayName.substring(0, 2).toUpperCase();
+
+      // Update Header Profile Info
       document.getElementById('header-user-initials').textContent = initials;
-      document.getElementById('header-user-name').textContent = fullName;
+      document.getElementById('header-user-name').textContent = displayName;
 
       // Role Routing: Admin vs Tutor
       if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-        // Load Admin View
-        document.getElementById('header-user-role').textContent = 'Super Administrator';
+        document.getElementById('header-user-role').textContent = 'Administrator';
         document.getElementById('admin-view').classList.remove('hidden');
         renderPendingQueue();
         renderTutorsDirectory('all');
         showToast('Authenticated as Administrator', 'success');
       } else {
-        // Load Tutor View
-        document.getElementById('header-user-role').textContent = 'Verified DIY Tutor';
+        document.getElementById('header-user-role').textContent = 'Verified Tutor';
         document.getElementById('tutor-view').classList.remove('hidden');
         
-        // Update Tutor Dashboard Profile Card
         document.getElementById('tutor-dashboard-initials').textContent = initials;
-        document.getElementById('tutor-dashboard-name').textContent = fullName;
+        document.getElementById('tutor-dashboard-name').textContent = displayName;
 
         renderAvailableJobs();
         renderAcceptedJobs();
-        showToast('Authenticated as Tutor', 'success');
+        showToast(`Welcome back, ${displayName}`, 'success');
       }
     });
 
@@ -294,9 +308,8 @@
       window.location.href = 'login.html';
     }
 
-
     /* =========================================================================
-       UI RENDER FUNCTIONS (Kept from existing framework)
+       UI RENDER FUNCTIONS
        ========================================================================= */
 
     function renderPendingQueue() {
@@ -367,8 +380,6 @@
       showToast('DBS Verified', 'success');
     }
 
-    // Helper functions
-    function toggleNotificationsModal() { showToast('No new notifications.', 'info'); }
     function triggerSystemAudit() { showToast('Audit run complete.', 'info'); }
     
     function showToast(message, type = 'info') {
