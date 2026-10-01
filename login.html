@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | ToolTutors Portal</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-container">
+        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
+      </a>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
+        <a href="login.html" class="nav-link">Login</a>
+        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <h1 class="section-title">Sign In to ToolTutors</h1>
+      <p class="section-subtitle">Access your Tutor account, job listings, or Admin back-office.</p>
+    </div>
+
+    <div class="form-container" style="max-width: 440px;">
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+      <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted, #8892b0);">
+        Don't have an account yet? <a href="apply.html" style="color: var(--accent-orange, #ff6b35);">Apply / Register here</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
+        <p>Empowering local communities through peer-to-peer DIY skills.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="login.html">Login</a>
+        <a href="apply.html">Apply / Register</a>
+        <a href="waiver.html">Safety & Liability Waiver</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // If already logged in, skip login screen and send straight to portal
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        window.location.href = 'portal.html';
+      }
+    });
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Authenticating...';
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        alert('Login failed: ' + error.message);
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+      } else {
+        window.location.href = 'portal.html';
+      }
+    });
+  </script>
+</body>
+</html>
