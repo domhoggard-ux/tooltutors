@@ -1,167 +1,221 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-[#0A192F]">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Join ToolTutors | Become a Mentor or Learner</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <header class="site-header">
-    <div class="header-container">
-      <a href="index.html" class="brand-container">
-        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
-      </a>
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-overlay" id="navOverlay"></div>
-      <nav class="nav-menu" id="navMenu">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="about.html" class="nav-link">About</a>
-        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
-        <a href="portal.html" class="nav-link">Portal</a>
-        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <div style="text-align: center; margin-bottom: 2.5rem;">
-      <h1 class="section-title">Join the ToolTutors Platform</h1>
-      <p class="section-subtitle">Whether you want to pass on your skills or learn a new craft, we'd love to have you.</p>
-    </div>
-
-    <div class="form-container">
-      <form id="registrationForm">
-        <div class="form-group">
-          <label class="form-label" for="role">I want to register as a:</label>
-          <select id="role" class="form-select" required>
-            <option value="learner">Learner (Looking for a Mentor)</option>
-            <option value="tutor">Tutor / Mentor (Offering Guidance)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="fullName">Full Name</label>
-          <input type="text" id="fullName" class="form-input" placeholder="e.g. Alex Morgan" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="email">Email Address</label>
-          <input type="email" id="email" class="form-input" placeholder="alex@example.com" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="password">Create Password</label>
-          <input type="password" id="password" class="form-input" placeholder="••••••••" minlength="6" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="location">City / Region</label>
-          <input type="text" id="location" class="form-input" placeholder="e.g. Darlington, Co. Durham" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="category">Primary DIY Interest</label>
-          <select id="category" class="form-select" required>
-            <option value="woodworking">Carpentry & Woodworking</option>
-            <option value="tiling">Tiling & Flooring</option>
-            <option value="plumbing">Plumbing Basics</option>
-            <option value="general">General Home Maintenance</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="details">Project Details / Experience Summary</label>
-          <textarea id="details" class="form-textarea" placeholder="Tell us about the skills you want to learn or teach..."></textarea>
-        </div>
-
-        <button type="submit" id="submitBtn" class="btn btn-primary">Submit Application</button>
-      </form>
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
-        <p>Empowering local communities through peer-to-peer DIY skills.</p>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="apply.html">Apply / Register</a>
-        <a href="waiver.html">Safety & Liability Waiver</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
-    </div>
-  </footer>
-
-  <script src="script.js"></script>
+  <title>ToolTutors - Create Your Account</title>
+  
+  <!-- Supabase & Tailwind CSS CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script>
-    // Initialize Supabase Client
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: { DEFAULT: '#FF6B35', hover: '#E05A2B', light: 'rgba(255, 107, 53, 0.15)' },
+            navy: { DEFAULT: '#0A192F', light: '#112240', lighter: '#1D3557', border: '#233554' },
+            slate: { light: '#E6F1FF', muted: '#8892B0' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+  <div class="sm:mx-auto sm:w-full sm:max-w-xl">
+    <!-- Brand Logo -->
+    <div class="flex items-center justify-center space-x-3 mb-6">
+      <div class="w-12 h-12 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-2xl shadow-lg">
+        <i class="fa-solid fa-wrench"></i>
+      </div>
+      <span class="text-2xl font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+    </div>
+
+    <h2 class="text-center text-3xl font-extrabold text-white tracking-tight">Create your account</h2>
+    <p class="mt-2 text-center text-sm text-[#8892B0]">
+      Join as a Homeowner looking for DIY guidance or as a Verified Tutor.
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
+    <div class="bg-[#112240] py-8 px-6 shadow-2xl rounded-2xl border border-[#233554] sm:px-10">
+      
+      <!-- Error / Alert Banner -->
+      <div id="alert-box" class="hidden mb-6 p-4 rounded-xl border text-xs font-medium"></div>
+
+      <form id="signup-form" onsubmit="handleSignUp(event)" class="space-y-5">
+        
+        <!-- Account Role Selection -->
+        <div>
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-2">I am joining as a</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label id="role-homeowner-label" class="cursor-pointer border-2 border-[#FF6B35] bg-[#FF6B35]/10 p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-white transition-all">
+              <input type="radio" name="role" value="homeowner" checked onchange="updateRoleUI()" class="sr-only">
+              <i class="fa-solid fa-house-chimney text-[#FF6B35]"></i>
+              <span>Homeowner</span>
+            </label>
+            <label id="role-tutor-label" class="cursor-pointer border-2 border-[#233554] bg-[#0A192F] p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-[#8892B0] hover:text-white transition-all">
+              <input type="radio" name="role" value="tutor" onchange="updateRoleUI()" class="sr-only">
+              <i class="fa-solid fa-user-gear"></i>
+              <span>DIY Tutor</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="full_name" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Full Name</label>
+            <input type="text" id="full_name" required placeholder="John Smith" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+          <div>
+            <label for="phone" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Phone Number</label>
+            <input type="tel" id="phone" required placeholder="07123 456789" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+        </div>
+
+        <!-- Address Fields -->
+        <div class="space-y-4 pt-2 border-t border-[#233554]/60">
+          <div>
+            <label for="address_line1" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Address Line 1</label>
+            <input type="text" id="address_line1" required placeholder="12 High Street" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+          
+          <div>
+            <label for="address_line2" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Address Line 2 <span class="text-[#8892B0]/50 lowercase">(optional)</span></label>
+            <input type="text" id="address_line2" placeholder="Apartment, suite, unit, etc." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="city" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">City / Town</label>
+              <input type="text" id="city" required placeholder="Darlington" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            </div>
+            <div>
+              <label for="postcode" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Postcode</label>
+              <input type="text" id="postcode" required placeholder="DL1 1AA" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Credentials -->
+        <div class="space-y-4 pt-2 border-t border-[#233554]/60">
+          <div>
+            <label for="email" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Email Address</label>
+            <input type="email" id="email" required placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+
+          <div>
+            <label for="password" class="block text-xs font-semibold text-[#8892B0] uppercase tracking-wider mb-1">Password</label>
+            <input type="password" id="password" required minlength="6" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-[#FF6B35] hover:bg-[#E05A2B] transition duration-200 shadow-lg text-sm mt-4 flex items-center justify-center space-x-2">
+          <span>Create Account</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-xs text-[#8892B0]">
+          Already have an account? 
+          <a href="login.html" class="font-semibold text-[#FF6B35] hover:underline">Sign in here</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
     const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('registrationForm');
-    const submitBtn = document.getElementById('submitBtn');
+    function updateRoleUI() {
+      const selectedRole = document.querySelector('input[name="role"]:checked').value;
+      const homeownerLabel = document.getElementById('role-homeowner-label');
+      const tutorLabel = document.getElementById('role-tutor-label');
 
-    form.addEventListener('submit', async (e) => {
+      if (selectedRole === 'homeowner') {
+        homeownerLabel.className = 'cursor-pointer border-2 border-[#FF6B35] bg-[#FF6B35]/10 p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-white transition-all';
+        tutorLabel.className = 'cursor-pointer border-2 border-[#233554] bg-[#0A192F] p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-[#8892B0] hover:text-white transition-all';
+      } else {
+        tutorLabel.className = 'cursor-pointer border-2 border-[#FF6B35] bg-[#FF6B35]/10 p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-white transition-all';
+        homeownerLabel.className = 'cursor-pointer border-2 border-[#233554] bg-[#0A192F] p-3.5 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold text-[#8892B0] hover:text-white transition-all';
+      }
+    }
+
+    function showAlert(message, isError = true) {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.classList.remove('hidden', 'bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400', 'bg-rose-500/10', 'border-rose-500/30', 'text-rose-400');
+      
+      if (isError) {
+        alertBox.classList.add('bg-rose-500/10', 'border-rose-500/30', 'text-rose-400');
+      } else {
+        alertBox.classList.add('bg-emerald-500/10', 'border-emerald-500/30', 'text-emerald-400');
+      }
+      alertBox.textContent = message;
+    }
+
+    async function handleSignUp(e) {
       e.preventDefault();
-
+      const submitBtn = document.getElementById('submit-btn');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Registering Account...';
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Creating Account...</span>';
 
-      const role = document.getElementById('role').value;
-      const fullName = document.getElementById('fullName').value;
-      const email = document.getElementById('email').value;
+      const role = document.querySelector('input[name="role"]:checked').value;
+      const full_name = document.getElementById('full_name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address_line1 = document.getElementById('address_line1').value.trim();
+      const address_line2 = document.getElementById('address_line2').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const postcode = document.getElementById('postcode').value.trim().toUpperCase();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const location = document.getElementById('location').value;
-      const category = document.getElementById('category').value;
-      const details = document.getElementById('details').value;
 
       try {
-        // 1. Create account in Supabase Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-          email: email,
-          password: password,
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name,
+              phone,
+              address_line1,
+              address_line2,
+              city,
+              postcode,
+              role
+            }
+          }
         });
 
-        if (authError) throw authError;
+        if (error) throw error;
 
-        // 2. Insert record into database 'profiles' table
-        const { error: dbError } = await supabaseClient
-          .from('profiles')
-          .insert([{
-            id: authData.user.id,
-            full_name: fullName,
-            email: email,
-            role: role,
-            location: location,
-            category: category,
-            experience: details,
-            dbs_status: role === 'tutor' ? 'pending' : 'verified'
-          }]);
+        showAlert('Account created successfully! Redirecting to portal...', false);
+        setTimeout(() => {
+          window.location.href = 'portal.html';
+        }, 1500);
 
-        if (dbError) throw dbError;
-
-        alert('Registration successful! Redirecting to the portal...');
-        window.location.href = 'portal.html';
-
-      } catch (error) {
-        alert('Error: ' + error.message);
+      } catch (err) {
+        showAlert(err.message || 'Registration failed. Please try again.');
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Application';
+        submitBtn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-arrow-right"></i>';
       }
-    });
+    }
   </script>
 </body>
 </html>
