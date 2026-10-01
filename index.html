@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors | Peer-to-Peer DIY Mentorship</title>
+  <meta name="description" content="Connect with experienced local DIY mentors for 1-on-1, in-person advice on home improvement projects.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-container" aria-label="ToolTutors Home">
+        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
+      </a>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
+        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION WITH TWO-COLUMN IMAGE LAYOUT -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">🛠️ The Peer-to-Peer DIY Mentorship Network</div>
+        <h1 class="hero-title">Master DIY Projects with <span>Local Mentors</span></h1>
+        <p class="hero-description">Stop guessing with YouTube videos. Get experienced hands-on tutors to guide you step-by-step through woodworking, tiling, plumbing, and home repairs.</p>
+        <div class="hero-actions">
+          <a href="apply.html" class="btn btn-primary">Find a Tutor</a>
+          <a href="apply.html" class="btn btn-secondary">Become a Tutor</a>
+        </div>
+      </div>
+      
+      <div class="hero-image">
+        <img src="hero-tradesman.jpg" alt="Experienced ToolTutors mentor measuring a doorframe" width="1024" height="1536">
+      </div>
+    </section>
+
+    <!-- CORE FEATURES -->
+    <section class="container">
+      <h2 class="section-title">Why ToolTutors?</h2>
+      <p class="section-subtitle">Real people, practical skills, zero intimidation.</p>
+      
+      <div class="grid-cards">
+        <div class="card">
+          <h3 style="margin-bottom:0.5rem; font-size:1.25rem; color:#FF6B35;">1-on-1 Guidance</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Personalized in-person mentorship tailored precisely to your specific project and tool kit.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:0.5rem; font-size:1.25rem; color:#FF6B35;">Verified Mentors</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Vetted local tradespeople and seasoned enthusiasts ready to pass down their skills safely.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:0.5rem; font-size:1.25rem; color:#FF6B35;">Affordable Learning</h3>
+          <p style="color:var(--text-muted); font-size:0.95rem;">Save thousands on contractor bills by learning how to do the job right yourself.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- POPULAR CATEGORIES -->
+    <section class="container" style="padding-top:0;">
+      <h2 class="section-title">Popular Categories</h2>
+      <p class="section-subtitle">From basic maintenance to full-room remodels.</p>
+      
+      <div class="grid-cards">
+        <div class="card">
+          <h4 style="font-size:1.1rem; margin-bottom:0.5rem;">Carpentry & Woodworking</h4>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Saws, joints, shelving, and timber framing fundamentals.</p>
+        </div>
+        <div class="card">
+          <h4 style="font-size:1.1rem; margin-bottom:0.5rem;">Tiling & Flooring</h4>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Subfloor preparation, tile cutting, grouting, and levelling.</p>
+        </div>
+        <div class="card">
+          <h4 style="font-size:1.1rem; margin-bottom:0.5rem;">Plumbing Basics</h4>
+          <p style="color:var(--text-muted); font-size:0.88rem;">Replacing taps, fixing leaks, and pipe fitting techniques.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
+        <p>Empowering local communities through peer-to-peer DIY skills.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="apply.html">Apply / Register</a>
+        <a href="waiver.html">Safety & Liability Waiver</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

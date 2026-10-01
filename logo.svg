@@ -1,0 +1,41 @@
+<svg width="330" height="90" viewBox="0 0 330 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- FULL BRAND BACKGROUND CONTAINER (Trimmed to width=330) -->
+  <rect width="330" height="90" rx="16" fill="#0A192F"/>
+
+  <!-- THE PICTORIAL 'T' (Serves as the 'T' in 'Tool') -->
+  <g transform="translate(10, 10)">
+    <!-- Inner Accent Border around 'T' Badge -->
+    <rect x="0" y="0" width="70" height="70" rx="18" fill="#0A192F" stroke="#FF6B35" stroke-width="2"/>
+
+    <defs>
+      <!-- Cutout mask for Spirit Level top bar -->
+      <mask id="t-bar-mask">
+        <rect width="70" height="70" fill="white" />
+        <circle cx="14" cy="22" r="2.5" fill="black" />
+        <circle cx="56" cy="22" r="2.5" fill="black" />
+        <rect x="56" y="19.5" width="8" height="5" fill="black" />
+      </mask>
+      
+      <!-- Cutout mask for Chisel stem -->
+      <mask id="t-stem-mask">
+        <rect width="70" height="70" fill="white" />
+        <rect x="32" y="38" width="6" height="14" rx="3" fill="black" />
+      </mask>
+    </defs>
+
+    <!-- Spirit Level Crossbar (Brand Orange) -->
+    <rect x="9" y="16" width="52" height="12" rx="6" fill="#FF6B35" mask="url(#t-bar-mask)" />
+
+    <!-- Structural Chisel Stem (White) -->
+    <rect x="29" y="24" width="12" height="36" rx="3" fill="#FFFFFF" mask="url(#t-stem-mask)" />
+
+    <!-- Level Bubble Accent -->
+    <circle cx="35" cy="45" r="1.8" fill="#FF6B35" />
+  </g>
+
+  <!-- WORDMARK -->
+  <text x="83" y="56" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="800" font-size="40" fill="#FFFFFF" letter-spacing="-1">ool<tspan dx="8" fill="#FF6B35">Tutors</tspan></text>
+
+  <!-- SUB-BRAND TAGLINE -->
+  <text x="85" y="73" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="10" fill="#8892B0" letter-spacing="3.2">PEER DIY MENTORSHIP</text>
+</svg>

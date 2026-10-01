@@ -1,0 +1,29 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy Squircle Container -->
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="#0A192F" stroke="#FF6B35" stroke-width="4"/>
+
+  <defs>
+    <!-- Cutout mask for Spirit Level top bar -->
+    <mask id="favicon-t-bar-mask">
+      <rect width="128" height="128" fill="white" />
+      <circle cx="28" cy="40" r="4.5" fill="black" />
+      <circle cx="100" cy="40" r="4.5" fill="black" />
+      <rect x="100" y="35.5" width="14" height="9" fill="black" />
+    </mask>
+    
+    <!-- Cutout mask for Chisel stem -->
+    <mask id="favicon-t-stem-mask">
+      <rect width="128" height="128" fill="white" />
+      <rect x="59" y="69" width="10" height="24" rx="5" fill="black" />
+    </mask>
+  </defs>
+
+  <!-- Spirit Level Crossbar (Brand Orange) -->
+  <rect x="20" y="29" width="88" height="22" rx="11" fill="#FF6B35" mask="url(#favicon-t-bar-mask)" />
+
+  <!-- Structural Chisel Stem (White) -->
+  <rect x="53" y="43" width="22" height="64" rx="5" fill="#FFFFFF" mask="url(#favicon-t-stem-mask)" />
+
+  <!-- Level Bubble Accent -->
+  <circle cx="64" cy="81" r="3.2" fill="#FF6B35" />
+</svg>

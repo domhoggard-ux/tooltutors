@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join ToolTutors | Become a Mentor or Learner</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-container">
+        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
+      </a>
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <nav class="nav-menu" id="navMenu">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
+        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <h1 class="section-title">Join the ToolTutors Platform</h1>
+      <p class="section-subtitle">Whether you want to pass on your skills or learn a new craft, we'd love to have you.</p>
+    </div>
+
+    <div class="form-container">
+      <form data-handle="true">
+        <div class="form-group">
+          <label class="form-label" for="role">I want to register as a:</label>
+          <select id="role" class="form-select" required>
+            <option value="learner">Learner (Looking for a Mentor)</option>
+            <option value="tutor">Tutor / Mentor (Offering Guidance)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fullName">Full Name</label>
+          <input type="text" id="fullName" class="form-input" placeholder="e.g. Alex Morgan" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" class="form-input" placeholder="alex@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="location">City / Region</label>
+          <input type="text" id="location" class="form-input" placeholder="e.g. Darlington, Co. Durham" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="category">Primary DIY Interest</label>
+          <select id="category" class="form-select" required>
+            <option value="woodworking">Carpentry & Woodworking</option>
+            <option value="tiling">Tiling & Flooring</option>
+            <option value="plumbing">Plumbing Basics</option>
+            <option value="general">General Home Maintenance</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="details">Project Details / Experience Summary</label>
+          <textarea id="details" class="form-textarea" placeholder="Tell us about the skills you want to learn or teach..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
+        <p>Empowering local communities through peer-to-peer DIY skills.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="apply.html">Apply / Register</a>
+        <a href="waiver.html">Safety & Liability Waiver</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
