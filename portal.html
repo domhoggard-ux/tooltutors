@@ -19,11 +19,11 @@
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'], },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
           colors: {
-            brand: { DEFAULT: '#FF6B35', hover: '#E05A2B', light: 'rgba(255, 107, 53, 0.15)', },
-            navy: { DEFAULT: '#0A192F', light: '#112240', lighter: '#1D3557', border: '#233554', },
-            slate: { light: '#E6F1FF', muted: '#8892B0', }
+            brand: { DEFAULT: '#FF6B35', hover: '#E05A2B', light: 'rgba(255, 107, 53, 0.15)' },
+            navy: { DEFAULT: '#0A192F', light: '#112240', lighter: '#1D3557', border: '#233554' },
+            slate: { light: '#E6F1FF', muted: '#8892B0' }
           }
         }
       }
@@ -35,17 +35,16 @@
     ::-webkit-scrollbar-track { background: #0A192F; }
     ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
-    .view-section { transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out; }
-    .touch-active:active { transform: scale(0.97); }
+    .view-section { transition: opacity 0.25s ease-in-out; }
   </style>
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
   <!-- Top Navigation Bar -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       
-      <!-- Brand Logo & Title -->
+      <!-- Brand Logo -->
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
           <i class="fa-solid fa-wrench"></i>
@@ -53,339 +52,364 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-lg font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Portal</span>
+            <span id="header-role-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Loading...</span>
           </div>
           <p class="text-xs text-[#8892B0] hidden xs:block">Peer DIY Mentorship Platform</p>
         </div>
       </div>
 
-      <!-- Profile & Sign Out Controls -->
+      <!-- Profile & Actions -->
       <div class="flex items-center space-x-3">
-        
-        <!-- User Badge (Always Visible) -->
-        <div class="flex items-center space-x-2.5 bg-[#112240] border border-[#233554] px-3 py-1.5 rounded-xl">
-          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF6B35] to-[#f99b75] p-0.5 flex-shrink-0">
+        <div class="flex items-center space-x-3 pr-2">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
             <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white">
               --
             </div>
           </div>
-          <div class="text-left">
+          <div class="hidden sm:block text-left">
             <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
-            <div id="header-user-role" class="text-[10px] text-[#FF6B35] font-medium">Authenticating</div>
+            <div id="header-user-role" class="text-[10px] text-[#8892B0]">Authenticating</div>
           </div>
         </div>
 
-        <!-- Prominent Sign Out Button -->
-        <button onclick="handleLogout()" class="px-3.5 py-2 rounded-xl text-xs font-bold border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/60 transition-all duration-200 flex items-center space-x-1.5 shadow-md cursor-pointer touch-active">
-          <i class="fa-solid fa-right-from-bracket text-xs"></i>
-          <span class="inline">Sign Out</span>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200 flex items-center space-x-1.5">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span class="hidden sm:inline">Sign Out</span>
         </button>
-
       </div>
 
     </div>
   </header>
 
-  <!-- Toast Notification System -->
+  <!-- Notification Toast Container -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
-  <!-- MAIN CONTAINER -->
+  <!-- Main Portal Body -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+    <!-- Loading Placeholder -->
+    <div id="portal-loader" class="flex flex-col items-center justify-center py-20 space-y-4">
+      <i class="fa-solid fa-spinner fa-spin text-3xl text-[#FF6B35]"></i>
+      <p class="text-xs text-[#8892B0]">Loading your dashboard profile...</p>
+    </div>
 
     <!-- ========================================================================= -->
     <!-- VIEW 1: ADMIN BACK-OFFICE PORTAL                                          -->
     <!-- ========================================================================= -->
     <section id="admin-view" class="view-section space-y-8 hidden">
-      
-      <!-- Welcome Header -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl relative overflow-hidden">
-        <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#FF6B35]/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="space-y-1 z-10">
-          <div class="flex items-center space-x-2">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Admin Back-Office</h1>
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">System Live</span>
+      <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl relative overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Admin Management Hub</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Administrator</span>
+            </div>
+            <p class="text-sm text-[#8892B0] mt-1">Platform overview, tutor DBS verification, and system control.</p>
           </div>
-          <p class="text-sm text-[#8892B0]">Verify tutor DBS certifications, audit compliance, and manage platform job activity.</p>
         </div>
-        <div class="flex items-center space-x-3 z-10">
-          <button onclick="triggerSystemAudit()" class="w-full sm:w-auto px-4 py-2.5 bg-[#0A192F] hover:bg-[#1D3557] border border-[#233554] text-xs font-semibold rounded-xl text-[#E6F1FF] flex items-center justify-center space-x-2 transition touch-active">
-            <i class="fa-solid fa-arrows-rotate text-[#FF6B35]"></i>
-            <span>Refresh Audit Logs</span>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554]">
+          <span class="text-xs font-semibold text-[#8892B0] uppercase">Registered Users</span>
+          <div id="admin-stat-users" class="text-2xl font-extrabold text-white mt-2">--</div>
+        </div>
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554]">
+          <span class="text-xs font-semibold text-[#8892B0] uppercase">Pending DBS Checks</span>
+          <div id="admin-stat-dbs" class="text-2xl font-extrabold text-amber-400 mt-2">--</div>
+        </div>
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554]">
+          <span class="text-xs font-semibold text-[#8892B0] uppercase">Active Tutors</span>
+          <div id="admin-stat-tutors" class="text-2xl font-extrabold text-emerald-400 mt-2">--</div>
+        </div>
+        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554]">
+          <span class="text-xs font-semibold text-[#8892B0] uppercase">Homeowners</span>
+          <div id="admin-stat-homeowners" class="text-2xl font-extrabold text-white mt-2">--</div>
+        </div>
+      </div>
+
+      <!-- User Directory Table -->
+      <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
+        <div class="p-5 border-b border-[#233554] flex justify-between items-center">
+          <h2 class="text-base font-bold text-white">User Accounts & Compliance</h2>
+          <button onclick="loadAdminDirectory()" class="text-xs text-[#FF6B35] hover:underline font-semibold flex items-center space-x-1">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Refresh</span>
           </button>
         </div>
-      </div>
-
-      <!-- Platform Overview Stats -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg">
-          <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Total Tutors</span>
-          <div class="flex items-baseline justify-between mt-2">
-            <span id="stat-total-tutors" class="text-2xl sm:text-3xl font-extrabold text-white">42</span>
-          </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#0A192F] text-[#8892B0] uppercase tracking-wider font-semibold border-b border-[#233554]">
+              <tr>
+                <th class="p-4">User</th>
+                <th class="p-4">Role</th>
+                <th class="p-4">Location</th>
+                <th class="p-4">Phone</th>
+                <th class="p-4">DBS Verification</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-table" class="divide-y divide-[#233554] text-white">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
         </div>
-        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-2 h-full bg-amber-500"></div>
-          <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Pending DBS</span>
-          <div class="flex items-baseline justify-between mt-2">
-            <span id="stat-pending-dbs" class="text-2xl sm:text-3xl font-extrabold text-amber-400">3</span>
-          </div>
-        </div>
-        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg">
-          <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Active Mentorships</span>
-          <div class="flex items-baseline justify-between mt-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-white">18</span>
-          </div>
-        </div>
-        <div class="bg-[#112240] p-5 rounded-2xl border border-[#233554] shadow-lg">
-          <span class="text-xs font-semibold text-[#8892B0] uppercase tracking-wider">Completed Jobs</span>
-          <div class="flex items-baseline justify-between mt-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-white">284</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pending Tutor Queue & Directory Grids -->
-      <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
-        <div class="p-5 sm:p-6 border-b border-[#233554]">
-          <h2 class="text-lg font-bold text-white">Pending Tutor Verification Queue</h2>
-        </div>
-        <div id="pending-queue-list" class="divide-y divide-[#233554]"></div>
-      </div>
-
-      <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl p-5 sm:p-6 space-y-6">
-        <h2 class="text-lg font-bold text-white">Tutors & Mentors Directory</h2>
-        <div id="tutors-directory-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
     </section>
 
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: HOMEOWNER PORTAL                                                  -->
+    <!-- ========================================================================= -->
+    <section id="homeowner-view" class="view-section space-y-8 hidden">
+      <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <div class="flex items-center space-x-3">
+            <h1 id="homeowner-welcome-name" class="text-2xl sm:text-3xl font-extrabold text-white">Welcome Homeowner</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/20">Homeowner</span>
+          </div>
+          <p id="homeowner-address-line" class="text-xs text-[#8892B0] mt-1">Fetching account address...</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-white mb-4">Request DIY Assistance</h2>
+            <p class="text-xs text-[#8892B0] mb-6">Describe the project or task you need hands-on guidance with.</p>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Project Title</label>
+                <input type="text" placeholder="e.g. Learning to re-tile bathroom splashback" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Category</label>
+                  <select class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                    <option>Plumbing</option>
+                    <option>Tiling</option>
+                    <option>Carpentry & Joinery</option>
+                    <option>Electrical Basics</option>
+                    <option>Decorating & Painting</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Time</label>
+                  <input type="text" placeholder="e.g. Weekend Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                </div>
+              </div>
+              <button onclick="showToast('Request feature initializing in Task 4', 'info')" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-xs rounded-xl transition">Submit Mentorship Request</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl space-y-4">
+            <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3">My Account Details</h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between text-[#8892B0]"><span class="font-medium">Phone:</span><span id="homeowner-phone-display" class="text-white">--</span></div>
+              <div class="flex justify-between text-[#8892B0]"><span class="font-medium">City:</span><span id="homeowner-city-display" class="text-white">--</span></div>
+              <div class="flex justify-between text-[#8892B0]"><span class="font-medium">Postcode:</span><span id="homeowner-postcode-display" class="text-white">--</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- ========================================================================= -->
-    <!-- VIEW 2: TUTOR JOB MANAGEMENT DASHBOARD                                   -->
+    <!-- VIEW 3: TUTOR PORTAL                                                      -->
     <!-- ========================================================================= -->
     <section id="tutor-view" class="view-section space-y-8 hidden">
-      
-      <!-- Tutor Header & Account Status Badge -->
-      <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+      <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-center space-x-4">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-amber-600 p-1 flex-shrink-0 shadow-lg">
-            <div id="tutor-dashboard-initials" class="w-full h-full bg-[#0A192F] rounded-xl flex items-center justify-center text-white font-extrabold text-xl">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FF6B35] to-amber-600 p-0.5 flex-shrink-0">
+            <div id="tutor-initials-badge" class="w-full h-full bg-[#0A192F] rounded-xl flex items-center justify-center text-white font-extrabold text-lg">
               --
             </div>
           </div>
           <div>
-            <div class="flex items-center space-x-3 flex-wrap gap-y-1">
-              <h1 id="tutor-dashboard-name" class="text-xl sm:text-2xl font-extrabold text-white">Loading...</h1>
-              <div id="tutor-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5">
-                <i class="fa-solid fa-shield-check text-xs"></i>
-                <span id="tutor-status-text">DBS Verified & Active</span>
+            <div class="flex items-center space-x-3">
+              <h1 id="tutor-welcome-name" class="text-2xl font-extrabold text-white">Welcome Tutor</h1>
+              <div id="tutor-dbs-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                Pending Verification
               </div>
             </div>
-            <p class="text-xs text-[#8892B0] mt-1">Platform Status: <span class="text-white font-medium">Ready for Jobs</span></p>
+            <p id="tutor-location-display" class="text-xs text-[#8892B0] mt-1">Location: --</p>
           </div>
         </div>
       </div>
 
-      <!-- Dashboard Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Left Column: Feed -->
         <div class="lg:col-span-2 space-y-6">
-          <h2 class="text-lg font-bold text-white">Available Jobs Near You</h2>
-          <div id="available-jobs-container" class="space-y-4"></div>
-        </div>
-
-        <!-- Right Column: Schedule -->
-        <div class="space-y-6">
-          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 space-y-4 shadow-xl">
-            <h3 class="font-bold text-white text-base border-b border-[#233554] pb-3">My Accepted Jobs</h3>
-            <div id="accepted-jobs-container" class="space-y-3"></div>
+          <h2 class="text-lg font-bold text-white">Available Local DIY Jobs</h2>
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 text-center space-y-3">
+            <i class="fa-solid fa-screwdriver-wrench text-3xl text-[#FF6B35]/60"></i>
+            <p class="text-xs text-[#8892B0]">Job marketplace syncing in Task 5. Live homeowner requests will populate here.</p>
           </div>
         </div>
 
+        <div class="space-y-6">
+          <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl space-y-3">
+            <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3">Tutor Profile Summary</h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between text-[#8892B0]"><span class="font-medium">Phone:</span><span id="tutor-phone-display" class="text-white">--</span></div>
+              <div class="flex justify-between text-[#8892B0]"><span class="font-medium">Address:</span><span id="tutor-address-display" class="text-white">--</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
+
   </main>
 
   <script>
-    /* =========================================================================
-       SUPABASE AUTHENTICATION & ROUTING
-       ========================================================================= */
-       
     const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Change this to match your admin login email
-    const ADMIN_EMAIL = 'admin@tooltutors.co.uk';
+    let currentProfile = null;
 
-    // Mock data structures
-    let pendingTutors = [
-      { id: 'tut-101', name: 'Marcus Vance', trade: 'Carpentry', location: 'Darlington', appliedDate: 'Today', initials: 'MV' }
-    ];
-    let directoryTutors = [
-      { id: 'dir-1', name: 'Alan Croft', trade: 'Tiling', location: 'Darlington', status: 'Active', rating: 5.0, jobsCount: 38, initials: 'AC' }
-    ];
-    let availableJobs = [
-      { id: 'job-1', title: 'Fitting Kitchen Tap', clientName: 'Rebecca W.', category: 'Plumbing', location: 'Darlington', datetime: 'Today', payout: '£65.00' }
-    ];
-    let acceptedJobs = [];
-
-    // Authenticate and load profile on startup
     window.addEventListener('DOMContentLoaded', async () => {
-      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      // 1. Authenticate session
+      const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
       
-      // Enforce Login Lock
       if (!session) {
         window.location.href = 'login.html';
         return;
       }
 
-      const user = session.user;
-      const userEmail = user.email || '';
+      const userId = session.user.id;
+
+      // 2. Fetch User Profile from Database
+      const { data: profile, error: profileErr } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileErr || !profile) {
+        console.error('Error loading profile:', profileErr);
+        showToast('Profile failed to load. Please try refreshing.', 'error');
+        return;
+      }
+
+      currentProfile = profile;
+      document.getElementById('portal-loader').classList.add('hidden');
+
+      // 3. Populate Header Info
+      const fullName = profile.full_name || 'User';
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
       
-      // Resolve Full Name (Metadata -> Database Profile -> Formatted Email)
-      let displayName = user.user_metadata?.full_name 
-                     || user.user_metadata?.name 
-                     || user.user_metadata?.display_name;
-
-      if (!displayName) {
-        try {
-          const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('full_name, name')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (profile) displayName = profile.full_name || profile.name;
-        } catch (e) {
-          console.warn('Profile table check skipped:', e);
-        }
-      }
-
-      // Final fallback: turn email prefix into formatted name (e.g., "john.doe" -> "John Doe")
-      if (!displayName && userEmail) {
-        const prefix = userEmail.split('@')[0];
-        displayName = prefix
-          .split(/[._-]/)
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' ');
-      }
-
-      displayName = displayName || 'User';
-
-      // Compute Initials
-      const nameParts = displayName.trim().split(' ');
-      const initials = nameParts.length > 1 
-        ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-        : displayName.substring(0, 2).toUpperCase();
-
-      // Update Header Profile Info
       document.getElementById('header-user-initials').textContent = initials;
-      document.getElementById('header-user-name').textContent = displayName;
+      document.getElementById('header-user-name').textContent = fullName;
+      document.getElementById('header-user-role').textContent = profile.role.toUpperCase();
+      document.getElementById('header-role-tag').textContent = profile.role;
 
-      // Role Routing: Admin vs Tutor
-      if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-        document.getElementById('header-user-role').textContent = 'Administrator';
-        document.getElementById('admin-view').classList.remove('hidden');
-        renderPendingQueue();
-        renderTutorsDirectory('all');
-        showToast('Authenticated as Administrator', 'success');
+      // 4. Route to Portal View based on Role
+      if (profile.role === 'admin') {
+        mountAdminView();
+      } else if (profile.role === 'tutor') {
+        mountTutorView();
       } else {
-        document.getElementById('header-user-role').textContent = 'Verified Tutor';
-        document.getElementById('tutor-view').classList.remove('hidden');
-        
-        document.getElementById('tutor-dashboard-initials').textContent = initials;
-        document.getElementById('tutor-dashboard-name').textContent = displayName;
-
-        renderAvailableJobs();
-        renderAcceptedJobs();
-        showToast(`Welcome back, ${displayName}`, 'success');
+        mountHomeownerView();
       }
     });
 
-    // Handle Secure Logout
+    // --- ADMIN MOUNT ---
+    async function mountAdminView() {
+      document.getElementById('admin-view').classList.remove('hidden');
+      loadAdminDirectory();
+    }
+
+    async function loadAdminDirectory() {
+      const { data: profiles, error } = await supabaseClient.from('profiles').select('*');
+      if (error) {
+        showToast('Failed to load user directory.', 'error');
+        return;
+      }
+
+      document.getElementById('admin-stat-users').textContent = profiles.length;
+      document.getElementById('admin-stat-dbs').textContent = profiles.filter(p => p.role === 'tutor' && !p.dbs_verified).length;
+      document.getElementById('admin-stat-tutors').textContent = profiles.filter(p => p.role === 'tutor').length;
+      document.getElementById('admin-stat-homeowners').textContent = profiles.filter(p => p.role === 'homeowner').length;
+
+      const tbody = document.getElementById('admin-users-table');
+      if (profiles.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-[#8892B0]">No users found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = profiles.map(user => `
+        <tr class="hover:bg-[#112240]/60">
+          <td class="p-4 font-bold text-white">${user.full_name}<br><span class="text-[10px] text-[#8892B0] font-normal">${user.id.substring(0, 8)}...</span></td>
+          <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${user.role==='admin'?'bg-amber-500/20 text-amber-400':user.role==='tutor'?'bg-blue-500/20 text-blue-400':'bg-emerald-500/20 text-emerald-400'}">${user.role.toUpperCase()}</span></td>
+          <td class="p-4">${user.city || 'N/A'}, ${user.postcode || ''}</td>
+          <td class="p-4">${user.phone || 'N/A'}</td>
+          <td class="p-4">
+            ${user.role === 'tutor' ? (
+              user.dbs_verified 
+                ? `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-check-circle"></i> Verified</span>`
+                : `<button onclick="toggleDbsVerification('${user.id}', true)" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded font-semibold hover:bg-amber-500/30">Approve DBS</button>`
+            ) : '<span class="text-[#8892B0]">N/A</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function toggleDbsVerification(userId, status) {
+      const { error } = await supabaseClient
+        .from('profiles')
+        .update({ dbs_verified: status })
+        .eq('id', userId);
+
+      if (error) {
+        showToast('Error updating DBS status.', 'error');
+      } else {
+        showToast('DBS Verification updated!', 'success');
+        loadAdminDirectory();
+      }
+    }
+
+    // --- HOMEOWNER MOUNT ---
+    function mountHomeownerView() {
+      document.getElementById('homeowner-view').classList.remove('hidden');
+      document.getElementById('homeowner-welcome-name').textContent = `Welcome, ${currentProfile.full_name}`;
+      document.getElementById('homeowner-address-line').textContent = `${currentProfile.address_line1 || ''}, ${currentProfile.city || ''} (${currentProfile.postcode || ''})`;
+      document.getElementById('homeowner-phone-display').textContent = currentProfile.phone || 'N/A';
+      document.getElementById('homeowner-city-display').textContent = currentProfile.city || 'N/A';
+      document.getElementById('homeowner-postcode-display').textContent = currentProfile.postcode || 'N/A';
+    }
+
+    // --- TUTOR MOUNT ---
+    function mountTutorView() {
+      document.getElementById('tutor-view').classList.remove('hidden');
+      const initials = currentProfile.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      document.getElementById('tutor-initials-badge').textContent = initials;
+      document.getElementById('tutor-welcome-name').textContent = currentProfile.full_name;
+      document.getElementById('tutor-location-display').textContent = `Location: ${currentProfile.city || 'N/A'} (${currentProfile.postcode || ''})`;
+      document.getElementById('tutor-phone-display').textContent = currentProfile.phone || 'N/A';
+      document.getElementById('tutor-address-display').textContent = `${currentProfile.address_line1 || ''}, ${currentProfile.postcode || ''}`;
+
+      const dbsBadge = document.getElementById('tutor-dbs-badge');
+      if (currentProfile.dbs_verified) {
+        dbsBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+        dbsBadge.innerHTML = '<i class="fa-solid fa-shield-check"></i> DBS Verified & Active';
+      } else {
+        dbsBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30';
+        dbsBadge.innerHTML = '<i class="fa-solid fa-clock"></i> DBS Verification Pending';
+      }
+    }
+
+    // --- UTILITIES ---
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       window.location.href = 'login.html';
     }
 
-    /* =========================================================================
-       UI RENDER FUNCTIONS
-       ========================================================================= */
-
-    function renderPendingQueue() {
-      const container = document.getElementById('pending-queue-list');
-      document.getElementById('stat-pending-dbs').textContent = pendingTutors.length;
-      if (pendingTutors.length === 0) {
-        container.innerHTML = `<p class="p-4 text-xs text-[#8892B0] text-center">Queue Cleared!</p>`;
-        return;
-      }
-      container.innerHTML = pendingTutors.map(tutor => `
-        <div class="p-5 flex justify-between gap-4 border-b border-[#233554]">
-          <div><span class="font-bold text-white">${tutor.name}</span><p class="text-xs text-[#FF6B35]">${tutor.trade}</p></div>
-          <button onclick="quickApproveDbs('${tutor.id}')" class="px-3 py-1.5 rounded bg-emerald-600 text-white text-xs">Verify</button>
-        </div>
-      `).join('');
-    }
-
-    function renderTutorsDirectory(filterStatus = 'all') {
-      const container = document.getElementById('tutors-directory-grid');
-      container.innerHTML = directoryTutors.map(tutor => `
-        <div class="p-4 rounded-xl bg-[#0A192F] border border-[#233554]"><h4 class="font-bold text-white text-sm">${tutor.name}</h4><p class="text-[11px] text-[#FF6B35]">${tutor.trade}</p></div>
-      `).join('');
-    }
-
-    function renderAvailableJobs() {
-      const container = document.getElementById('available-jobs-container');
-      if (availableJobs.length === 0) {
-        container.innerHTML = `<p class="text-xs text-[#8892B0] text-center p-4">No jobs available right now.</p>`;
-        return;
-      }
-      container.innerHTML = availableJobs.map(job => `
-        <div class="bg-[#112240] rounded-xl border border-[#233554] p-5 flex justify-between">
-          <div><h3 class="font-bold text-white text-base">${job.title}</h3><p class="text-xs text-[#8892B0]">${job.clientName} - ${job.location}</p></div>
-          <button onclick="acceptJob('${job.id}')" class="px-3 py-1.5 bg-[#FF6B35] text-white text-xs font-bold rounded-lg h-fit">Accept</button>
-        </div>
-      `).join('');
-    }
-
-    function renderAcceptedJobs() {
-      const container = document.getElementById('accepted-jobs-container');
-      if (acceptedJobs.length === 0) {
-        container.innerHTML = `<p class="text-xs text-[#8892B0] text-center py-4">No upcoming jobs.</p>`;
-        return;
-      }
-      container.innerHTML = acceptedJobs.map(job => `
-        <div class="p-3.5 rounded-xl bg-[#0A192F] border border-[#233554]"><h4 class="font-bold text-white text-xs">${job.title}</h4></div>
-      `).join('');
-    }
-
-    function acceptJob(id) {
-      const index = availableJobs.findIndex(j => j.id === id);
-      if (index === -1) return;
-      const job = availableJobs.splice(index, 1)[0];
-      acceptedJobs.push(job);
-      renderAvailableJobs();
-      renderAcceptedJobs();
-      showToast('Job Accepted', 'success');
-    }
-    
-    function quickApproveDbs(id) {
-      const index = pendingTutors.findIndex(t => t.id === id);
-      if (index === -1) return;
-      const tutor = pendingTutors.splice(index, 1)[0];
-      directoryTutors.push({ ...tutor, status: 'Active', rating: 5.0, jobsCount: 0 });
-      document.getElementById('stat-total-tutors').textContent = parseInt(document.getElementById('stat-total-tutors').textContent) + 1;
-      renderPendingQueue();
-      renderTutorsDirectory('all');
-      showToast('DBS Verified', 'success');
-    }
-
-    function triggerSystemAudit() { showToast('Audit run complete.', 'info'); }
-    
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl transition-all duration-300`;
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':type==='error'?'border-rose-500/30 text-rose-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl transition-all duration-300`;
       toast.innerHTML = `<span>${message}</span>`;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 3000);
