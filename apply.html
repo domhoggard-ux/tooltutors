@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Join ToolTutors | Become a Mentor or Learner</title>
@@ -22,6 +23,7 @@
         <a href="index.html" class="nav-link">Home</a>
         <a href="about.html" class="nav-link">About</a>
         <a href="waiver.html" class="nav-link">Safety & Waiver</a>
+        <a href="portal.html" class="nav-link">Portal</a>
         <a href="apply.html" class="nav-cta-btn">Join Platform</a>
       </nav>
     </div>
@@ -34,7 +36,7 @@
     </div>
 
     <div class="form-container">
-      <form data-handle="true">
+      <form id="registrationForm">
         <div class="form-group">
           <label class="form-label" for="role">I want to register as a:</label>
           <select id="role" class="form-select" required>
@@ -51,6 +53,11 @@
         <div class="form-group">
           <label class="form-label" for="email">Email Address</label>
           <input type="email" id="email" class="form-input" placeholder="alex@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Create Password</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" minlength="6" required>
         </div>
 
         <div class="form-group">
@@ -73,7 +80,7 @@
           <textarea id="details" class="form-textarea" placeholder="Tell us about the skills you want to learn or teach..."></textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit Application</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary">Submit Application</button>
       </form>
     </div>
   </main>
@@ -97,5 +104,64 @@
   </footer>
 
   <script src="script.js"></script>
+
+  <script>
+    // Initialize Supabase Client
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('registrationForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering Account...';
+
+      const role = document.getElementById('role').value;
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const location = document.getElementById('location').value;
+      const category = document.getElementById('category').value;
+      const details = document.getElementById('details').value;
+
+      try {
+        // 1. Create account in Supabase Auth
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
+        });
+
+        if (authError) throw authError;
+
+        // 2. Insert record into database 'profiles' table
+        const { error: dbError } = await supabaseClient
+          .from('profiles')
+          .insert([{
+            id: authData.user.id,
+            full_name: fullName,
+            email: email,
+            role: role,
+            location: location,
+            category: category,
+            experience: details,
+            dbs_status: role === 'tutor' ? 'pending' : 'verified'
+          }]);
+
+        if (dbError) throw dbError;
+
+        alert('Registration successful! Redirecting to the portal...');
+        window.location.href = 'portal.html';
+
+      } catch (error) {
+        alert('Error: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Application';
+      }
+    });
+  </script>
 </body>
 </html>
