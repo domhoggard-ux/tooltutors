@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Learner Portal</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A192F; }
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Learner Portal</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:block text-right">
+          <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+          <div class="text-[10px] text-[#8892B0] uppercase">Learner</div>
+        </div>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
+
+    <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between items-center">
+      <div>
+        <h1 id="learner-welcome-name" class="text-2xl font-extrabold text-white">Welcome Back</h1>
+        <p class="text-xs text-[#8892B0] mt-1">Manage your active projects and review tutor offers below.</p>
+      </div>
+      <button onclick="loadLearnerRequests()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
+        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- CREATE A JOB REQUEST -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
+          <p class="text-xs text-[#8892B0] mb-6">Describe your project space and budget so matching tutors can bid on your job.</p>
+          
+          <form id="job-request-form" onsubmit="submitJobRequest(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Project Title</label>
+              <input type="text" id="job-title" required placeholder="e.g. Need help laying patio slabs" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Category</label>
+                <select id="job-category" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                  <option value="Plumbing">Plumbing</option>
+                  <option value="Tiling">Tiling</option>
+                  <option value="Carpentry & Joinery">Carpentry & Joinery</option>
+                  <option value="Electrical Basics">Electrical Basics</option>
+                  <option value="Decorating & Painting">Decorating & Painting</option>
+                  <option value="Garden & Landscaping">Garden & Landscaping</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Timing</label>
+                <input type="text" id="job-time" required placeholder="e.g. This Saturday Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Tutor Level</label>
+                <select id="job-preferred-tier" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                  <option value="any">Any Experience Level</option>
+                  <option value="self_taught">Self-Taught Enthusiast</option>
+                  <option value="professional">Professional / Trade Certified</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Estimated Budget (£)</label>
+                <input type="number" id="job-budget" required min="1" step="1" placeholder="e.g. 50" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Detailed Description</label>
+              <textarea id="job-desc" required rows="3" placeholder="Describe the current state and what you want to achieve..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
+            </div>
+
+            <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl mt-4">
+              <label class="flex items-start space-x-3 cursor-pointer">
+                <input type="checkbox" id="job-waiver" required class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35] bg-[#0A192F]">
+                <span class="text-xs text-[#8892B0]">
+                  <strong class="text-white">Liability Waiver:</strong> By submitting this request, I acknowledge that ToolTutors provides peer mentorship. I accept full responsibility for any physical work on my property and hold ToolTutors harmless from damages or injury.
+                </span>
+              </label>
+            </div>
+
+            <button type="submit" id="submit-job-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center">
+              Submit Job to Marketplace
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- MY ACTIVE REQUESTS & OFFERS -->
+      <div class="space-y-6">
+        <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
+          <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Job Board</h3>
+          <div id="learner-requests-list" class="space-y-4 max-h-[800px] overflow-y-auto pr-2">
+            <p class="text-xs text-[#8892B0] text-center"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading requests...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CHAT MODAL -->
+    <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
+        <div class="flex justify-between items-center p-4 border-b border-[#233554]">
+          <div>
+            <h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3>
+            <p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting with Tutor...</p>
+          </div>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] transition text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
+        <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
+          <input type="text" id="chat-input" required autocomplete="off" placeholder="Type a message to your tutor..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+          <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded-xl transition text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentProfile = null;
+    let currentChatJobId = null;
+    let chatPollInterval = null;
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
+        if (sessionErr || !session) { window.location.href = 'login.html'; return; }
+
+        const user = session.user;
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        
+        currentProfile = profile;
+        const fullName = profile.full_name || user.email;
+        document.getElementById('header-user-name').textContent = fullName;
+        document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName.split(' ')[0]}`;
+        
+        loadLearnerRequests();
+
+      } catch (err) {
+        console.error(err);
+        showToast('Authentication error. Please log in again.', 'error');
+      }
+    });
+
+    // --- JOB SUBMISSION ---
+    async function submitJobRequest(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-job-btn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
+      btn.disabled = true;
+
+      const title = document.getElementById('job-title').value;
+      const category = document.getElementById('job-category').value;
+      const time = document.getElementById('job-time').value;
+      const desc = document.getElementById('job-desc').value;
+      const preferredTier = document.getElementById('job-preferred-tier').value;
+      const budget = document.getElementById('job-budget').value;
+      const waiver = document.getElementById('job-waiver').checked;
+
+      const { error } = await supabaseClient.from('job_requests').insert([{
+        learner_id: currentProfile.id, 
+        title, 
+        category, 
+        preferred_time: time, 
+        description: desc, 
+        waiver_signed: waiver,
+        preferred_tier: preferredTier,
+        budget_estimate: budget
+      }]);
+
+      if (error) {
+        showToast('Failed to submit request.', 'error');
+      } else {
+        showToast('Job added to marketplace!', 'success');
+        document.getElementById('job-request-form').reset();
+        loadLearnerRequests();
+      }
+      
+      btn.innerHTML = 'Submit Job to Marketplace';
+      btn.disabled = false;
+    }
+
+    // --- LOAD LEARNER DASHBOARD (JOBS & OFFERS) ---
+    async function loadLearnerRequests() {
+      const listContainer = document.getElementById('learner-requests-list');
+      
+      // Fetch learner's jobs
+      const { data: requests, error } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
+      
+      if (error) { listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading jobs.</p>'; return; }
+      if (!requests || requests.length === 0) { listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active projects.</p>'; return; }
+
+      // Fetch pending offers for these jobs to review
+      const jobIds = requests.map(r => r.id);
+      const { data: offers } = await supabaseClient.from('job_offers').select('*, tutor:profiles!tutor_id(full_name, tutor_tier)').in('job_id', jobIds).eq('status', 'pending');
+
+      // Fetch tutor info for already accepted jobs
+      const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', requests.map(r => r.tutor_id).filter(Boolean));
+      const tutorMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
+
+      listContainer.innerHTML = requests.map(job => {
+        let contentHtml = '';
+        const jobOffers = (offers || []).filter(o => o.job_id === job.id);
+
+        if (job.status === 'open') {
+          // Display Bids/Offers
+          if (jobOffers.length > 0) {
+            contentHtml = `
+              <div class="mt-4 border-t border-[#233554] pt-3 space-y-3">
+                <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${jobOffers.length} Bids Received</h4>
+                ${jobOffers.map(o => {
+                  const tName = o.tutor?.full_name || 'Tutor';
+                  const tTier = (o.tutor?.tutor_tier || 'unknown').replace('_', ' ');
+                  const tierColor = o.tutor?.tutor_tier === 'professional' ? 'text-purple-400' : 'text-blue-400';
+                  
+                  return `
+                    <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-bold text-white">${tName}</span>
+                        <span class="text-emerald-400 font-extrabold text-sm border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 rounded">£${o.offer_price}</span>
+                      </div>
+                      <span class="text-[9px] uppercase font-bold tracking-wide ${tierColor}">${tTier}</span>
+                      <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
+                      <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">
+                        Accept This Tutor
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          } else {
+            contentHtml = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for tutors to bid on this job...</p></div>`;
+          }
+        } else if (job.status === 'accepted') {
+          // SPRINT 8.6: SCHEDULING AND CANCELLATION LOGIC
+          
+          let scheduleHtml = '';
+          let cancelBtn = '';
+          const tName = tutorMap[job.tutor_id] || 'Tutor';
+
+          if (job.appointment_time) {
+            // Already Scheduled
+            scheduleHtml = `<p class="text-sm text-emerald-400 font-bold mb-3"><i class="fa-solid fa-calendar-check mr-2"></i> Locked: ${new Date(job.appointment_time).toLocaleString()}</p>`;
+            
+            // 48 Hour Rule Check
+            const msUntil = new Date(job.appointment_time).getTime() - new Date().getTime();
+            const hoursUntil = msUntil / (1000 * 60 * 60);
+
+            if (msUntil > 0 && hoursUntil < 48) {
+              cancelBtn = `<button disabled class="px-4 py-2 bg-rose-500/10 text-rose-400/50 text-xs font-bold rounded-lg cursor-not-allowed border border-rose-500/10" title="Cannot cancel within 48 hours of appointment">Too Close (<48h)</button>`;
+            } else {
+              cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
+            }
+          } else {
+            // Needs Scheduling
+            scheduleHtml = `
+              <div class="mb-4 p-3 bg-[#0A192F] rounded-lg border border-[#233554]">
+                <label class="block text-[10px] text-[#8892B0] uppercase font-bold mb-2">Set Agreed Appointment Time</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="datetime-local" id="dt-${job.id}" class="flex-1 text-xs px-3 py-2 bg-[#112240] border border-[#233554] text-white rounded-lg focus:border-[#FF6B35] focus:outline-none">
+                  <button onclick="setAppointment('${job.id}')" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white text-xs font-bold rounded-lg transition">Lock Time</button>
+                </div>
+              </div>
+            `;
+            // Can always cancel if not scheduled yet
+            cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
+          }
+
+          contentHtml = `
+            <div class="mt-4 border-t border-[#233554] pt-4">
+              ${scheduleHtml}
+              <div class="flex gap-2">
+                <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition flex justify-center items-center">
+                  <i class="fa-solid fa-comments mr-2"></i> Chat with ${tName.split(' ')[0]}
+                </button>
+                ${cancelBtn}
+              </div>
+            </div>
+          `;
+        }
+
+        let outerBorder = job.status === 'accepted' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]';
+
+        return `
+          <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+                <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status}</span>
+              </div>
+              <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
+              <p class="text-[#8892B0] mt-1"><i class="fa-solid fa-clock w-4"></i> Prefers: ${job.preferred_time}</p>
+            </div>
+            ${contentHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- ACTIONS ---
+    async function acceptOffer(offerId, jobId, tutorId) {
+      if(!confirm("Are you sure you want to accept this tutor's bid? This will lock the job and open the chat.")) return;
+
+      const { error: reqErr } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: tutorId }).eq('id', jobId);
+      const { error: offErr } = await supabaseClient.from('job_offers').update({ status: 'accepted' }).eq('id', offerId);
+      await supabaseClient.from('job_offers').update({ status: 'rejected' }).eq('job_id', jobId).neq('id', offerId);
+
+      if (reqErr || offErr) showToast('Error accepting offer.', 'error');
+      else { showToast('Offer accepted! You can now chat and schedule.', 'success'); loadLearnerRequests(); }
+    }
+
+    async function setAppointment(jobId) {
+      const val = document.getElementById(`dt-${jobId}`).value;
+      if(!val) return showToast('Please select a date and time.', 'error');
+      
+      const { error } = await supabaseClient.from('job_requests').update({ appointment_time: new Date(val).toISOString() }).eq('id', jobId);
+      if (error) showToast('Failed to lock time.', 'error');
+      else { showToast('Appointment scheduled successfully!', 'success'); loadLearnerRequests(); }
+    }
+
+    async function cancelJob(jobId) {
+      if(!confirm('Are you sure you want to cancel this job request?')) return;
+      
+      const { error } = await supabaseClient.from('job_requests').update({ status: 'cancelled' }).eq('id', jobId);
+      if (error) showToast('Failed to cancel job.', 'error');
+      else { showToast('Job cancelled.', 'success'); loadLearnerRequests(); }
+    }
+
+    // --- CHAT LOGIC ---
+    function openChat(jobId, jobTitle, participantName) {
+      currentChatJobId = jobId;
+      document.getElementById('chat-job-title').textContent = jobTitle;
+      document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
+      document.getElementById('chat-modal').classList.remove('hidden');
+      loadMessages();
+      chatPollInterval = setInterval(loadMessages, 3000);
+    }
+    
+    function closeChat() { 
+      document.getElementById('chat-modal').classList.add('hidden'); 
+      currentChatJobId = null; 
+      clearInterval(chatPollInterval); 
+    }
+    
+    async function loadMessages() {
+      if (!currentChatJobId) return;
+      const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
+      const container = document.getElementById('chat-messages');
+      
+      if (!data || data.length === 0) return container.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello and lock in your times!</p>';
+      
+      const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+      container.innerHTML = data.map(m => `
+        <div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-sm' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tl-sm'} max-w-[85%] text-xs p-3 rounded-2xl shadow-md">
+          ${m.content}
+        </div>
+      `).join('');
+      
+      if (isScrolledToBottom) container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage(e) {
+      e.preventDefault();
+      const text = document.getElementById('chat-input').value.trim();
+      if (!text || !currentChatJobId) return;
+      document.getElementById('chat-input').value = '';
+      await supabaseClient.from('messages').insert([{ job_id: currentChatJobId, sender_id: currentProfile.id, content: text }]);
+      loadMessages();
+    }
+
+    // --- UTILS ---
+    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':type==='error'?'border-rose-500/30 text-rose-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl transition-all duration-300`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
