@@ -26,7 +26,6 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
@@ -69,14 +68,14 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
 
     <div id="portal-loader" class="flex flex-col items-center justify-center py-20 space-y-4">
       <i class="fa-solid fa-spinner fa-spin text-3xl text-[#FF6B35]"></i>
       <p class="text-xs text-[#8892B0]">Loading your dashboard profile...</p>
     </div>
 
-    <!-- ================= ADMIN VIEW ================= -->
+    <!-- ADMIN VIEW -->
     <section id="admin-view" class="view-section space-y-8 hidden">
       <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between items-center">
         <div>
@@ -96,7 +95,7 @@
       </div>
     </section>
 
-    <!-- ================= TUTOR VIEW ================= -->
+    <!-- TUTOR VIEW -->
     <section id="tutor-view" class="view-section space-y-8 hidden">
       <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between items-center">
         <div>
@@ -107,7 +106,6 @@
         </div>
       </div>
 
-      <!-- Tutor Onboarding State -->
       <div id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden">
         <div id="tutor-rejected-note" class="hidden mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
         <h2 class="text-lg font-bold text-white mb-2">Complete Your Profile & Compliance</h2>
@@ -134,14 +132,12 @@
         </form>
       </div>
 
-      <!-- Tutor Pending Review State -->
       <div id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-8 text-center hidden">
         <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500 mb-4"></i>
         <h3 class="text-xl font-bold text-amber-500">Documents Under Review</h3>
         <p class="text-sm text-amber-400/80 mt-2 max-w-md mx-auto">Our admin team is reviewing your documents. Check back soon for approval!</p>
       </div>
 
-      <!-- Tutor Active State (Marketplace Engine) -->
       <div id="tutor-active-dashboard" class="space-y-6 hidden">
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl flex justify-between items-center">
           <div>
@@ -155,7 +151,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
-          <!-- Open Jobs Board -->
+          <!-- Open Jobs -->
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
             <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Open Local Jobs</h3>
             <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
@@ -175,7 +171,7 @@
       </div>
     </section>
 
-    <!-- ================= LEARNER VIEW ================= -->
+    <!-- LEARNER VIEW -->
     <section id="learner-view" class="view-section space-y-8 hidden">
       <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between">
         <div>
@@ -189,7 +185,6 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- Job Submission Form -->
         <div class="lg:col-span-2 space-y-6">
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
             <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
@@ -245,7 +240,6 @@
           </div>
         </div>
 
-        <!-- Active Requests List -->
         <div class="space-y-6">
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
             <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Requests</h3>
@@ -258,15 +252,39 @@
       </div>
     </section>
 
+    <!-- CHAT MODAL -->
+    <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
+        
+        <div class="flex justify-between items-center p-4 border-b border-[#233554]">
+          <div>
+            <h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3>
+            <p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting with...</p>
+          </div>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] transition text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth">
+          <!-- Messages inject here -->
+        </div>
+
+        <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
+          <input type="text" id="chat-input" required autocomplete="off" placeholder="Type a message..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+          <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded-xl transition text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+
   </main>
 
   <script>
-    // --- SUPABASE INITIALIZATION ---
     const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let currentProfile = null;
+    let currentChatJobId = null;
+    let chatPollInterval = null;
 
     // --- ON PAGE LOAD ---
     window.addEventListener('DOMContentLoaded', async () => {
@@ -279,14 +297,9 @@
         }
 
         const user = session.user;
-        let { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
+        let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
         const meta = user.user_metadata || {};
-        
         let rawRole = profile?.role || meta.role || 'learner';
         let normalizedRole = rawRole.toLowerCase() === 'homeowner' ? 'learner' : rawRole.toLowerCase();
 
@@ -319,19 +332,14 @@
         if (loader) loader.classList.add('hidden');
 
         updateHeaderUI();
-
         document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
 
-        if (currentProfile.role === 'admin') {
-          mountAdminView();
-        } else if (currentProfile.role === 'tutor') {
-          mountTutorView();
-        } else {
-          mountLearnerView();
-        }
+        if (currentProfile.role === 'admin') mountAdminView();
+        else if (currentProfile.role === 'tutor') mountTutorView();
+        else mountLearnerView();
 
       } catch (err) {
-        console.error('Fatal initialization error:', err);
+        console.error(err);
         showToast('Error loading portal profile. Please refresh.', 'error');
       }
     });
@@ -353,20 +361,15 @@
       }
     }
 
-    // --- GLOBAL AVATAR UPLOAD ---
     async function handleGlobalAvatarUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
       showToast('Uploading profile picture...', 'info');
-      
       try {
         const ext = file.name.split('.').pop();
         const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
-        
-        const { error: uploadErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
-        if (uploadErr) throw uploadErr;
-
+        await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
         const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
         const newUrl = publicUrlData.publicUrl;
 
@@ -376,11 +379,80 @@
         currentProfile.profile_picture_url = newUrl;
         updateHeaderUI();
         showToast('Profile picture updated!', 'success');
-
       } catch (err) {
-        console.error(err);
         showToast('Failed to update picture.', 'error');
       }
+    }
+
+    // --- CHAT LOGIC ---
+    function openChat(jobId, jobTitle, participantName) {
+      currentChatJobId = jobId;
+      document.getElementById('chat-job-title').textContent = jobTitle;
+      document.getElementById('chat-participant').textContent = participantName ? `Chatting with ${participantName}` : 'Project Chat';
+      document.getElementById('chat-modal').classList.remove('hidden');
+      
+      loadMessages();
+      chatPollInterval = setInterval(loadMessages, 3000);
+    }
+
+    function closeChat() {
+      document.getElementById('chat-modal').classList.add('hidden');
+      currentChatJobId = null;
+      if (chatPollInterval) clearInterval(chatPollInterval);
+    }
+
+    async function loadMessages() {
+      if (!currentChatJobId) return;
+      const { data, error } = await supabaseClient
+        .from('messages')
+        .select('*')
+        .eq('job_id', currentChatJobId)
+        .order('created_at', { ascending: true });
+
+      if (error) return;
+
+      const container = document.getElementById('chat-messages');
+      
+      if (data.length === 0) {
+        container.innerHTML = '<div class="flex-1 flex items-center justify-center"><p class="text-xs text-[#8892B0] text-center px-6">No messages yet. Use this chat to align on tools, timings, and expectations.</p></div>';
+        return;
+      }
+
+      const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+
+      container.innerHTML = data.map(msg => {
+        const isMe = msg.sender_id === currentProfile.id;
+        if (isMe) {
+          return `<div class="self-end max-w-[85%] bg-[#FF6B35] text-white text-xs p-3 rounded-2xl rounded-tr-sm shadow-md">${msg.content}</div>`;
+        } else {
+          return `<div class="self-start max-w-[85%] bg-[#233554] text-[#E6F1FF] text-xs p-3 rounded-2xl rounded-tl-sm shadow-md border border-[#233554]">${msg.content}</div>`;
+        }
+      }).join('');
+
+      if (isScrolledToBottom) container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text || !currentChatJobId) return;
+
+      input.value = '';
+      const btn = document.getElementById('chat-send-btn');
+      btn.disabled = true;
+
+      await supabaseClient.from('messages').insert([{
+        job_id: currentChatJobId,
+        sender_id: currentProfile.id,
+        content: text
+      }]);
+
+      btn.disabled = false;
+      await loadMessages();
+      
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
     }
 
     // --- ADMIN LOGIC ---
@@ -393,42 +465,27 @@
       const container = document.getElementById('admin-review-list');
       container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
 
-      const { data: tutors, error } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('role', 'tutor')
-        .eq('validation_status', 'submitted');
+      const { data: tutors, error } = await supabaseClient.from('profiles').select('*').eq('role', 'tutor').eq('validation_status', 'submitted');
 
-      if (error) {
-        container.innerHTML = `<p class="text-xs text-rose-400">Error: ${error.message}</p>`;
-        return;
-      }
-
-      if (!tutors || tutors.length === 0) {
-        container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-6 italic">No pending verifications at this time.</p>';
-        return;
-      }
+      if (error) { container.innerHTML = `<p class="text-xs text-rose-400">Error: ${error.message}</p>`; return; }
+      if (!tutors || tutors.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-6 italic">No pending verifications at this time.</p>'; return; }
 
       container.innerHTML = tutors.map(t => {
         const tierLabel = (t.tutor_tier || 'self_taught').replace('_', ' ');
         const tierClass = t.tutor_tier === 'professional' ? 'text-purple-400' : 'text-blue-400';
-        const avatarUrl = t.profile_picture_url || 'https://via.placeholder.com/150';
-
         return `
           <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
             <div class="flex items-center space-x-4">
-              <img src="${avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-[#233554]">
+              <img src="${t.profile_picture_url || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full object-cover border border-[#233554]">
               <div>
                 <div class="font-bold text-white">${t.full_name || 'Tutor'}</div>
                 <div class="text-[10px] text-[#8892B0] uppercase"><span class="${tierClass}">${tierLabel}</span></div>
               </div>
             </div>
-
             <div class="flex space-x-3">
               <button onclick="viewSecureDocument('${t.id_document_url || ''}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white rounded text-[10px] font-bold transition">View ID</button>
               <button onclick="viewSecureDocument('${t.dbs_document_url || ''}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white rounded text-[10px] font-bold transition">View DBS</button>
             </div>
-
             <div class="flex flex-col space-y-2 w-full md:w-auto">
               <input type="text" id="notes-${t.id}" placeholder="Rejection notes (optional)" class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-[10px] focus:outline-none focus:border-[#FF6B35]">
               <div class="flex space-x-2">
@@ -442,36 +499,16 @@
     }
 
     async function viewSecureDocument(path) {
-      if (!path) { showToast('Document path missing', 'error'); return; }
-      const { data, error } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
-      if (error) {
-        showToast('Error accessing secure document.', 'error');
-        console.error(error);
-      } else {
-        window.open(data.signedUrl, '_blank');
-      }
+      if (!path) return;
+      const { data } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
+      if (data) window.open(data.signedUrl, '_blank');
     }
 
     async function processTutor(tutorId, newStatus) {
-      const notesInput = document.getElementById(`notes-${tutorId}`);
-      const notes = notesInput ? notesInput.value : '';
-      
-      if (newStatus === 'rejected' && !notes.trim()) {
-        showToast('Please provide notes when rejecting an account.', 'error');
-        return;
-      }
-
-      const { error } = await supabaseClient
-        .from('profiles')
-        .update({ validation_status: newStatus, validation_notes: notes })
-        .eq('id', tutorId);
-
-      if (error) {
-        showToast('Error processing account.', 'error');
-      } else {
-        showToast(`Tutor account ${newStatus}!`, 'success');
-        loadPendingTutors(); 
-      }
+      const notes = document.getElementById(`notes-${tutorId}`)?.value || '';
+      if (newStatus === 'rejected' && !notes.trim()) { showToast('Please provide notes when rejecting.', 'error'); return; }
+      const { error } = await supabaseClient.from('profiles').update({ validation_status: newStatus, validation_notes: notes }).eq('id', tutorId);
+      if (!error) { showToast(`Tutor account ${newStatus}!`, 'success'); loadPendingTutors(); }
     }
 
     // --- TUTOR LOGIC ---
@@ -490,7 +527,6 @@
       }
 
       const status = currentProfile?.validation_status || 'pending';
-      
       document.getElementById('tutor-onboarding-section').classList.add('hidden');
       document.getElementById('tutor-pending-review').classList.add('hidden');
       document.getElementById('tutor-active-dashboard').classList.add('hidden');
@@ -508,7 +544,7 @@
         document.getElementById('tutor-pending-review').classList.remove('hidden');
       } else if (status === 'approved') {
         document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-        loadTutorJobs(); // Load the live marketplace
+        loadTutorJobs();
       }
     }
 
@@ -519,22 +555,13 @@
       openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
       acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
 
-      // Fetch open jobs available to claim
-      const { data: openJobs, error: openErr } = await supabaseClient
-        .from('job_requests')
-        .select('*')
-        .eq('status', 'open')
-        .order('created_at', { ascending: false });
+      const { data: openJobs, error: openErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
+      const { data: acceptedJobs, error: accErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']).order('created_at', { ascending: false });
 
-      // Fetch jobs this tutor has already claimed
-      const { data: acceptedJobs, error: accErr } = await supabaseClient
-        .from('job_requests')
-        .select('*')
-        .eq('tutor_id', currentProfile.id)
-        .in('status', ['accepted', 'completed'])
-        .order('created_at', { ascending: false });
+      const allLearnerIds = [...new Set([...(openJobs||[]), ...(acceptedJobs||[])].map(j => j.learner_id))];
+      const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', allLearnerIds);
+      const learnerMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
 
-      // Render Open Jobs
       if (openErr) {
         openContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${openErr.message}</p>`;
       } else if (!openJobs || openJobs.length === 0) {
@@ -546,6 +573,8 @@
               <span class="font-bold text-white text-sm pr-2">${job.title}</span>
               <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 uppercase text-[9px] font-bold">New</span>
             </div>
+            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
+            <hr class="border-[#233554] my-2">
             <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category}</p>
             <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
             <p class="text-[#E6F1FF] mt-2 italic border-l-2 border-[#233554] pl-2">"${job.description}"</p>
@@ -555,7 +584,6 @@
         `).join('');
       }
 
-      // Render Accepted Jobs
       if (accErr) {
         acceptedContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${accErr.message}</p>`;
       } else if (!acceptedJobs || acceptedJobs.length === 0) {
@@ -567,16 +595,13 @@
               <span class="font-bold text-white text-sm pr-2">${job.title}</span>
               <span class="px-2 py-0.5 rounded bg-[#FF6B35]/10 text-[#FF6B35] uppercase text-[9px] font-bold">${job.status}</span>
             </div>
+            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
             <hr class="border-[#233554] my-2">
             <p class="text-emerald-400 font-bold mb-1"><i class="fa-solid fa-unlock-keyhole mr-1"></i> Job Unlocked</p>
             <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
             <p class="text-[#E6F1FF] mt-2 mb-2 italic border-l-2 border-[#FF6B35]/50 pl-2">"${job.description}"</p>
-            
-            ${job.photo_urls && job.photo_urls.length > 0 ? `
-              <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
-                ${job.photo_urls.map(url => `<a href="${url}" target="_blank"><img src="${url}" class="h-16 w-16 object-cover rounded border border-[#233554] hover:border-[#FF6B35] transition cursor-pointer"></a>`).join('')}
-              </div>
-            ` : ''}
+            ${job.photo_urls && job.photo_urls.length > 0 ? `<div class="flex gap-2 mt-2 overflow-x-auto pb-2">${job.photo_urls.map(url => `<a href="${url}" target="_blank"><img src="${url}" class="h-16 w-16 object-cover rounded border border-[#233554] hover:border-[#FF6B35] transition cursor-pointer"></a>`).join('')}</div>` : ''}
+            <button onclick="openChat('${job.id}', '${job.title}', '${learnerMap[job.learner_id] || 'Learner'}')" class="mt-3 w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-1"></i> Message Learner</button>
           </div>
         `).join('');
       }
@@ -584,20 +609,11 @@
 
     async function acceptJob(jobId) {
       const btn = document.getElementById(`accept-btn-${jobId}`);
-      if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        btn.disabled = true;
-      }
+      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
       
-      const { error } = await supabaseClient
-        .from('job_requests')
-        .update({ status: 'accepted', tutor_id: currentProfile.id })
-        .eq('id', jobId)
-        .eq('status', 'open'); // Prevents double-claiming if another tutor clicked at the exact same time
-
+      const { error } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: currentProfile.id }).eq('id', jobId).eq('status', 'open');
       if (error) {
         showToast('Failed to accept job. Another tutor may have claimed it.', 'error');
-        console.error(error);
         if(btn) { btn.innerHTML = 'Accept Job'; btn.disabled = false; }
       } else {
         showToast('Job Accepted! Check your accepted projects list.', 'success');
@@ -624,7 +640,8 @@
           const ext = profilePic.name.split('.').pop();
           const fileName = `${currentProfile.id}_${Date.now()}.${ext}`;
           await supabaseClient.storage.from('profile_pictures').upload(fileName, profilePic);
-          profilePicUrl = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName).data.publicUrl;
+          const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+          profilePicUrl = publicUrlData.publicUrl;
         }
 
         if (idDoc) {
@@ -650,7 +667,6 @@
         if (error) throw error;
 
         showToast('Documents submitted for review!', 'success');
-        
         currentProfile = { ...currentProfile, ...updates };
 
         if (profilePicUrl) {
@@ -672,46 +688,37 @@
     // --- LEARNER LOGIC ---
     function mountLearnerView() {
       document.getElementById('learner-view').classList.remove('hidden');
-      
       const fullName = currentProfile?.full_name || 'Learner';
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName.split(' ')[0]}`;
-      
-      const addr1 = currentProfile?.address_line1 || '';
-      const city = currentProfile?.city || '';
-      const postcode = currentProfile?.postcode || '';
-      
-      const addrStr = [addr1, city, postcode].filter(Boolean).join(', ');
+      const addrStr = [currentProfile?.address_line1, currentProfile?.city, currentProfile?.postcode].filter(Boolean).join(', ');
       document.getElementById('learner-address-line').textContent = addrStr || 'No address on file';
-
       loadLearnerRequests();
     }
 
     async function loadLearnerRequests() {
       const listContainer = document.getElementById('learner-requests-list');
-      const { data: requests, error } = await supabaseClient
-        .from('job_requests')
-        .select('*')
-        .eq('learner_id', currentProfile.id)
-        .order('created_at', { ascending: false });
+      const { data: requests, error } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
 
-      if (error) { 
-        listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading requests.</p>'; 
-        return; 
-      }
+      if (error) { listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading requests.</p>'; return; }
+      if (!requests || requests.length === 0) { listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active requests.</p>'; return; }
 
-      if (!requests || requests.length === 0) { 
-        listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active requests.</p>'; 
-        return; 
-      }
+      const tutorIds = [...new Set(requests.map(r => r.tutor_id).filter(Boolean))];
+      const { data: tutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', tutorIds);
+      const tutorMap = (tutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
 
-      listContainer.innerHTML = requests.map(req => `
-        <div class="p-3 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-1">
+      listContainer.innerHTML = requests.map(job => `
+        <div class="p-4 bg-[#0A192F] border ${job.status === 'accepted' ? 'border-[#FF6B35]/30' : 'border-[#233554]'} rounded-xl text-xs space-y-2">
           <div class="flex justify-between items-start">
-            <span class="font-bold text-white truncate pr-2">${req.title}</span>
-            <span class="px-1.5 py-0.5 rounded bg-[#233554] text-[#8892B0] uppercase text-[9px] font-bold">${req.status || 'open'}</span>
+            <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+            <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status || 'open'}</span>
           </div>
-          <p class="text-[#8892B0]">${req.category} • ${req.preferred_time}</p>
-          ${req.photo_urls && req.photo_urls.length > 0 ? `<p class="text-[#FF6B35] text-[10px]"><i class="fa-solid fa-image"></i> ${req.photo_urls.length} Photos Attached</p>` : ''}
+          <p class="text-[#8892B0]">${job.category} • ${job.preferred_time}</p>
+          
+          ${job.status === 'accepted' ? `
+            <hr class="border-[#233554] my-2">
+            <p class="text-emerald-400 text-[10px] font-bold mb-2 uppercase tracking-wide"><i class="fa-solid fa-user-check mr-1"></i> Accepted by: <span class="text-white">${tutorMap[job.tutor_id] || 'Tutor'}</span></p>
+            <button onclick="openChat('${job.id}', '${job.title}', '${tutorMap[job.tutor_id] || 'Tutor'}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded flex items-center justify-center transition"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+          ` : ''}
         </div>
       `).join('');
     }
@@ -730,48 +737,34 @@
       const photoInput = document.getElementById('job-photos');
 
       let uploadedUrls = [];
-
       if (photoInput.files && photoInput.files.length > 0) {
         for (const file of photoInput.files) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${currentProfile.id}_${Date.now()}.${fileExt}`;
+          const ext = file.name.split('.').pop();
+          const fileName = `${currentProfile.id}_${Date.now()}.${ext}`;
           const { error: uploadErr } = await supabaseClient.storage.from('job_photos').upload(fileName, file);
           if (!uploadErr) {
-            const { data: publicUrlData } = supabaseClient.storage.from('job_photos').getPublicUrl(fileName);
-            uploadedUrls.push(publicUrlData.publicUrl);
+            const { data } = supabaseClient.storage.from('job_photos').getPublicUrl(fileName);
+            uploadedUrls.push(data.publicUrl);
           }
         }
       }
 
       const { error: insertErr } = await supabaseClient.from('job_requests').insert([{
-        learner_id: currentProfile.id, 
-        title: title, 
-        category: category, 
-        preferred_time: time, 
-        description: desc, 
-        photo_urls: uploadedUrls, 
-        waiver_signed: waiver
+        learner_id: currentProfile.id, title, category, preferred_time: time, description: desc, photo_urls: uploadedUrls, waiver_signed: waiver
       }]);
 
-      if (insertErr) {
-        showToast('Failed to submit request.', 'error');
-        console.error(insertErr);
-      } else {
+      if (insertErr) showToast('Failed to submit request.', 'error');
+      else {
         showToast('Job Request Submitted!', 'success');
         document.getElementById('job-request-form').reset();
         loadLearnerRequests();
       }
-
       btn.innerHTML = 'Submit Request';
       btn.disabled = false;
     }
 
     // --- SHARED UTILS ---
-    async function handleLogout() {
-      await supabaseClient.auth.signOut();
-      window.location.href = 'login.html';
-    }
-
+    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       if (!container) return;
