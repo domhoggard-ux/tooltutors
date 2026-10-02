@@ -26,6 +26,7 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
+  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
@@ -98,6 +99,7 @@
         </div>
       </div>
 
+      <!-- Tutor Onboarding State -->
       <div id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden">
         <div id="tutor-rejected-note" class="hidden mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
         <h2 class="text-lg font-bold text-white mb-2">Complete Your Profile & Compliance</h2>
@@ -124,12 +126,14 @@
         </form>
       </div>
 
+      <!-- Tutor Pending Review State -->
       <div id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-8 text-center hidden">
         <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500 mb-4"></i>
         <h3 class="text-xl font-bold text-amber-500">Documents Under Review</h3>
         <p class="text-sm text-amber-400/80 mt-2 max-w-md mx-auto">Our admin team is reviewing your documents. Check back soon for approval!</p>
       </div>
 
+      <!-- Tutor Active State -->
       <div id="tutor-active-dashboard" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden">
         <h2 class="text-lg font-bold text-emerald-400 mb-2"><i class="fa-solid fa-circle-check mr-2"></i>Account Verified</h2>
         <p class="text-sm text-[#8892B0]">Your account is fully validated. Local learner job requests will appear here in Sprint 6.</p>
@@ -233,6 +237,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
+        
         if (sessionErr || !session) {
           window.location.href = 'login.html';
           return;
@@ -245,53 +250,64 @@
           .eq('id', user.id)
           .maybeSingle();
 
-        // Self-healing check if user exists in Auth but missing profile record
-        if (!profile) {
-          const fallbackName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-          const fallbackRole = user.user_metadata?.role || 'learner';
+        // THE FIX: Deep merge database profile with Auth metadata. 
+        // If a field is missing in the database, we pull it from the user's sign-up metadata so nobody loses their details.
+        const meta = user.user_metadata || {};
+        
+        currentProfile = {
+          id: user.id,
+          email: user.email,
+          full_name: profile?.full_name || meta.full_name || user.email.split('@')[0],
+          role: profile?.role || meta.role || 'learner',
+          profile_picture_url: profile?.profile_picture_url || meta.profile_picture_url || null,
+          address_line1: profile?.address_line1 || meta.address_line1 || '',
+          city: profile?.city || meta.city || '',
+          postcode: profile?.postcode || meta.postcode || '',
+          tutor_tier: profile?.tutor_tier || meta.tutor_tier || 'self_taught',
+          validation_status: profile?.validation_status || meta.validation_status || 'pending',
+          validation_notes: profile?.validation_notes || '',
+          id_document_url: profile?.id_document_url || '',
+          dbs_document_url: profile?.dbs_document_url || ''
+        };
 
-          const { data: newProfile, error: createErr } = await supabaseClient
-            .from('profiles')
-            .upsert({
-              id: user.id,
-              email: user.email,
-              full_name: fallbackName,
-              role: fallbackRole,
-              phone: user.user_metadata?.phone || '',
-              address_line1: user.user_metadata?.address_line1 || '',
-              city: user.user_metadata?.city || '',
-              postcode: user.user_metadata?.postcode || ''
-            })
-            .select()
-            .single();
-
-          if (!createErr && newProfile) {
-            profile = newProfile;
-          }
+        // Auto-heal the database behind the scenes if rows were missing
+        if (!profile || !profile.role || !profile.full_name) {
+          await supabaseClient.from('profiles').upsert({
+            id: currentProfile.id,
+            email: currentProfile.email,
+            full_name: currentProfile.full_name,
+            role: currentProfile.role,
+            tutor_tier: currentProfile.tutor_tier,
+            address_line1: currentProfile.address_line1,
+            city: currentProfile.city,
+            postcode: currentProfile.postcode
+          });
         }
-
-        currentProfile = profile || { id: user.id, email: user.email, full_name: 'User', role: 'learner' };
 
         // Hide loader
         const loader = document.getElementById('portal-loader');
         if (loader) loader.classList.add('hidden');
 
         // Populate Header Info Safely
-        const fullName = currentProfile.full_name || 'User';
-        const userRole = (currentProfile.role || 'learner').toLowerCase();
+        const fullName = currentProfile.full_name;
+        const userRole = currentProfile.role.toLowerCase();
         const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         
         document.getElementById('header-user-name').textContent = fullName;
         document.getElementById('header-user-role').textContent = userRole.toUpperCase();
         document.getElementById('header-role-tag').textContent = userRole;
 
+        const initialsContainer = document.getElementById('header-user-initials');
         if (currentProfile.profile_picture_url) {
-          document.getElementById('header-user-initials').innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
+          initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
         } else {
-          document.getElementById('header-user-initials').textContent = initials;
+          initialsContainer.innerHTML = initials;
         }
 
-        // Route based on role
+        // Hide all sections first
+        document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+
+        // Route to correct view
         if (userRole === 'admin') {
           mountAdminView();
         } else if (userRole === 'tutor') {
@@ -299,6 +315,7 @@
         } else {
           mountLearnerView();
         }
+
       } catch (err) {
         console.error('Fatal initialization error:', err);
         showToast('Error loading portal profile. Please refresh.', 'error');
@@ -414,11 +431,13 @@
       }
 
       const status = currentProfile?.validation_status || 'pending';
+      
+      // Hide all states first
       document.getElementById('tutor-onboarding-section').classList.add('hidden');
       document.getElementById('tutor-pending-review').classList.add('hidden');
       document.getElementById('tutor-active-dashboard').classList.add('hidden');
 
-      if (status === 'pending' || status === 'rejected' || !status) {
+      if (status === 'pending' || status === 'rejected') {
         document.getElementById('tutor-onboarding-section').classList.remove('hidden');
         const noteDiv = document.getElementById('tutor-rejected-note');
         if (status === 'rejected' && currentProfile?.validation_notes) {
@@ -479,6 +498,7 @@
         if (error) throw error;
 
         showToast('Documents submitted for review!', 'success');
+        
         currentProfile = { ...currentProfile, ...updates };
 
         if (profilePicUrl) {
@@ -499,12 +519,14 @@
     // --- LEARNER LOGIC ---
     function mountLearnerView() {
       document.getElementById('learner-view').classList.remove('hidden');
+      
       const fullName = currentProfile?.full_name || 'Learner';
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName}`;
       
       const addr1 = currentProfile?.address_line1 || '';
       const city = currentProfile?.city || '';
       const postcode = currentProfile?.postcode || '';
+      
       const addrStr = [addr1, city, postcode].filter(Boolean).join(', ');
       document.getElementById('learner-address-line').textContent = addrStr || 'No address on file';
 
