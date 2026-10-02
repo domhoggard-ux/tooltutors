@@ -1,118 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-[#0A192F]">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In | ToolTutors Portal</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="style.css">
+  <title>ToolTutors - Sign In</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
 </head>
-<body>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col justify-center items-center p-4">
 
-  <header class="site-header">
-    <div class="header-container">
-      <a href="index.html" class="brand-container">
-        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
-      </a>
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <div class="w-full max-w-md bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-8 space-y-8">
+    
+    <!-- BRAND LOGO -->
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 mx-auto rounded-2xl bg-[#0A192F] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-2xl shadow-lg">
+        <i class="fa-solid fa-wrench"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></h1>
+      <p class="text-xs text-[#8892B0]">Peer DIY Mentorship & Marketplace Hub</p>
+    </div>
+
+    <!-- TOGGLE TABS -->
+    <div class="flex bg-[#0A192F] p-1 rounded-xl border border-[#233554]">
+      <button onclick="switchMode('signin')" id="tab-signin" class="flex-1 py-2 text-xs font-bold rounded-lg bg-[#233554] text-white transition">Sign In</button>
+      <button onclick="switchMode('signup')" id="tab-signup" class="flex-1 py-2 text-xs font-bold rounded-lg text-[#8892B0] hover:text-white transition">Register</button>
+    </div>
+
+    <!-- FORM -->
+    <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+      
+      <!-- Extra fields for registration -->
+      <div id="signup-fields" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Full Name</label>
+          <input type="text" id="full-name" placeholder="John Doe" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Select Role</label>
+          <select id="user-role" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            <option value="learner">Learner (Homeowner)</option>
+            <option value="tutor">Tutor (DIY Mentor)</option>
+          </select>
+        </div>
+
+        <div id="tutor-tier-group" class="hidden">
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Tutor Experience Level</label>
+          <select id="tutor-tier" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            <option value="self_taught">Self-Taught Enthusiast</option>
+            <option value="professional">Professional / Trade Certified</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email Address</label>
+        <input type="email" id="email" required placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Password</label>
+        <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+      </div>
+
+      <button type="submit" id="submit-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">
+        Sign In
       </button>
-      <div class="nav-overlay" id="navOverlay"></div>
-      <nav class="nav-menu" id="navMenu">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="about.html" class="nav-link">About</a>
-        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
-        <a href="login.html" class="nav-link">Login</a>
-        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <h1 class="section-title">Sign In to ToolTutors</h1>
-      <p class="section-subtitle">Access your Tutor account, job listings, or Admin back-office.</p>
-    </div>
-
-    <div class="form-container" style="max-width: 440px;">
-      <form id="loginForm">
-        <div class="form-group">
-          <label class="form-label" for="loginEmail">Email Address</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
-        </div>
-
-        <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%;">Sign In</button>
-      </form>
-      <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted, #8892b0);">
-        Don't have an account yet? <a href="apply.html" style="color: var(--accent-orange, #ff6b35);">Apply / Register here</a>
-      </p>
-    </div>
-  </main>
-
-  <footer class="site-footer">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
-        <p>Empowering local communities through peer-to-peer DIY skills.</p>
-      </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="login.html">Login</a>
-        <a href="apply.html">Apply / Register</a>
-        <a href="waiver.html">Safety & Liability Waiver</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
-    </div>
-  </footer>
-
-  <script src="script.js"></script>
+    </form>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // If already logged in, skip login screen and send straight to portal
-    window.addEventListener('DOMContentLoaded', async () => {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        window.location.href = 'portal.html';
-      }
-    });
+    let isSignUp = false;
 
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Authenticating...';
-
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (error) {
-        alert('Login failed: ' + error.message);
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Sign In';
+    // Toggle Role-based subfields during signup
+    document.getElementById('user-role').addEventListener('change', (e) => {
+      const tierGroup = document.getElementById('tutor-tier-group');
+      if (e.target.value === 'tutor') {
+        tierGroup.classList.remove('hidden');
       } else {
-        window.location.href = 'portal.html';
+        tierGroup.classList.add('hidden');
       }
     });
+
+    function switchMode(mode) {
+      isSignUp = (mode === 'signup');
+      const btn = document.getElementById('submit-btn');
+      const signupFields = document.getElementById('signup-fields');
+      const tabIn = document.getElementById('tab-signin');
+      const tabUp = document.getElementById('tab-signup');
+
+      if (isSignUp) {
+        signupFields.classList.remove('hidden');
+        btn.textContent = 'Create Account';
+        tabUp.className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-[#233554] text-white transition';
+        tabIn.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-[#8892B0] hover:text-white transition';
+      } else {
+        signupFields.classList.add('hidden');
+        btn.textContent = 'Sign In';
+        tabIn.className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-[#233554] text-white transition';
+        tabUp.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-[#8892B0] hover:text-white transition';
+      }
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('submit-btn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...';
+
+      try {
+        if (isSignUp) {
+          const fullName = document.getElementById('full-name').value.trim() || email.split('@')[0];
+          const role = document.getElementById('user-role').value;
+          const tutorTier = document.getElementById('tutor-tier').value;
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { full_name: fullName, role, tutor_tier: tutorTier }
+            }
+          });
+
+          if (error) throw error;
+
+          // Upsert profile record immediately
+          if (data.user) {
+            await supabaseClient.from('profiles').upsert({
+              id: data.user.id,
+              email: data.user.email,
+              full_name: fullName,
+              role: role,
+              tutor_tier: role === 'tutor' ? tutorTier : 'self_taught',
+              validation_status: role === 'tutor' ? 'pending' : 'approved'
+            });
+          }
+
+          showToast('Account created successfully!', 'success');
+          setTimeout(() => routeUser(data.user.id), 1000);
+
+        } else {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+
+          showToast('Signed in successfully!', 'success');
+          setTimeout(() => routeUser(data.user.id), 800);
+        }
+      } catch (err) {
+        showToast(err.message || 'Authentication failed', 'error');
+        btn.disabled = false;
+        btn.textContent = isSignUp ? 'Create Account' : 'Sign In';
+      }
+    }
+
+    async function routeUser(userId) {
+      // Fetch role from profiles table to determine routing destination
+      const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', userId).maybeSingle();
+      const role = profile?.role || 'learner';
+
+      if (role === 'admin') {
+        window.location.href = 'admin.html';
+      } else if (role === 'tutor') {
+        window.location.href = 'tutor.html';
+      } else {
+        window.location.href = 'learner.html';
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':type==='error'?'border-rose-500/30 text-rose-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl transition-all duration-300`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
   </script>
 </body>
 </html>
