@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Admin Hub</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A192F; }
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+    .tab-content { transition: opacity 0.25s ease-in-out; }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30 uppercase tracking-wider hidden sm:inline-block">Admin System</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:block text-right">
+          <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+          <div class="text-[10px] text-rose-400 uppercase">Administrator</div>
+        </div>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
+
+    <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-extrabold text-white">Admin Management Hub</h1>
+        <p class="text-xs text-[#8892B0] mt-1">Oversee platform safety, resolve disputes, and manage users.</p>
+      </div>
+      <button onclick="refreshActiveTab()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
+        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Data
+      </button>
+    </div>
+
+    <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
+      <!-- Admin Navigation Tabs -->
+      <div class="flex border-b border-[#233554] overflow-x-auto">
+        <button onclick="switchTab('reviews')" id="tab-btn-reviews" class="flex-1 py-4 px-6 text-sm font-bold bg-[#233554]/50 text-white border-b-2 border-[#FF6B35] transition whitespace-nowrap">
+          <i class="fa-solid fa-id-card mr-2 text-[#FF6B35]"></i>Pending Tutors
+        </button>
+        <button onclick="switchTab('jobs')" id="tab-btn-jobs" class="flex-1 py-4 px-6 text-sm font-bold text-[#8892B0] hover:bg-[#233554]/30 hover:text-white border-b-2 border-transparent transition whitespace-nowrap">
+          <i class="fa-solid fa-list-check mr-2"></i>All Jobs Registry
+        </button>
+        <button onclick="switchTab('users')" id="tab-btn-users" class="flex-1 py-4 px-6 text-sm font-bold text-[#8892B0] hover:bg-[#233554]/30 hover:text-white border-b-2 border-transparent transition whitespace-nowrap">
+          <i class="fa-solid fa-users mr-2"></i>User Directory
+        </button>
+      </div>
+
+      <div class="p-6 min-h-[400px]">
+        
+        <!-- SECTION 1: PENDING REVIEWS -->
+        <div id="section-reviews" class="tab-content block space-y-4">
+          <div id="admin-review-list" class="space-y-4">
+            <p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading pending verifications...</p>
+          </div>
+        </div>
+
+        <!-- SECTION 2: ALL JOBS REGISTRY -->
+        <div id="section-jobs" class="tab-content hidden space-y-4">
+          <div id="admin-jobs-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <p class="text-xs text-[#8892B0] text-center py-8 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading job registry...</p>
+          </div>
+        </div>
+
+        <!-- SECTION 3: USER DIRECTORY -->
+        <div id="section-users" class="tab-content hidden space-y-4">
+          <div class="flex gap-2 mb-4">
+             <input type="text" id="user-search" placeholder="Search by name or email..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+             <button onclick="loadAllUsers()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-xl transition text-xs font-bold">Search</button>
+          </div>
+          <div id="admin-users-list" class="space-y-3">
+            <p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading user directory...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentAdminProfile = null;
+    let currentActiveTab = 'reviews';
+
+    // --- INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
+        if (sessionErr || !session) { window.location.href = 'login.html'; return; }
+
+        const user = session.user;
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        
+        const role = profile?.role || user.user_metadata?.role || 'learner';
+        
+        // SECURITY REDIRECT: Kick non-admins out
+        if (role !== 'admin') {
+          window.location.href = 'login.html'; // Or redirect them to their specific portal later
+          return;
+        }
+
+        currentAdminProfile = profile;
+        document.getElementById('header-user-name').textContent = profile.full_name || user.email;
+        
+        loadPendingTutors();
+
+      } catch (err) {
+        console.error(err);
+        showToast('Authentication error. Please log in again.', 'error');
+      }
+    });
+
+    // --- UI NAVIGATION ---
+    function switchTab(tabId) {
+      currentActiveTab = tabId;
+      // Hide all sections
+      ['reviews', 'jobs', 'users'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-btn-${t}`);
+        btn.classList.remove('bg-[#233554]/50', 'text-white', 'border-[#FF6B35]');
+        btn.classList.add('text-[#8892B0]', 'border-transparent');
+      });
+
+      // Show selected section
+      document.getElementById(`section-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.classList.remove('text-[#8892B0]', 'border-transparent');
+      activeBtn.classList.add('bg-[#233554]/50', 'text-white', 'border-[#FF6B35]');
+
+      refreshActiveTab();
+    }
+
+    function refreshActiveTab() {
+      if (currentActiveTab === 'reviews') loadPendingTutors();
+      if (currentActiveTab === 'jobs') loadAllJobs();
+      if (currentActiveTab === 'users') loadAllUsers();
+    }
+
+    // --- TAB 1: PENDING TUTOR REVIEWS ---
+    async function loadPendingTutors() {
+      const container = document.getElementById('admin-review-list');
+      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Fetching documents...</p>';
+
+      const { data: tutors, error } = await supabaseClient.from('profiles').select('*').eq('role', 'tutor').eq('validation_status', 'submitted');
+      
+      if (error) { container.innerHTML = `<p class="text-xs text-rose-400">Database Error: ${error.message}</p>`; return; }
+      if (!tutors || tutors.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8 italic">Inbox zero! No pending verifications at this time.</p>'; return; }
+
+      container.innerHTML = tutors.map(t => {
+        const tierClass = t.tutor_tier === 'professional' ? 'text-purple-400' : 'text-blue-400';
+        const tierLabel = (t.tutor_tier || 'unknown tier').replace('_', ' ');
+        return `
+          <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-5 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+            <div class="flex items-center space-x-4 min-w-[250px]">
+              <img src="${t.profile_picture_url || 'https://via.placeholder.com/150'}" class="w-14 h-14 rounded-full object-cover border-2 border-[#233554]">
+              <div>
+                <div class="font-bold text-white text-sm">${t.full_name || 'Tutor User'}</div>
+                <div class="text-[10px] text-[#8892B0] uppercase tracking-wide mt-1"><span class="${tierClass} font-bold">${tierLabel}</span></div>
+                ${t.skills && t.skills.length > 0 ? `<div class="text-[10px] text-emerald-400 mt-1 max-w-[200px] truncate" title="${t.skills.join(', ')}">Skills: ${t.skills.join(', ')}</div>` : ''}
+              </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <button onclick="viewSecureDocument('${t.id_document_url || ''}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg text-xs font-bold transition flex items-center justify-center">
+                <i class="fa-solid fa-id-card mr-2"></i>View ID
+              </button>
+              <button onclick="viewSecureDocument('${t.dbs_document_url || ''}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg text-xs font-bold transition flex items-center justify-center">
+                <i class="fa-solid fa-shield-halved mr-2"></i>View DBS
+              </button>
+            </div>
+            
+            <div class="flex flex-col space-y-2 w-full md:w-64">
+              <input type="text" id="notes-${t.id}" placeholder="Required if rejecting..." class="px-4 py-2 rounded-lg bg-[#112240] border border-[#233554] text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+              <div class="flex gap-2">
+                <button onclick="processTutor('${t.id}', 'approved')" class="flex-1 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 rounded-lg text-xs font-bold transition">Approve</button>
+                <button onclick="processTutor('${t.id}', 'rejected')" class="flex-1 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/40 rounded-lg text-xs font-bold transition">Reject</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function viewSecureDocument(path) {
+      if (!path) { showToast('Document path missing or not uploaded properly.', 'error'); return; }
+      const { data, error } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
+      if (error) { showToast('Failed to generate secure viewing link.', 'error'); }
+      else if (data) { window.open(data.signedUrl, '_blank'); }
+    }
+
+    async function processTutor(tutorId, newStatus) {
+      const notes = document.getElementById(`notes-${tutorId}`)?.value || '';
+      if (newStatus === 'rejected' && !notes.trim()) { showToast('You must provide notes explaining why the application is rejected.', 'error'); return; }
+      
+      const { error } = await supabaseClient.from('profiles').update({ validation_status: newStatus, validation_notes: notes }).eq('id', tutorId);
+      if (error) { showToast('Database error updating status.', 'error'); }
+      else { showToast(`Tutor has been ${newStatus}!`, 'success'); loadPendingTutors(); }
+    }
+
+    // --- TAB 2: ALL JOBS REGISTRY ---
+    async function loadAllJobs() {
+      const container = document.getElementById('admin-jobs-list');
+      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Pulling job registry...</p>';
+
+      // We join the profiles table twice: once for the learner (owner) and once for the assigned tutor
+      const { data: jobs, error } = await supabaseClient.from('job_requests').select(`
+        *,
+        learner:profiles!learner_id(full_name, email),
+        tutor:profiles!tutor_id(full_name, email)
+      `).order('created_at', { ascending: false });
+
+      if (error) { container.innerHTML = `<p class="text-xs text-rose-400 col-span-full">Database Error: ${error.message}</p>`; return; }
+      if (!jobs || jobs.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center col-span-full italic">No jobs have been created on the platform yet.</p>'; return; }
+
+      container.innerHTML = jobs.map(job => {
+        let statusColor = 'bg-[#233554] text-[#8892B0]';
+        if(job.status === 'open') statusColor = 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+        if(job.status === 'accepted') statusColor = 'bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30';
+        if(job.status === 'completed') statusColor = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        if(job.status === 'cancelled') statusColor = 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+
+        return `
+        <div class="p-5 bg-[#0A192F] border border-[#233554] rounded-xl flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <span class="font-bold text-white text-sm pr-2 truncate" title="${job.title}">${job.title}</span>
+              <span class="px-2 py-1 rounded ${statusColor} uppercase text-[9px] font-bold tracking-wider">${job.status}</span>
+            </div>
+            
+            <div class="space-y-1 text-xs">
+              <p class="text-[#8892B0]"><strong class="text-white">Category:</strong> ${job.category}</p>
+              <p class="text-[#8892B0]"><strong class="text-white">Budget:</strong> £${job.budget_estimate || '0'}</p>
+              <p class="text-[#8892B0]"><strong class="text-white">Created:</strong> ${new Date(job.created_at).toLocaleDateString()}</p>
+              
+              <div class="mt-3 p-3 bg-[#112240] rounded border border-[#233554]">
+                <p class="text-[#8892B0] mb-1"><i class="fa-solid fa-user-pen mr-1"></i> <strong class="text-white">Learner:</strong> ${job.learner?.full_name || 'Unknown'}</p>
+                <p class="text-[#8892B0]"><i class="fa-solid fa-user-check mr-1"></i> <strong class="text-white">Tutor:</strong> ${job.tutor?.full_name || 'Unassigned'}</p>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="adminDeleteJob('${job.id}')" class="w-full py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded-lg transition text-xs flex items-center justify-center">
+            <i class="fa-solid fa-trash mr-2"></i> Delete Job Record
+          </button>
+        </div>
+      `}).join('');
+    }
+
+    async function adminDeleteJob(jobId) {
+      if(!confirm("⚠️ WARNING: Are you sure you want to permanently delete this job request from the database? This action cannot be undone.")) return;
+      
+      const { error } = await supabaseClient.from('job_requests').delete().eq('id', jobId);
+      if(error) showToast("Failed to delete job.", "error");
+      else { showToast("Job successfully deleted.", "success"); loadAllJobs(); }
+    }
+
+    // --- TAB 3: USER DIRECTORY ---
+    async function loadAllUsers() {
+      const container = document.getElementById('admin-users-list');
+      const searchTerm = document.getElementById('user-search').value.trim().toLowerCase();
+      
+      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Querying users...</p>';
+
+      let query = supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
+      
+      if (searchTerm) {
+        query = query.or(`full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      }
+
+      const { data: users, error } = await query;
+      
+      if (error) { container.innerHTML = `<p class="text-xs text-rose-400">Database Error: ${error.message}</p>`; return; }
+      if (!users || users.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">No users found matching that search.</p>'; return; }
+
+      container.innerHTML = users.map(u => {
+        const roleColor = u.role === 'admin' ? 'text-rose-400' : u.role === 'tutor' ? 'text-[#FF6B35]' : 'text-blue-400';
+        return `
+        <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div class="flex items-center gap-3">
+             <div class="w-10 h-10 rounded-full bg-[#112240] flex items-center justify-center text-[#8892B0] overflow-hidden border border-[#233554]">
+               ${u.profile_picture_url ? `<img src="${u.profile_picture_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user"></i>`}
+             </div>
+             <div>
+               <div class="font-bold text-white text-sm">${u.full_name || 'Unnamed User'}</div>
+               <div class="text-[10px] text-[#8892B0] mt-0.5">${u.email}</div>
+               <div class="text-[10px] text-[#8892B0] uppercase mt-1 tracking-wider">Role: <span class="${roleColor} font-bold">${u.role}</span> | Status: ${u.validation_status}</div>
+             </div>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <select id="role-select-${u.id}" class="px-3 py-2 rounded-lg bg-[#112240] border border-[#233554] text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+              <option value="learner" ${u.role==='learner'?'selected':''}>Learner</option>
+              <option value="tutor" ${u.role==='tutor'?'selected':''}>Tutor</option>
+              <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+            </select>
+            <button onclick="adminUpdateRole('${u.id}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg text-xs font-bold transition flex-shrink-0">
+              Update Role
+            </button>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    async function adminUpdateRole(userId) {
+      if(!confirm("Are you sure you want to change this user's platform role? Giving them Admin access will grant them full control over the database.")) return;
+      
+      const newRole = document.getElementById(`role-select-${userId}`).value;
+      const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
+      
+      if(error) showToast("Failed to update role.", "error");
+      else { showToast("User role successfully updated.", "success"); loadAllUsers(); }
+    }
+
+    // --- SHARED UTILS ---
+    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':type==='error'?'border-rose-500/30 text-rose-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl transition-all duration-300`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
