@@ -1,19 +1,3 @@
-Brilliant. The database is now fully prepared to handle the marketplace mechanics securely.
-
-Since you requested the full file to avoid any copy-paste mishaps, here is the complete, fully stitched **Sprint 6 `portal.html**`.
-
-### What's New in This Version:
-
-1. **The Live Job Board:** When a verified Tutor logs in, their dashboard now splits into two panels: **Open Local Jobs** and **My Accepted Projects**.
-2. **Job Rendering:** It pulls all `open` jobs submitted by Learners and displays the category, preferred time, and description.
-3. **The "Accept" Workflow:** When a Tutor clicks "Accept Job", it fires a secure request to Supabase, updates the job to `accepted`, assigns the `tutor_id` to their account, and immediately moves the job over to their "Accepted Projects" panel.
-4. **Photo Unlocking:** To protect the Learner's privacy, project photos are obscured until the Tutor officially accepts the job and assumes responsibility.
-
-### Action Required:
-
-Replace your entire `portal.html` with this code.
-
-```html
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-[#0A192F]">
 <head>
@@ -800,5 +784,3 @@ Replace your entire `portal.html` with this code.
   </script>
 </body>
 </html>
-
-```
