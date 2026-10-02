@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-[#0A192F]">
 <head>
@@ -45,9 +44,18 @@
 
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-3 pr-2">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
-            <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
+          
+          <!-- Clickable Avatar Wrapper -->
+          <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
+              <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
+            </div>
+            <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
+              <i class="fa-solid fa-camera text-white text-[10px]"></i>
+            </div>
           </div>
+          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
+          
           <div class="hidden sm:block text-left">
             <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
             <div id="header-user-role" class="text-[10px] text-[#8892B0] uppercase">Authenticating</div>
@@ -253,32 +261,25 @@
 
         const meta = user.user_metadata || {};
         
-        // Ensure legacy "homeowner" tags are correctly converted to "learner"
         let rawRole = profile?.role || meta.role || 'learner';
-        let normalizedRole = rawRole.toLowerCase();
-        if (normalizedRole === 'homeowner') {
-          normalizedRole = 'learner';
-        }
+        let normalizedRole = rawRole.toLowerCase() === 'homeowner' ? 'learner' : rawRole.toLowerCase();
 
         currentProfile = {
           id: user.id,
           email: user.email,
           full_name: profile?.full_name || meta.full_name || user.email.split('@')[0],
           role: normalizedRole,
-          profile_picture_url: profile?.profile_picture_url || meta.profile_picture_url || null,
+          profile_picture_url: profile?.profile_picture_url || meta.profile_picture_url || meta.avatar_url || null,
           address_line1: profile?.address_line1 || meta.address_line1 || '',
           city: profile?.city || meta.city || '',
           postcode: profile?.postcode || meta.postcode || '',
           tutor_tier: profile?.tutor_tier || meta.tutor_tier || 'self_taught',
-          validation_status: profile?.validation_status || 'pending',
+          validation_status: profile?.validation_status || meta.validation_status || 'pending',
           validation_notes: profile?.validation_notes || '',
           id_document_url: profile?.id_document_url || '',
           dbs_document_url: profile?.dbs_document_url || ''
         };
 
-        // SAFELY Auto-heal: 
-        // Only insert if the row is entirely missing.
-        // If it exists but is missing text fields (like a legacy homeowner), update ONLY those fields so we don't erase doc statuses.
         if (!profile) {
           await supabaseClient.from('profiles').upsert(currentProfile);
         } else if (!profile.full_name || profile.role?.toLowerCase() === 'homeowner') {
@@ -288,33 +289,16 @@
           }).eq('id', user.id);
         }
 
-        // Hide loader
         const loader = document.getElementById('portal-loader');
         if (loader) loader.classList.add('hidden');
 
-        // Populate Header Info Safely
-        const fullName = currentProfile.full_name;
-        const userRole = currentProfile.role;
-        const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        
-        document.getElementById('header-user-name').textContent = fullName;
-        document.getElementById('header-user-role').textContent = userRole.toUpperCase();
-        document.getElementById('header-role-tag').textContent = userRole;
+        updateHeaderUI();
 
-        const initialsContainer = document.getElementById('header-user-initials');
-        if (currentProfile.profile_picture_url) {
-          initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
-        } else {
-          initialsContainer.innerHTML = initials;
-        }
-
-        // Hide all sections first
         document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
 
-        // Route to correct view
-        if (userRole === 'admin') {
+        if (currentProfile.role === 'admin') {
           mountAdminView();
-        } else if (userRole === 'tutor') {
+        } else if (currentProfile.role === 'tutor') {
           mountTutorView();
         } else {
           mountLearnerView();
@@ -325,6 +309,57 @@
         showToast('Error loading portal profile. Please refresh.', 'error');
       }
     });
+
+    function updateHeaderUI() {
+      const fullName = currentProfile.full_name;
+      const userRole = currentProfile.role;
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      document.getElementById('header-user-name').textContent = fullName;
+      document.getElementById('header-user-role').textContent = userRole.toUpperCase();
+      document.getElementById('header-role-tag').textContent = userRole;
+
+      const initialsContainer = document.getElementById('header-user-initials');
+      if (currentProfile.profile_picture_url) {
+        initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
+      } else {
+        initialsContainer.innerHTML = initials;
+      }
+    }
+
+    // --- GLOBAL AVATAR UPLOAD ---
+    async function handleGlobalAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showToast('Uploading profile picture...', 'info');
+      
+      try {
+        const ext = file.name.split('.').pop();
+        const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+        
+        const { error: uploadErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
+        if (uploadErr) throw uploadErr;
+
+        const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+        const newUrl = publicUrlData.publicUrl;
+
+        // Update Database
+        const { error: updateErr } = await supabaseClient.from('profiles').update({ profile_picture_url: newUrl }).eq('id', currentProfile.id);
+        if (updateErr) throw updateErr;
+
+        // Update Auth Metadata so it persists
+        await supabaseClient.auth.updateUser({ data: { profile_picture_url: newUrl } });
+
+        currentProfile.profile_picture_url = newUrl;
+        updateHeaderUI();
+        showToast('Profile picture updated!', 'success');
+
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to update picture.', 'error');
+      }
+    }
 
     // --- ADMIN LOGIC ---
     function mountAdminView() { 
@@ -386,9 +421,7 @@
 
     async function viewSecureDocument(path) {
       if (!path) { showToast('Document path missing', 'error'); return; }
-      
       const { data, error } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
-      
       if (error) {
         showToast('Error accessing secure document.', 'error');
         console.error(error);
@@ -436,7 +469,6 @@
 
       const status = currentProfile?.validation_status || 'pending';
       
-      // Hide all states first
       document.getElementById('tutor-onboarding-section').classList.add('hidden');
       document.getElementById('tutor-pending-review').classList.add('hidden');
       document.getElementById('tutor-active-dashboard').classList.add('hidden');
@@ -505,10 +537,12 @@
         
         currentProfile = { ...currentProfile, ...updates };
 
+        // Ensure auth meta catches up if they updated their avatar during onboarding
         if (profilePicUrl) {
-          document.getElementById('header-user-initials').innerHTML = `<img src="${profilePicUrl}" class="w-full h-full object-cover rounded-full">`;
+          await supabaseClient.auth.updateUser({ data: { profile_picture_url: profilePicUrl } });
         }
 
+        updateHeaderUI();
         mountTutorView();
 
       } catch (err) {
@@ -525,7 +559,7 @@
       document.getElementById('learner-view').classList.remove('hidden');
       
       const fullName = currentProfile?.full_name || 'Learner';
-      document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName}`;
+      document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName.split(' ')[0]}`;
       
       const addr1 = currentProfile?.address_line1 || '';
       const city = currentProfile?.city || '';
