@@ -26,6 +26,7 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
+  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
@@ -109,7 +110,7 @@
       <div id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden">
         <div id="tutor-rejected-note" class="hidden mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
         <h2 class="text-lg font-bold text-white mb-2">Complete Your Profile & Compliance</h2>
-        <p class="text-xs text-[#8892B0] mb-6">Upload your profile picture, photo ID, and DBS certificate.</p>
+        <p class="text-xs text-[#8892B0] mb-6">Upload your documents and select your specific DIY skills.</p>
         
         <form id="tutor-docs-form" onsubmit="submitTutorDocuments(event)" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -125,9 +126,24 @@
               <label class="block text-xs font-semibold text-white uppercase"><i class="fa-solid fa-shield-halved mr-1 text-[#FF6B35]"></i> DBS Certificate</label>
               <input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="block w-full text-xs text-[#8892B0] file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#233554] file:text-white hover:file:bg-[#FF6B35] cursor-pointer mt-2">
             </div>
+
+            <!-- SKILLS SELECTION -->
+            <div class="md:col-span-3 p-4 bg-[#0A192F] border border-[#233554] rounded-xl space-y-3">
+              <label class="block text-xs font-semibold text-white uppercase"><i class="fa-solid fa-screwdriver-wrench mr-1 text-[#FF6B35]"></i> My Skills</label>
+              <p class="text-[10px] text-[#8892B0]">Select the DIY categories you are qualified or experienced enough to mentor in.</p>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3" id="tutor-skills-container">
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Plumbing" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Plumbing</span></label>
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Tiling" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Tiling</span></label>
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Carpentry & Joinery" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Carpentry & Joinery</span></label>
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Electrical Basics" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Electrical Basics</span></label>
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Decorating & Painting" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Decorating & Painting</span></label>
+                <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Garden & Landscaping" class="rounded bg-[#112240] border-[#233554] text-[#FF6B35] focus:ring-[#FF6B35]"> <span>Garden & Landscaping</span></label>
+              </div>
+            </div>
+
           </div>
           <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center">
-            Submit Documents for Verification
+            Submit Profile for Verification
           </button>
         </form>
       </div>
@@ -142,7 +158,7 @@
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl flex justify-between items-center">
           <div>
             <h2 class="text-lg font-bold text-emerald-400 mb-1"><i class="fa-solid fa-circle-check mr-2"></i>Account Verified</h2>
-            <p class="text-sm text-[#8892B0]">You are approved to browse and accept local learner requests.</p>
+            <p class="text-sm text-[#8892B0]">You are approved to browse and accept local learner requests matching your skills.</p>
           </div>
           <button onclick="loadTutorJobs()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition">
             <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Board
@@ -153,7 +169,10 @@
           
           <!-- Open Jobs -->
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
-            <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Open Local Jobs</h3>
+            <div class="flex justify-between items-end border-b border-[#233554] pb-3 mb-4">
+              <h3 class="font-bold text-white text-sm">Open Local Jobs</h3>
+              <p class="text-[10px] text-[#8892B0]">Filtered by your skills</p>
+            </div>
             <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
               <p class="text-xs text-[#8892B0] text-center">Loading open jobs...</p>
             </div>
@@ -188,7 +207,7 @@
         <div class="lg:col-span-2 space-y-6">
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
             <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
-            <p class="text-xs text-[#8892B0] mb-6">Provide details and upload photos of your project space so local tutors can assess the job.</p>
+            <p class="text-xs text-[#8892B0] mb-6">Provide details, budget, and upload photos of your project space so matching tutors can assess the job.</p>
             
             <form id="job-request-form" onsubmit="submitJobRequest(event)" class="space-y-4">
               <div>
@@ -211,6 +230,22 @@
                 <div>
                   <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Timing</label>
                   <input type="text" id="job-time" required placeholder="e.g. This Saturday Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                </div>
+              </div>
+
+              <!-- NEW SPRINT 7: TIER AND BUDGET -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Tutor Level</label>
+                  <select id="job-preferred-tier" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                    <option value="any">Any Experience Level</option>
+                    <option value="self_taught">Self-Taught Enthusiast</option>
+                    <option value="professional">Professional / Trade Certified</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Estimated Budget (£)</label>
+                  <input type="number" id="job-budget" required min="0" step="5" placeholder="e.g. 50" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
                 </div>
               </div>
 
@@ -316,7 +351,8 @@
           validation_status: profile?.validation_status || meta.validation_status || 'pending',
           validation_notes: profile?.validation_notes || '',
           id_document_url: profile?.id_document_url || '',
-          dbs_document_url: profile?.dbs_document_url || ''
+          dbs_document_url: profile?.dbs_document_url || '',
+          skills: profile?.skills || [] // Sprint 7 Add
         };
 
         if (!profile) {
@@ -480,6 +516,7 @@
               <div>
                 <div class="font-bold text-white">${t.full_name || 'Tutor'}</div>
                 <div class="text-[10px] text-[#8892B0] uppercase"><span class="${tierClass}">${tierLabel}</span></div>
+                ${t.skills && t.skills.length > 0 ? `<div class="text-[9px] text-emerald-400 mt-1 truncate max-w-[150px]">Skills: ${t.skills.join(', ')}</div>` : ''}
               </div>
             </div>
             <div class="flex space-x-3">
@@ -548,81 +585,18 @@
       }
     }
 
-    async function loadTutorJobs() {
-      const openContainer = document.getElementById('tutor-open-jobs-list');
-      const acceptedContainer = document.getElementById('tutor-accepted-jobs-list');
-      
-      openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
-      acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
-
-      const { data: openJobs, error: openErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
-      const { data: acceptedJobs, error: accErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']).order('created_at', { ascending: false });
-
-      const allLearnerIds = [...new Set([...(openJobs||[]), ...(acceptedJobs||[])].map(j => j.learner_id))];
-      const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', allLearnerIds);
-      const learnerMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
-
-      if (openErr) {
-        openContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${openErr.message}</p>`;
-      } else if (!openJobs || openJobs.length === 0) {
-        openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">No open jobs right now.</p>';
-      } else {
-        openContainer.innerHTML = openJobs.map(job => `
-          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2 relative">
-            <div class="flex justify-between items-start">
-              <span class="font-bold text-white text-sm pr-2">${job.title}</span>
-              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 uppercase text-[9px] font-bold">New</span>
-            </div>
-            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
-            <hr class="border-[#233554] my-2">
-            <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category}</p>
-            <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
-            <p class="text-[#E6F1FF] mt-2 italic border-l-2 border-[#233554] pl-2">"${job.description}"</p>
-            ${job.photo_urls && job.photo_urls.length > 0 ? `<p class="text-[#FF6B35] text-[10px] mt-2"><i class="fa-solid fa-image"></i> ${job.photo_urls.length} Photos Provided (visible upon acceptance)</p>` : ''}
-            <button id="accept-btn-${job.id}" onclick="acceptJob('${job.id}')" class="w-full mt-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition">Accept Job</button>
-          </div>
-        `).join('');
-      }
-
-      if (accErr) {
-        acceptedContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${accErr.message}</p>`;
-      } else if (!acceptedJobs || acceptedJobs.length === 0) {
-        acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You haven\'t accepted any jobs yet.</p>';
-      } else {
-        acceptedContainer.innerHTML = acceptedJobs.map(job => `
-          <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
-            <div class="flex justify-between items-start">
-              <span class="font-bold text-white text-sm pr-2">${job.title}</span>
-              <span class="px-2 py-0.5 rounded bg-[#FF6B35]/10 text-[#FF6B35] uppercase text-[9px] font-bold">${job.status}</span>
-            </div>
-            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
-            <hr class="border-[#233554] my-2">
-            <p class="text-emerald-400 font-bold mb-1"><i class="fa-solid fa-unlock-keyhole mr-1"></i> Job Unlocked</p>
-            <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
-            <p class="text-[#E6F1FF] mt-2 mb-2 italic border-l-2 border-[#FF6B35]/50 pl-2">"${job.description}"</p>
-            ${job.photo_urls && job.photo_urls.length > 0 ? `<div class="flex gap-2 mt-2 overflow-x-auto pb-2">${job.photo_urls.map(url => `<a href="${url}" target="_blank"><img src="${url}" class="h-16 w-16 object-cover rounded border border-[#233554] hover:border-[#FF6B35] transition cursor-pointer"></a>`).join('')}</div>` : ''}
-            <button onclick="openChat('${job.id}', '${job.title}', '${learnerMap[job.learner_id] || 'Learner'}')" class="mt-3 w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-1"></i> Message Learner</button>
-          </div>
-        `).join('');
-      }
-    }
-
-    async function acceptJob(jobId) {
-      const btn = document.getElementById(`accept-btn-${jobId}`);
-      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
-      
-      const { error } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: currentProfile.id }).eq('id', jobId).eq('status', 'open');
-      if (error) {
-        showToast('Failed to accept job. Another tutor may have claimed it.', 'error');
-        if(btn) { btn.innerHTML = 'Accept Job'; btn.disabled = false; }
-      } else {
-        showToast('Job Accepted! Check your accepted projects list.', 'success');
-        loadTutorJobs();
-      }
-    }
-
     async function submitTutorDocuments(e) {
       e.preventDefault();
+      
+      // SPRINT 7: Gather checked skills
+      const skillCheckboxes = document.querySelectorAll('#tutor-skills-container input[type="checkbox"]:checked');
+      const selectedSkills = Array.from(skillCheckboxes).map(cb => cb.value);
+      
+      if (selectedSkills.length === 0) {
+        showToast('Please select at least one skill.', 'error');
+        return;
+      }
+
       const btn = document.getElementById('submit-docs-btn');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading...';
       btn.disabled = true;
@@ -660,13 +634,14 @@
           validation_status: 'submitted', 
           profile_picture_url: profilePicUrl, 
           id_document_url: idDocPath, 
-          dbs_document_url: dbsDocPath 
+          dbs_document_url: dbsDocPath,
+          skills: selectedSkills // Saving the skills to the database
         };
 
         const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentProfile.id);
         if (error) throw error;
 
-        showToast('Documents submitted for review!', 'success');
+        showToast('Documents and skills submitted for review!', 'success');
         currentProfile = { ...currentProfile, ...updates };
 
         if (profilePicUrl) {
@@ -680,8 +655,96 @@
         showToast('Upload failed. Try again.', 'error');
         console.error(err);
       } finally {
-        btn.innerHTML = 'Submit Documents for Verification';
+        btn.innerHTML = 'Submit Profile for Verification';
         btn.disabled = false;
+      }
+    }
+
+    async function loadTutorJobs() {
+      const openContainer = document.getElementById('tutor-open-jobs-list');
+      const acceptedContainer = document.getElementById('tutor-accepted-jobs-list');
+      
+      openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
+      acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
+
+      const { data: rawOpenJobs, error: openErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
+      const { data: acceptedJobs, error: accErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']).order('created_at', { ascending: false });
+
+      // SPRINT 7: STRICT FILTERING LOGIC
+      // 1. Must match Tutor Tier (or Learner selected 'any')
+      // 2. Must match Tutor Skills array
+      const openJobs = (rawOpenJobs || []).filter(job => {
+        const matchesTier = job.preferred_tier === 'any' || job.preferred_tier === currentProfile.tutor_tier;
+        const matchesSkill = currentProfile.skills && currentProfile.skills.includes(job.category);
+        return matchesTier && matchesSkill;
+      });
+
+      const allLearnerIds = [...new Set([...(openJobs||[]), ...(acceptedJobs||[])].map(j => j.learner_id))];
+      const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', allLearnerIds);
+      const learnerMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
+
+      if (openErr) {
+        openContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${openErr.message}</p>`;
+      } else if (!openJobs || openJobs.length === 0) {
+        openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">No local jobs match your selected skills and tier right now.</p>';
+      } else {
+        openContainer.innerHTML = openJobs.map(job => `
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2 relative">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 uppercase text-[9px] font-bold">New</span>
+            </div>
+            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
+            <hr class="border-[#233554] my-2">
+            
+            <div class="flex gap-4">
+                <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category}</p>
+                <p class="text-[#8892B0]"><i class="fa-solid fa-pound-sign w-3"></i> Budget: £${job.budget_estimate || '0'}</p>
+            </div>
+            <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
+            
+            <p class="text-[#E6F1FF] mt-2 italic border-l-2 border-[#233554] pl-2">"${job.description}"</p>
+            ${job.photo_urls && job.photo_urls.length > 0 ? `<p class="text-[#FF6B35] text-[10px] mt-2"><i class="fa-solid fa-image"></i> ${job.photo_urls.length} Photos Provided (visible upon acceptance)</p>` : ''}
+            
+            <button id="accept-btn-${job.id}" onclick="acceptJob('${job.id}')" class="w-full mt-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition">Accept Job</button>
+          </div>
+        `).join('');
+      }
+
+      if (accErr) {
+        acceptedContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${accErr.message}</p>`;
+      } else if (!acceptedJobs || acceptedJobs.length === 0) {
+        acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You haven\'t accepted any jobs yet.</p>';
+      } else {
+        acceptedContainer.innerHTML = acceptedJobs.map(job => `
+          <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+              <span class="px-2 py-0.5 rounded bg-[#FF6B35]/10 text-[#FF6B35] uppercase text-[9px] font-bold">${job.status}</span>
+            </div>
+            <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
+            <hr class="border-[#233554] my-2">
+            <p class="text-emerald-400 font-bold mb-1"><i class="fa-solid fa-unlock-keyhole mr-1"></i> Job Unlocked (Budget: £${job.budget_estimate || '0'})</p>
+            <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
+            <p class="text-[#E6F1FF] mt-2 mb-2 italic border-l-2 border-[#FF6B35]/50 pl-2">"${job.description}"</p>
+            ${job.photo_urls && job.photo_urls.length > 0 ? `<div class="flex gap-2 mt-2 overflow-x-auto pb-2">${job.photo_urls.map(url => `<a href="${url}" target="_blank"><img src="${url}" class="h-16 w-16 object-cover rounded border border-[#233554] hover:border-[#FF6B35] transition cursor-pointer"></a>`).join('')}</div>` : ''}
+            <button onclick="openChat('${job.id}', '${job.title}', '${learnerMap[job.learner_id] || 'Learner'}')" class="mt-3 w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-1"></i> Message Learner</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function acceptJob(jobId) {
+      const btn = document.getElementById(`accept-btn-${jobId}`);
+      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
+      
+      const { error } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: currentProfile.id }).eq('id', jobId).eq('status', 'open');
+      if (error) {
+        showToast('Failed to accept job. Another tutor may have claimed it.', 'error');
+        if(btn) { btn.innerHTML = 'Accept Job'; btn.disabled = false; }
+      } else {
+        showToast('Job Accepted! Check your accepted projects list.', 'success');
+        loadTutorJobs();
       }
     }
 
@@ -712,7 +775,12 @@
             <span class="font-bold text-white text-sm pr-2">${job.title}</span>
             <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status || 'open'}</span>
           </div>
-          <p class="text-[#8892B0]">${job.category} • ${job.preferred_time}</p>
+          
+          <div class="flex gap-4">
+            <p class="text-[#8892B0]">${job.category}</p>
+            <p class="text-[#8892B0]"><i class="fa-solid fa-pound-sign w-3"></i> Budget: £${job.budget_estimate || '0'}</p>
+          </div>
+          <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
           
           ${job.status === 'accepted' ? `
             <hr class="border-[#233554] my-2">
@@ -733,6 +801,11 @@
       const category = document.getElementById('job-category').value;
       const time = document.getElementById('job-time').value;
       const desc = document.getElementById('job-desc').value;
+      
+      // SPRINT 7 ADDITIONS
+      const preferredTier = document.getElementById('job-preferred-tier').value;
+      const budget = document.getElementById('job-budget').value;
+      
       const waiver = document.getElementById('job-waiver').checked;
       const photoInput = document.getElementById('job-photos');
 
@@ -750,7 +823,15 @@
       }
 
       const { error: insertErr } = await supabaseClient.from('job_requests').insert([{
-        learner_id: currentProfile.id, title, category, preferred_time: time, description: desc, photo_urls: uploadedUrls, waiver_signed: waiver
+        learner_id: currentProfile.id, 
+        title, 
+        category, 
+        preferred_time: time, 
+        description: desc, 
+        photo_urls: uploadedUrls, 
+        waiver_signed: waiver,
+        preferred_tier: preferredTier,
+        budget_estimate: budget
       }]);
 
       if (insertErr) showToast('Failed to submit request.', 'error');
