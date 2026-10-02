@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-[#0A192F]">
 <head>
@@ -250,38 +251,41 @@
           .eq('id', user.id)
           .maybeSingle();
 
-        // THE FIX: Deep merge database profile with Auth metadata. 
-        // If a field is missing in the database, we pull it from the user's sign-up metadata so nobody loses their details.
         const meta = user.user_metadata || {};
         
+        // Ensure legacy "homeowner" tags are correctly converted to "learner"
+        let rawRole = profile?.role || meta.role || 'learner';
+        let normalizedRole = rawRole.toLowerCase();
+        if (normalizedRole === 'homeowner') {
+          normalizedRole = 'learner';
+        }
+
         currentProfile = {
           id: user.id,
           email: user.email,
           full_name: profile?.full_name || meta.full_name || user.email.split('@')[0],
-          role: profile?.role || meta.role || 'learner',
+          role: normalizedRole,
           profile_picture_url: profile?.profile_picture_url || meta.profile_picture_url || null,
           address_line1: profile?.address_line1 || meta.address_line1 || '',
           city: profile?.city || meta.city || '',
           postcode: profile?.postcode || meta.postcode || '',
           tutor_tier: profile?.tutor_tier || meta.tutor_tier || 'self_taught',
-          validation_status: profile?.validation_status || meta.validation_status || 'pending',
+          validation_status: profile?.validation_status || 'pending',
           validation_notes: profile?.validation_notes || '',
           id_document_url: profile?.id_document_url || '',
           dbs_document_url: profile?.dbs_document_url || ''
         };
 
-        // Auto-heal the database behind the scenes if rows were missing
-        if (!profile || !profile.role || !profile.full_name) {
-          await supabaseClient.from('profiles').upsert({
-            id: currentProfile.id,
-            email: currentProfile.email,
+        // SAFELY Auto-heal: 
+        // Only insert if the row is entirely missing.
+        // If it exists but is missing text fields (like a legacy homeowner), update ONLY those fields so we don't erase doc statuses.
+        if (!profile) {
+          await supabaseClient.from('profiles').upsert(currentProfile);
+        } else if (!profile.full_name || profile.role?.toLowerCase() === 'homeowner') {
+          await supabaseClient.from('profiles').update({
             full_name: currentProfile.full_name,
-            role: currentProfile.role,
-            tutor_tier: currentProfile.tutor_tier,
-            address_line1: currentProfile.address_line1,
-            city: currentProfile.city,
-            postcode: currentProfile.postcode
-          });
+            role: currentProfile.role
+          }).eq('id', user.id);
         }
 
         // Hide loader
@@ -290,7 +294,7 @@
 
         // Populate Header Info Safely
         const fullName = currentProfile.full_name;
-        const userRole = currentProfile.role.toLowerCase();
+        const userRole = currentProfile.role;
         const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         
         document.getElementById('header-user-name').textContent = fullName;
