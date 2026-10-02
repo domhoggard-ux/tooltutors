@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Tutor Workspace</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A192F; }
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+            <span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="hidden sm:block text-right">
+          <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+          <div class="text-[10px] text-[#FF6B35] uppercase">Verified Tutor</div>
+        </div>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
+
+    <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-extrabold text-white">Tutor Dashboard</h1>
+        <p class="text-xs text-[#8892B0] mt-1">Browse open local requests matching your skills and submit blind offers.</p>
+      </div>
+      <button onclick="loadTutorWorkspace()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
+        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
+      </button>
+    </div>
+
+    <!-- ONBOARDING SECTION -->
+    <section id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden space-y-6">
+      <div id="tutor-rejected-note" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
+      <div>
+        <h2 class="text-lg font-bold text-white mb-1">Complete Profile & Compliance Verification</h2>
+        <p class="text-xs text-[#8892B0]">Upload your credentials and select the DIY categories you are qualified to mentor in.</p>
+      </div>
+      <form id="tutor-docs-form" onsubmit="submitTutorDocuments(event)" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Profile Picture</label><input type="file" id="tutor-profile-pic" accept="image/*" required class="text-xs text-white"></div>
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Photo ID</label><input type="file" id="tutor-id-doc" accept="image/*,.pdf" required class="text-xs text-white"></div>
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-white"></div>
+          
+          <div class="md:col-span-3 p-4 bg-[#0A192F] border border-[#233554] rounded-xl">
+            <label class="block text-xs font-semibold text-white mb-2">My Mentorship Skills</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="tutor-skills-container">
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Plumbing" class="rounded text-[#FF6B35]"><span>Plumbing</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Tiling" class="rounded text-[#FF6B35]"><span>Tiling</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Carpentry & Joinery" class="rounded text-[#FF6B35]"><span>Carpentry & Joinery</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Electrical Basics" class="rounded text-[#FF6B35]"><span>Electrical Basics</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Decorating & Painting" class="rounded text-[#FF6B35]"><span>Decorating & Painting</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF]"><input type="checkbox" value="Garden & Landscaping" class="rounded text-[#FF6B35]"><span>Garden & Landscaping</span></label>
+            </div>
+          </div>
+        </div>
+        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition">Submit For Verification</button>
+      </form>
+    </section>
+
+    <!-- PENDING REVIEW -->
+    <section id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-12 text-center hidden space-y-4">
+      <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500"></i>
+      <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
+      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your credentials have been submitted. Once verified by an admin, your marketplace dashboard will unlock.</p>
+    </section>
+
+    <!-- ACTIVE DASHBOARD -->
+    <section id="tutor-active-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+      <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
+        <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+      </div>
+      <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects & Bids Won</h3>
+        <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- OFFER MODAL -->
+    <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35]"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-lg font-bold text-white mb-1">Make an Offer</h3>
+        <p id="offer-job-title" class="text-xs text-[#8892B0] mb-6"></p>
+        <form id="offer-form" onsubmit="submitOffer(event)" class="space-y-4">
+          <input type="hidden" id="offer-job-id">
+          <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Price (£)</label><input type="number" id="offer-price" required min="1" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white"></div>
+          <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Pitch</label><textarea id="offer-message" required rows="3" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white"></textarea></div>
+          <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] text-white font-bold text-sm rounded-xl transition mt-2">Submit Offer</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- CHAT MODAL -->
+    <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
+        <div class="flex justify-between items-center p-4 border-b border-[#233554]">
+          <div><h3 id="chat-job-title" class="text-white font-bold text-sm">Job</h3><p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting...</p></div>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] px-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
+        <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
+          <input type="text" id="chat-input" required autocomplete="off" class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+          <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[#FF6B35] text-white rounded-xl font-bold"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentProfile = null;
+    let currentChatJobId = null;
+    let chatPollInterval = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return window.location.href = 'login.html';
+
+        const user = session.user;
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+        
+        if (profile.role !== 'tutor') { window.location.href = 'login.html'; return; }
+
+        currentProfile = profile;
+        document.getElementById('header-user-name').textContent = profile.full_name || user.email;
+        document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
+
+        const status = profile.validation_status || 'pending';
+        if (status === 'approved') {
+          document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+          loadTutorWorkspace();
+        } else if (status === 'submitted') {
+          document.getElementById('tutor-pending-review').classList.remove('hidden');
+        } else {
+          document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+          if (status === 'rejected' && profile.validation_notes) {
+            const noteDiv = document.getElementById('tutor-rejected-note');
+            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${profile.validation_notes}`;
+            noteDiv.classList.remove('hidden');
+          }
+        }
+      } catch (err) { showToast('Init error', 'error'); }
+    });
+
+    async function submitTutorDocuments(e) {
+      e.preventDefault();
+      const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
+      if (!skills.length) return showToast('Select at least one skill', 'error');
+      
+      await supabaseClient.from('profiles').update({ validation_status: 'submitted', skills }).eq('id', currentProfile.id);
+      showToast('Submitted for review!', 'success');
+      setTimeout(() => window.location.reload(), 1500);
+    }
+
+    async function loadTutorWorkspace() {
+      const { data: rawJobs } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
+      const { data: acceptedJobs } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']);
+      const { data: myOffers } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
+
+      const openJobs = (rawJobs || []).filter(j => (j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier) && currentProfile.skills?.includes(j.category));
+      
+      const learnerIds = [...new Set([...openJobs, ...(acceptedJobs || [])].map(j => j.learner_id))];
+      const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', learnerIds);
+      const learnerMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
+
+      document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
+        const bid = (myOffers || []).find(o => o.job_id === j.id);
+        return `
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2">
+            <div class="flex justify-between"><span class="font-bold text-white text-sm">${j.title}</span><span class="text-[9px] uppercase text-emerald-400">Match</span></div>
+            <p class="text-[#8892B0]">Budget: £${j.budget_estimate} | Category: ${j.category}</p>
+            <p class="text-[#E6F1FF] italic">"${j.description}"</p>
+            ${bid ? `<button disabled class="w-full mt-2 py-1.5 bg-[#233554]/50 text-[#8892B0] font-bold rounded">Offer Pending: £${bid.offer_price}</button>` : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded">Make Offer</button>`}
+          </div>
+        `;
+      }).join('') : '<p class="text-xs text-[#8892B0] text-center">No matching open jobs.</p>';
+
+      document.getElementById('tutor-accepted-jobs-list').innerHTML = acceptedJobs?.length ? acceptedJobs.map(j => {
+        const lName = learnerMap[j.learner_id] || 'Learner';
+        return `
+          <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
+            <div class="flex justify-between"><span class="font-bold text-white text-sm">${j.title}</span><span class="text-[9px] uppercase text-[#FF6B35]">Won</span></div>
+            ${j.appointment_time ? `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-calendar-check"></i> Scheduled: ${new Date(j.appointment_time).toLocaleString()}</p>` : `<p class="text-amber-500 font-bold">Awaiting schedule confirmation</p>`}
+            <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded"><i class="fa-solid fa-comments"></i> Chat with ${lName}</button>
+          </div>
+        `;
+      }).join('') : '<p class="text-xs text-[#8892B0] text-center">No active projects yet.</p>';
+    }
+
+    function showOfferModal(jobId, jobTitle) {
+      document.getElementById('offer-job-id').value = jobId;
+      document.getElementById('offer-job-title').textContent = jobTitle;
+      document.getElementById('offer-modal').classList.remove('hidden');
+    }
+
+    async function submitOffer(e) {
+      e.preventDefault();
+      await supabaseClient.from('job_offers').insert([{
+        job_id: document.getElementById('offer-job-id').value,
+        tutor_id: currentProfile.id,
+        offer_price: document.getElementById('offer-price').value,
+        message: document.getElementById('offer-message').value
+      }]);
+      document.getElementById('offer-modal').classList.add('hidden');
+      showToast('Offer submitted!', 'success');
+      loadTutorWorkspace();
+    }
+
+    function openChat(jobId, jobTitle, participantName) {
+      currentChatJobId = jobId;
+      document.getElementById('chat-job-title').textContent = jobTitle;
+      document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
+      document.getElementById('chat-modal').classList.remove('hidden');
+      loadMessages();
+      chatPollInterval = setInterval(loadMessages, 3000);
+    }
+    function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); currentChatJobId = null; clearInterval(chatPollInterval); }
+    async function loadMessages() {
+      if (!currentChatJobId) return;
+      const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
+      const c = document.getElementById('chat-messages');
+      if (!data || data.length === 0) return c.innerHTML = '<p class="text-xs text-[#8892B0] text-center">No messages yet.</p>';
+      c.innerHTML = data.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-sm' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tl-sm'} max-w-[85%] text-xs p-3 rounded-2xl shadow-md">${m.content}</div>`).join('');
+    }
+    async function sendMessage(e) {
+      e.preventDefault();
+      const text = document.getElementById('chat-input').value.trim();
+      if (!text || !currentChatJobId) return;
+      document.getElementById('chat-input').value = '';
+      await supabaseClient.from('messages').insert([{ job_id: currentChatJobId, sender_id: currentProfile.id, content: text }]);
+      loadMessages();
+    }
+
+    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      c.innerHTML += `<div class="p-4 rounded-xl bg-[#112240] border ${type==='error'?'border-rose-500/30 text-rose-400':'border-emerald-500/30 text-emerald-400'} text-xs shadow-2xl">${msg}</div>`;
+      setTimeout(() => c.lastChild.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
