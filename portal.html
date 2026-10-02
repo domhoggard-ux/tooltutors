@@ -158,7 +158,7 @@
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl flex justify-between items-center">
           <div>
             <h2 class="text-lg font-bold text-emerald-400 mb-1"><i class="fa-solid fa-circle-check mr-2"></i>Account Verified</h2>
-            <p class="text-sm text-[#8892B0]">You are approved to browse and accept local learner requests matching your skills.</p>
+            <p class="text-sm text-[#8892B0]">You are approved to browse and submit offers for local requests.</p>
           </div>
           <button onclick="loadTutorJobs()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition">
             <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Board
@@ -180,7 +180,7 @@
 
           <!-- Accepted Jobs -->
           <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
-            <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Accepted Projects</h3>
+            <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects</h3>
             <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
               <p class="text-xs text-[#8892B0] text-center">Loading your projects...</p>
             </div>
@@ -207,7 +207,7 @@
         <div class="lg:col-span-2 space-y-6">
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
             <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
-            <p class="text-xs text-[#8892B0] mb-6">Provide details, budget, and upload photos of your project space so matching tutors can assess the job.</p>
+            <p class="text-xs text-[#8892B0] mb-6">Provide details, budget, and upload photos of your project space so matching tutors can offer their help.</p>
             
             <form id="job-request-form" onsubmit="submitJobRequest(event)" class="space-y-4">
               <div>
@@ -233,7 +233,6 @@
                 </div>
               </div>
 
-              <!-- NEW SPRINT 7: TIER AND BUDGET -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Tutor Level</label>
@@ -278,7 +277,7 @@
         <div class="space-y-6">
           <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
             <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Requests</h3>
-            <div id="learner-requests-list" class="space-y-3">
+            <div id="learner-requests-list" class="space-y-4">
               <p class="text-xs text-[#8892B0] text-center">Loading requests...</p>
             </div>
           </div>
@@ -287,10 +286,37 @@
       </div>
     </section>
 
+    <!-- SPRINT 8: OFFER MODAL (TUTOR) -->
+    <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="closeOfferModal()" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        
+        <h3 class="text-lg font-bold text-white mb-1">Make an Offer</h3>
+        <p id="offer-job-title" class="text-xs text-[#8892B0] mb-6">Job Title Here</p>
+
+        <form id="offer-form" onsubmit="submitOffer(event)" class="space-y-4">
+          <input type="hidden" id="offer-job-id">
+          
+          <div>
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Your Price (£)</label>
+            <input type="number" id="offer-price" required min="1" step="1" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+          </div>
+          
+          <div>
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Pitch / Note for Learner</label>
+            <textarea id="offer-message" required rows="3" placeholder="Hi! I have 5 years of experience in this and can bring the tools..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
+          </div>
+
+          <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition mt-2">
+            Submit Offer
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- CHAT MODAL -->
     <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
-        
         <div class="flex justify-between items-center p-4 border-b border-[#233554]">
           <div>
             <h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3>
@@ -298,11 +324,7 @@
           </div>
           <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] transition text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth">
-          <!-- Messages inject here -->
-        </div>
-
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
         <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
           <input type="text" id="chat-input" required autocomplete="off" placeholder="Type a message..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
           <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded-xl transition text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
@@ -325,16 +347,12 @@
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
-        
-        if (sessionErr || !session) {
-          window.location.href = 'login.html';
-          return;
-        }
+        if (sessionErr || !session) { window.location.href = 'login.html'; return; }
 
         const user = session.user;
         let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
-
         const meta = user.user_metadata || {};
+        
         let rawRole = profile?.role || meta.role || 'learner';
         let normalizedRole = rawRole.toLowerCase() === 'homeowner' ? 'learner' : rawRole.toLowerCase();
 
@@ -352,17 +370,10 @@
           validation_notes: profile?.validation_notes || '',
           id_document_url: profile?.id_document_url || '',
           dbs_document_url: profile?.dbs_document_url || '',
-          skills: profile?.skills || [] // Sprint 7 Add
+          skills: profile?.skills || []
         };
 
-        if (!profile) {
-          await supabaseClient.from('profiles').upsert(currentProfile);
-        } else if (!profile.full_name || profile.role?.toLowerCase() === 'homeowner') {
-          await supabaseClient.from('profiles').update({
-            full_name: currentProfile.full_name,
-            role: currentProfile.role
-          }).eq('id', user.id);
-        }
+        if (!profile) await supabaseClient.from('profiles').upsert(currentProfile);
 
         const loader = document.getElementById('portal-loader');
         if (loader) loader.classList.add('hidden');
@@ -426,7 +437,6 @@
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = participantName ? `Chatting with ${participantName}` : 'Project Chat';
       document.getElementById('chat-modal').classList.remove('hidden');
-      
       loadMessages();
       chatPollInterval = setInterval(loadMessages, 3000);
     }
@@ -439,23 +449,16 @@
 
     async function loadMessages() {
       if (!currentChatJobId) return;
-      const { data, error } = await supabaseClient
-        .from('messages')
-        .select('*')
-        .eq('job_id', currentChatJobId)
-        .order('created_at', { ascending: true });
-
+      const { data, error } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       if (error) return;
 
       const container = document.getElementById('chat-messages');
-      
       if (data.length === 0) {
         container.innerHTML = '<div class="flex-1 flex items-center justify-center"><p class="text-xs text-[#8892B0] text-center px-6">No messages yet. Use this chat to align on tools, timings, and expectations.</p></div>';
         return;
       }
 
       const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
-
       container.innerHTML = data.map(msg => {
         const isMe = msg.sender_id === currentProfile.id;
         if (isMe) {
@@ -478,31 +481,20 @@
       const btn = document.getElementById('chat-send-btn');
       btn.disabled = true;
 
-      await supabaseClient.from('messages').insert([{
-        job_id: currentChatJobId,
-        sender_id: currentProfile.id,
-        content: text
-      }]);
-
+      await supabaseClient.from('messages').insert([{ job_id: currentChatJobId, sender_id: currentProfile.id, content: text }]);
       btn.disabled = false;
       await loadMessages();
-      
-      const container = document.getElementById('chat-messages');
-      container.scrollTop = container.scrollHeight;
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
     }
 
     // --- ADMIN LOGIC ---
-    function mountAdminView() { 
-      document.getElementById('admin-view').classList.remove('hidden'); 
-      loadPendingTutors();
-    }
+    function mountAdminView() { document.getElementById('admin-view').classList.remove('hidden'); loadPendingTutors(); }
 
     async function loadPendingTutors() {
       const container = document.getElementById('admin-review-list');
       container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading...</p>';
 
       const { data: tutors, error } = await supabaseClient.from('profiles').select('*').eq('role', 'tutor').eq('validation_status', 'submitted');
-
       if (error) { container.innerHTML = `<p class="text-xs text-rose-400">Error: ${error.message}</p>`; return; }
       if (!tutors || tutors.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-6 italic">No pending verifications at this time.</p>'; return; }
 
@@ -588,14 +580,10 @@
     async function submitTutorDocuments(e) {
       e.preventDefault();
       
-      // SPRINT 7: Gather checked skills
       const skillCheckboxes = document.querySelectorAll('#tutor-skills-container input[type="checkbox"]:checked');
       const selectedSkills = Array.from(skillCheckboxes).map(cb => cb.value);
       
-      if (selectedSkills.length === 0) {
-        showToast('Please select at least one skill.', 'error');
-        return;
-      }
+      if (selectedSkills.length === 0) { showToast('Please select at least one skill.', 'error'); return; }
 
       const btn = document.getElementById('submit-docs-btn');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading...';
@@ -630,27 +618,17 @@
           await supabaseClient.storage.from('tutor_documents').upload(dbsDocPath, dbsDoc);
         }
 
-        const updates = { 
-          validation_status: 'submitted', 
-          profile_picture_url: profilePicUrl, 
-          id_document_url: idDocPath, 
-          dbs_document_url: dbsDocPath,
-          skills: selectedSkills // Saving the skills to the database
-        };
-
+        const updates = { validation_status: 'submitted', profile_picture_url: profilePicUrl, id_document_url: idDocPath, dbs_document_url: dbsDocPath, skills: selectedSkills };
         const { error } = await supabaseClient.from('profiles').update(updates).eq('id', currentProfile.id);
         if (error) throw error;
 
         showToast('Documents and skills submitted for review!', 'success');
         currentProfile = { ...currentProfile, ...updates };
 
-        if (profilePicUrl) {
-          await supabaseClient.auth.updateUser({ data: { profile_picture_url: profilePicUrl } });
-        }
+        if (profilePicUrl) await supabaseClient.auth.updateUser({ data: { profile_picture_url: profilePicUrl } });
 
         updateHeaderUI();
         mountTutorView();
-
       } catch (err) {
         showToast('Upload failed. Try again.', 'error');
         console.error(err);
@@ -669,10 +647,10 @@
 
       const { data: rawOpenJobs, error: openErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
       const { data: acceptedJobs, error: accErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']).order('created_at', { ascending: false });
+      
+      // SPRINT 8: Fetch Tutor's current offers so we know what they've already bid on
+      const { data: myOffers } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
 
-      // SPRINT 7: STRICT FILTERING LOGIC
-      // 1. Must match Tutor Tier (or Learner selected 'any')
-      // 2. Must match Tutor Skills array
       const openJobs = (rawOpenJobs || []).filter(job => {
         const matchesTier = job.preferred_tier === 'any' || job.preferred_tier === currentProfile.tutor_tier;
         const matchesSkill = currentProfile.skills && currentProfile.skills.includes(job.category);
@@ -688,7 +666,18 @@
       } else if (!openJobs || openJobs.length === 0) {
         openContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">No local jobs match your selected skills and tier right now.</p>';
       } else {
-        openContainer.innerHTML = openJobs.map(job => `
+        openContainer.innerHTML = openJobs.map(job => {
+          // SPRINT 8: Check if Tutor has a pending offer
+          const existingBid = myOffers?.find(o => o.job_id === job.id);
+          
+          let buttonHtml = '';
+          if (existingBid) {
+            buttonHtml = `<button disabled class="w-full mt-3 py-2 bg-[#233554]/50 border border-[#233554] text-[#8892B0] font-bold rounded-lg text-xs cursor-not-allowed">Offer Pending: £${existingBid.offer_price}</button>`;
+          } else {
+            buttonHtml = `<button onclick="showOfferModal('${job.id}', '${job.title.replace(/'/g, "\\'")}')" class="w-full mt-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs">Make Offer</button>`;
+          }
+
+          return `
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2 relative">
             <div class="flex justify-between items-start">
               <span class="font-bold text-white text-sm pr-2">${job.title}</span>
@@ -696,25 +685,23 @@
             </div>
             <p class="text-[10px] text-[#8892B0] uppercase tracking-wide font-bold"><i class="fa-solid fa-user mr-1 text-[#FF6B35]"></i> Posted by: <span class="text-white">${learnerMap[job.learner_id] || 'Learner'}</span></p>
             <hr class="border-[#233554] my-2">
-            
             <div class="flex gap-4">
                 <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category}</p>
                 <p class="text-[#8892B0]"><i class="fa-solid fa-pound-sign w-3"></i> Budget: £${job.budget_estimate || '0'}</p>
             </div>
             <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
-            
             <p class="text-[#E6F1FF] mt-2 italic border-l-2 border-[#233554] pl-2">"${job.description}"</p>
             ${job.photo_urls && job.photo_urls.length > 0 ? `<p class="text-[#FF6B35] text-[10px] mt-2"><i class="fa-solid fa-image"></i> ${job.photo_urls.length} Photos Provided (visible upon acceptance)</p>` : ''}
             
-            <button id="accept-btn-${job.id}" onclick="acceptJob('${job.id}')" class="w-full mt-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition">Accept Job</button>
+            ${buttonHtml}
           </div>
-        `).join('');
+        `}).join('');
       }
 
       if (accErr) {
         acceptedContainer.innerHTML = `<p class="text-xs text-rose-400">Error: ${accErr.message}</p>`;
       } else if (!acceptedJobs || acceptedJobs.length === 0) {
-        acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You haven\'t accepted any jobs yet.</p>';
+        acceptedContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You haven\'t won any bids yet.</p>';
       } else {
         acceptedContainer.innerHTML = acceptedJobs.map(job => `
           <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
@@ -728,25 +715,55 @@
             <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
             <p class="text-[#E6F1FF] mt-2 mb-2 italic border-l-2 border-[#FF6B35]/50 pl-2">"${job.description}"</p>
             ${job.photo_urls && job.photo_urls.length > 0 ? `<div class="flex gap-2 mt-2 overflow-x-auto pb-2">${job.photo_urls.map(url => `<a href="${url}" target="_blank"><img src="${url}" class="h-16 w-16 object-cover rounded border border-[#233554] hover:border-[#FF6B35] transition cursor-pointer"></a>`).join('')}</div>` : ''}
-            <button onclick="openChat('${job.id}', '${job.title}', '${learnerMap[job.learner_id] || 'Learner'}')" class="mt-3 w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-1"></i> Message Learner</button>
+            <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${learnerMap[job.learner_id] || 'Learner'}')" class="mt-3 w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-1"></i> Message Learner</button>
           </div>
         `).join('');
       }
     }
 
-    async function acceptJob(jobId) {
-      const btn = document.getElementById(`accept-btn-${jobId}`);
-      if (btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true; }
-      
-      const { error } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: currentProfile.id }).eq('id', jobId).eq('status', 'open');
+    // --- SPRINT 8: OFFER SUBMISSION LOGIC ---
+    function showOfferModal(jobId, jobTitle) {
+      document.getElementById('offer-job-id').value = jobId;
+      document.getElementById('offer-job-title').textContent = jobTitle;
+      document.getElementById('offer-price').value = '';
+      document.getElementById('offer-message').value = '';
+      document.getElementById('offer-modal').classList.remove('hidden');
+    }
+
+    function closeOfferModal() {
+      document.getElementById('offer-modal').classList.add('hidden');
+    }
+
+    async function submitOffer(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-offer-btn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+      btn.disabled = true;
+
+      const jobId = document.getElementById('offer-job-id').value;
+      const price = document.getElementById('offer-price').value;
+      const msg = document.getElementById('offer-message').value;
+
+      const { error } = await supabaseClient.from('job_offers').insert([{
+        job_id: jobId,
+        tutor_id: currentProfile.id,
+        offer_price: price,
+        message: msg
+      }]);
+
       if (error) {
-        showToast('Failed to accept job. Another tutor may have claimed it.', 'error');
-        if(btn) { btn.innerHTML = 'Accept Job'; btn.disabled = false; }
+        showToast('Failed to submit offer.', 'error');
+        console.error(error);
       } else {
-        showToast('Job Accepted! Check your accepted projects list.', 'success');
+        showToast('Offer submitted successfully!', 'success');
+        closeOfferModal();
         loadTutorJobs();
       }
+
+      btn.innerHTML = 'Submit Offer';
+      btn.disabled = false;
     }
+
 
     // --- LEARNER LOGIC ---
     function mountLearnerView() {
@@ -765,30 +782,95 @@
       if (error) { listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading requests.</p>'; return; }
       if (!requests || requests.length === 0) { listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active requests.</p>'; return; }
 
-      const tutorIds = [...new Set(requests.map(r => r.tutor_id).filter(Boolean))];
-      const { data: tutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', tutorIds);
-      const tutorMap = (tutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
+      // SPRINT 8: Fetch Offers for the Learner's Jobs
+      const jobIds = requests.map(r => r.id);
+      const { data: jobOffers } = await supabaseClient.from('job_offers').select('*').in('job_id', jobIds).eq('status', 'pending');
+      
+      // Map all Tutor IDs from offers AND accepted jobs
+      const tutorIds = [...new Set([
+        ...requests.map(r => r.tutor_id).filter(Boolean),
+        ...(jobOffers || []).map(o => o.tutor_id)
+      ])];
+      
+      const { data: tutors } = await supabaseClient.from('profiles').select('id, full_name, tutor_tier').in('id', tutorIds);
+      const tutorMap = (tutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t }), {});
 
-      listContainer.innerHTML = requests.map(job => `
-        <div class="p-4 bg-[#0A192F] border ${job.status === 'accepted' ? 'border-[#FF6B35]/30' : 'border-[#233554]'} rounded-xl text-xs space-y-2">
-          <div class="flex justify-between items-start">
-            <span class="font-bold text-white text-sm pr-2">${job.title}</span>
-            <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status || 'open'}</span>
+      listContainer.innerHTML = requests.map(job => {
+        // Find offers for this specific job
+        const offersForJob = (jobOffers || []).filter(o => o.job_id === job.id);
+        
+        let offersHtml = '';
+        if (job.status === 'open' && offersForJob.length > 0) {
+          offersHtml = `
+            <div class="mt-4 space-y-2 border-t border-[#233554] pt-3">
+              <h4 class="text-[10px] text-white font-bold uppercase mb-2"><i class="fa-solid fa-hand-holding-dollar text-[#FF6B35] mr-1"></i> Bids Received (${offersForJob.length})</h4>
+              ${offersForJob.map(o => {
+                const tProfile = tutorMap[o.tutor_id];
+                const tName = tProfile?.full_name || 'Tutor';
+                const tTier = tProfile?.tutor_tier.replace('_', ' ') || 'unknown tier';
+                const tierColor = tProfile?.tutor_tier === 'professional' ? 'text-purple-400' : 'text-blue-400';
+                
+                return `
+                  <div class="bg-[#112240] p-3 rounded-lg border border-[#233554] flex flex-col space-y-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs font-bold text-white">${tName}</span>
+                      <span class="text-emerald-400 font-extrabold text-sm border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 rounded">£${o.offer_price}</span>
+                    </div>
+                    <span class="text-[9px] uppercase font-bold ${tierColor}">${tTier}</span>
+                    <p class="text-[10px] text-[#E6F1FF] italic border-l border-[#233554] pl-2">"${o.message}"</p>
+                    <button onclick="acceptTutorOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full mt-1 py-1.5 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded text-[10px] transition">Accept Offer</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (job.status === 'open') {
+          offersHtml = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for tutors to bid...</p></div>`;
+        }
+
+        return `
+          <div class="p-4 bg-[#0A192F] border ${job.status === 'accepted' ? 'border-[#FF6B35]/30' : 'border-[#233554]'} rounded-xl text-xs space-y-2">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+              <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status || 'open'}</span>
+            </div>
+            
+            <div class="flex gap-4">
+              <p class="text-[#8892B0]">${job.category}</p>
+              <p class="text-[#8892B0]"><i class="fa-solid fa-pound-sign w-3"></i> Budget: £${job.budget_estimate || '0'}</p>
+            </div>
+            <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
+            
+            ${job.status === 'accepted' ? `
+              <hr class="border-[#233554] my-2">
+              <p class="text-emerald-400 text-[10px] font-bold mb-2 uppercase tracking-wide"><i class="fa-solid fa-user-check mr-1"></i> Accepted by: <span class="text-white">${tutorMap[job.tutor_id]?.full_name || 'Tutor'}</span></p>
+              <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tutorMap[job.tutor_id]?.full_name || 'Tutor'}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded flex items-center justify-center transition"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+            ` : offersHtml}
           </div>
-          
-          <div class="flex gap-4">
-            <p class="text-[#8892B0]">${job.category}</p>
-            <p class="text-[#8892B0]"><i class="fa-solid fa-pound-sign w-3"></i> Budget: £${job.budget_estimate || '0'}</p>
-          </div>
-          <p class="text-[#8892B0]"><i class="fa-solid fa-clock w-4"></i> ${job.preferred_time}</p>
-          
-          ${job.status === 'accepted' ? `
-            <hr class="border-[#233554] my-2">
-            <p class="text-emerald-400 text-[10px] font-bold mb-2 uppercase tracking-wide"><i class="fa-solid fa-user-check mr-1"></i> Accepted by: <span class="text-white">${tutorMap[job.tutor_id] || 'Tutor'}</span></p>
-            <button onclick="openChat('${job.id}', '${job.title}', '${tutorMap[job.tutor_id] || 'Tutor'}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded flex items-center justify-center transition"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
-          ` : ''}
-        </div>
-      `).join('');
+        `;
+      }).join('');
+    }
+
+    // SPRINT 8: ACCEPTING AN OFFER
+    async function acceptTutorOffer(offerId, jobId, tutorId) {
+      if(!confirm("Are you sure you want to accept this offer?")) return;
+
+      // 1. Update the main job request status and assign the tutor
+      const { error: reqErr } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: tutorId }).eq('id', jobId);
+      
+      // 2. Mark this specific offer as accepted
+      const { error: offErr } = await supabaseClient.from('job_offers').update({ status: 'accepted' }).eq('id', offerId);
+      
+      // 3. Mark all other competing offers for this job as rejected
+      await supabaseClient.from('job_offers').update({ status: 'rejected' }).eq('job_id', jobId).neq('id', offerId);
+
+      if (reqErr || offErr) {
+        showToast('Error accepting offer.', 'error');
+        console.error(reqErr, offErr);
+      } else {
+        showToast('Offer accepted! Chat is now unlocked.', 'success');
+        loadLearnerRequests();
+      }
     }
 
     async function submitJobRequest(e) {
@@ -801,11 +883,8 @@
       const category = document.getElementById('job-category').value;
       const time = document.getElementById('job-time').value;
       const desc = document.getElementById('job-desc').value;
-      
-      // SPRINT 7 ADDITIONS
       const preferredTier = document.getElementById('job-preferred-tier').value;
       const budget = document.getElementById('job-budget').value;
-      
       const waiver = document.getElementById('job-waiver').checked;
       const photoInput = document.getElementById('job-photos');
 
