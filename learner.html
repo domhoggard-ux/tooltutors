@@ -25,7 +25,6 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
@@ -68,11 +67,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <!-- CREATE A JOB REQUEST -->
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
-          <p class="text-xs text-[#8892B0] mb-6">Describe your project space and budget so matching tutors can bid on your job.</p>
+          <p class="text-xs text-[#8892B0] mb-6">Describe your project space and budget. <strong>Note: Your browser will request location access to help local tutors find you.</strong></p>
           
           <form id="job-request-form" onsubmit="submitJobRequest(event)" class="space-y-4">
             <div>
@@ -128,13 +126,12 @@
             </div>
 
             <button type="submit" id="submit-job-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center">
-              Submit Job to Marketplace
+              <i class="fa-solid fa-location-dot mr-2"></i> Submit Job to Local Marketplace
             </button>
           </form>
         </div>
       </div>
 
-      <!-- MY ACTIVE REQUESTS & OFFERS -->
       <div class="space-y-6">
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
           <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Job Board</h3>
@@ -175,7 +172,6 @@
     let currentChatJobId = null;
     let chatPollInterval = null;
 
-    // --- INITIALIZATION ---
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const { data: { session }, error: sessionErr } = await supabaseClient.auth.getSession();
@@ -192,17 +188,32 @@
         loadLearnerRequests();
 
       } catch (err) {
-        console.error(err);
         showToast('Authentication error. Please log in again.', 'error');
       }
+    });
+
+    // --- GEOLOCATION HELPER ---
+    const getCoordinates = () => new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve({ lat: null, lng: null });
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => {
+          console.warn('Geolocation blocked or failed:', err);
+          resolve({ lat: null, lng: null });
+        },
+        { timeout: 10000, maximumAge: 60000 }
+      );
     });
 
     // --- JOB SUBMISSION ---
     async function submitJobRequest(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-job-btn');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing Location...';
       btn.disabled = true;
+
+      showToast('Fetching local coordinates...', 'info');
+      const coords = await getCoordinates();
 
       const title = document.getElementById('job-title').value;
       const category = document.getElementById('job-category').value;
@@ -212,6 +223,8 @@
       const budget = document.getElementById('job-budget').value;
       const waiver = document.getElementById('job-waiver').checked;
 
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
+
       const { error } = await supabaseClient.from('job_requests').insert([{
         learner_id: currentProfile.id, 
         title, 
@@ -220,45 +233,45 @@
         description: desc, 
         waiver_signed: waiver,
         preferred_tier: preferredTier,
-        budget_estimate: budget
+        budget_estimate: budget,
+        latitude: coords.lat,
+        longitude: coords.lng
       }]);
 
       if (error) {
         showToast('Failed to submit request.', 'error');
       } else {
-        showToast('Job added to marketplace!', 'success');
+        if (coords.lat) showToast('Job added with precise location!', 'success');
+        else showToast('Job added (Location not provided)', 'success');
+        
         document.getElementById('job-request-form').reset();
         loadLearnerRequests();
       }
       
-      btn.innerHTML = 'Submit Job to Marketplace';
+      btn.innerHTML = '<i class="fa-solid fa-location-dot mr-2"></i> Submit Job to Local Marketplace';
       btn.disabled = false;
     }
 
-    // --- LOAD LEARNER DASHBOARD (JOBS & OFFERS) ---
+    // --- LOAD DASHBOARD ---
     async function loadLearnerRequests() {
       const listContainer = document.getElementById('learner-requests-list');
       
-      // Fetch learner's jobs
       const { data: requests, error } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
       
       if (error) { listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading jobs.</p>'; return; }
       if (!requests || requests.length === 0) { listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active projects.</p>'; return; }
 
-      // Fetch pending offers for these jobs to review
       const jobIds = requests.map(r => r.id);
       const { data: offers } = await supabaseClient.from('job_offers').select('*, tutor:profiles!tutor_id(full_name, tutor_tier)').in('job_id', jobIds).eq('status', 'pending');
-
-      // Fetch tutor info for already accepted jobs
       const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', requests.map(r => r.tutor_id).filter(Boolean));
       const tutorMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
 
       listContainer.innerHTML = requests.map(job => {
         let contentHtml = '';
         const jobOffers = (offers || []).filter(o => o.job_id === job.id);
+        const geoIcon = job.latitude ? `<span class="text-emerald-400 ml-2" title="Location Tracked"><i class="fa-solid fa-location-dot"></i></span>` : '';
 
         if (job.status === 'open') {
-          // Display Bids/Offers
           if (jobOffers.length > 0) {
             contentHtml = `
               <div class="mt-4 border-t border-[#233554] pt-3 space-y-3">
@@ -285,30 +298,22 @@
               </div>
             `;
           } else {
-            contentHtml = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for tutors to bid on this job...</p></div>`;
+            contentHtml = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
           }
         } else if (job.status === 'accepted') {
-          // SPRINT 8.6: SCHEDULING AND CANCELLATION LOGIC
-          
           let scheduleHtml = '';
           let cancelBtn = '';
           const tName = tutorMap[job.tutor_id] || 'Tutor';
 
           if (job.appointment_time) {
-            // Already Scheduled
             scheduleHtml = `<p class="text-sm text-emerald-400 font-bold mb-3"><i class="fa-solid fa-calendar-check mr-2"></i> Locked: ${new Date(job.appointment_time).toLocaleString()}</p>`;
-            
-            // 48 Hour Rule Check
             const msUntil = new Date(job.appointment_time).getTime() - new Date().getTime();
-            const hoursUntil = msUntil / (1000 * 60 * 60);
-
-            if (msUntil > 0 && hoursUntil < 48) {
+            if (msUntil > 0 && (msUntil / (1000 * 60 * 60)) < 48) {
               cancelBtn = `<button disabled class="px-4 py-2 bg-rose-500/10 text-rose-400/50 text-xs font-bold rounded-lg cursor-not-allowed border border-rose-500/10" title="Cannot cancel within 48 hours of appointment">Too Close (<48h)</button>`;
             } else {
               cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
             }
           } else {
-            // Needs Scheduling
             scheduleHtml = `
               <div class="mb-4 p-3 bg-[#0A192F] rounded-lg border border-[#233554]">
                 <label class="block text-[10px] text-[#8892B0] uppercase font-bold mb-2">Set Agreed Appointment Time</label>
@@ -318,7 +323,6 @@
                 </div>
               </div>
             `;
-            // Can always cancel if not scheduled yet
             cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
           }
 
@@ -341,7 +345,7 @@
           <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-2">
-                <span class="font-bold text-white text-sm pr-2">${job.title}</span>
+                <span class="font-bold text-white text-sm pr-2">${job.title} ${geoIcon}</span>
                 <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status}</span>
               </div>
               <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
