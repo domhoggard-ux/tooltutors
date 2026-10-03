@@ -24,7 +24,6 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
@@ -102,6 +101,19 @@
 
     <!-- ACTIVE DASHBOARD -->
     <section id="tutor-active-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+      
+      <!-- LOCATION SETTER BAR -->
+      <div class="lg:col-span-2 p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+        <div>
+          <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-location-crosshairs text-[#FF6B35] mr-2"></i>My Service Location</h3>
+          <p class="text-[10px] text-[#8892B0]">Set your base postcode to calculate how far away open jobs are.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <input type="text" id="tutor-location-input" placeholder="e.g. SW1A 1AA" class="flex-1 sm:w-32 px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs uppercase focus:outline-none focus:border-[#FF6B35]">
+          <button onclick="saveTutorLocation()" id="save-location-btn" class="px-4 py-1.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded text-xs font-bold transition">Update</button>
+        </div>
+      </div>
+
       <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
         <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
@@ -184,6 +196,49 @@
       } catch (err) { showToast('Init error', 'error'); }
     });
 
+    // --- HAVERSINE DISTANCE CALCULATOR ---
+    function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      const R = 3958.8; // Earth radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return parseFloat((R * c).toFixed(1));
+    }
+
+    // --- SAVE LOCATION ---
+    async function saveTutorLocation() {
+      const postcode = document.getElementById('tutor-location-input').value.trim();
+      if (!postcode) return showToast('Please enter a postcode.', 'error');
+      
+      const btn = document.getElementById('save-location-btn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      
+      try {
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await res.json();
+        
+        if (data.status === 200 && data.result) {
+          const { latitude, longitude } = data.result;
+          await supabaseClient.from('profiles').update({ latitude, longitude }).eq('id', currentProfile.id);
+          
+          currentProfile.latitude = latitude;
+          currentProfile.longitude = longitude;
+          
+          showToast('Location saved! Distances updated.', 'success');
+          loadTutorWorkspace();
+        } else {
+          showToast('Invalid postcode.', 'error');
+        }
+      } catch (error) {
+        showToast('Error verifying postcode.', 'error');
+      }
+      btn.innerHTML = 'Update';
+    }
+
     async function submitTutorDocuments(e) {
       e.preventDefault();
       const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
@@ -195,11 +250,25 @@
     }
 
     async function loadTutorWorkspace() {
-      const { data: rawJobs } = await supabaseClient.from('job_requests').select('*').eq('status', 'open').order('created_at', { ascending: false });
+      const { data: rawJobs } = await supabaseClient.from('job_requests').select('*').eq('status', 'open');
       const { data: acceptedJobs } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']);
       const { data: myOffers } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
 
-      const openJobs = (rawJobs || []).filter(j => (j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier) && currentProfile.skills?.includes(j.category));
+      // Filter and Calculate Distances
+      let openJobs = (rawJobs || []).filter(j => (j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier) && currentProfile.skills?.includes(j.category));
+      
+      openJobs = openJobs.map(job => {
+        job.distance = calculateDistanceMiles(currentProfile.latitude, currentProfile.longitude, job.latitude, job.longitude);
+        return job;
+      });
+
+      // Sort by distance (closest first), fallback to creation date if distance is null
+      openJobs.sort((a, b) => {
+        if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+        if (a.distance !== null) return -1;
+        if (b.distance !== null) return 1;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
       
       const learnerIds = [...new Set([...openJobs, ...(acceptedJobs || [])].map(j => j.learner_id))];
       const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', learnerIds);
@@ -207,23 +276,36 @@
 
       document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
         const bid = (myOffers || []).find(o => o.job_id === j.id);
+        const distanceHtml = j.distance !== null 
+          ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow"></i> ${j.distance} miles away</span>` 
+          : `<span class="text-[#8892B0]"><i class="fa-solid fa-location-dot"></i> Distance unknown</span>`;
+
         return `
-          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2">
-            <div class="flex justify-between"><span class="font-bold text-white text-sm">${j.title}</span><span class="text-[9px] uppercase text-emerald-400">Match</span></div>
-            <p class="text-[#8892B0]">Budget: £${j.budget_estimate} | Category: ${j.category}</p>
-            <p class="text-[#E6F1FF] italic">"${j.description}"</p>
-            ${bid ? `<button disabled class="w-full mt-2 py-1.5 bg-[#233554]/50 text-[#8892B0] font-bold rounded">Offer Pending: £${bid.offer_price}</button>` : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded">Make Offer</button>`}
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2 relative overflow-hidden">
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-white text-sm pr-2">${j.title}</span>
+              <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Match</span>
+            </div>
+            <div class="flex justify-between items-center bg-[#112240] p-2 rounded text-[10px]">
+              ${distanceHtml}
+              <span class="text-[#8892B0]">Budget: £${j.budget_estimate}</span>
+            </div>
+            <p class="text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2">"${j.description}"</p>
+            ${bid ? `<button disabled class="w-full mt-2 py-1.5 bg-[#233554]/50 text-[#8892B0] font-bold rounded">Offer Pending: £${bid.offer_price}</button>` : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded transition">Make Offer</button>`}
           </div>
         `;
-      }).join('') : '<p class="text-xs text-[#8892B0] text-center">No matching open jobs.</p>';
+      }).join('') : '<p class="text-xs text-[#8892B0] text-center">No matching open jobs right now.</p>';
 
       document.getElementById('tutor-accepted-jobs-list').innerHTML = acceptedJobs?.length ? acceptedJobs.map(j => {
         const lName = learnerMap[j.learner_id] || 'Learner';
         return `
           <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
-            <div class="flex justify-between"><span class="font-bold text-white text-sm">${j.title}</span><span class="text-[9px] uppercase text-[#FF6B35]">Won</span></div>
-            ${j.appointment_time ? `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-calendar-check"></i> Scheduled: ${new Date(j.appointment_time).toLocaleString()}</p>` : `<p class="text-amber-500 font-bold">Awaiting schedule confirmation</p>`}
-            <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded"><i class="fa-solid fa-comments"></i> Chat with ${lName}</button>
+            <div class="flex justify-between items-start">
+              <span class="font-bold text-white text-sm">${j.title}</span>
+              <span class="text-[9px] uppercase text-[#FF6B35]">Won</span>
+            </div>
+            ${j.appointment_time ? `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-calendar-check mr-1"></i> Scheduled: ${new Date(j.appointment_time).toLocaleString()}</p>` : `<p class="text-amber-500 font-bold"><i class="fa-solid fa-clock mr-1"></i> Awaiting schedule confirmation</p>`}
+            <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded transition"><i class="fa-solid fa-comments mr-2"></i> Chat with ${lName}</button>
           </div>
         `;
       }).join('') : '<p class="text-xs text-[#8892B0] text-center">No active projects yet.</p>';
@@ -261,7 +343,7 @@
       if (!currentChatJobId) return;
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const c = document.getElementById('chat-messages');
-      if (!data || data.length === 0) return c.innerHTML = '<p class="text-xs text-[#8892B0] text-center">No messages yet.</p>';
+      if (!data || data.length === 0) return c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet.</p>';
       c.innerHTML = data.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-sm' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tl-sm'} max-w-[85%] text-xs p-3 rounded-2xl shadow-md">${m.content}</div>`).join('');
     }
     async function sendMessage(e) {
