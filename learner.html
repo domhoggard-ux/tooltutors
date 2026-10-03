@@ -26,7 +26,6 @@
     </div>
   </header>
 
-  <!-- High z-index to prevent hidden errors -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
@@ -63,6 +62,12 @@
 
           <div><label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Detailed Description</label><textarea id="job-desc" required rows="3" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white"></textarea></div>
 
+          <!-- NEW: Photo Upload -->
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Upload Photo (Optional)</label>
+            <input type="file" id="job-photo" accept="image/*" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#233554] file:text-[#FF6B35] hover:file:bg-[#FF6B35] hover:file:text-white file:cursor-pointer transition">
+          </div>
+
           <button type="submit" id="submit-job-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition">Submit Job Request</button>
         </form>
       </div>
@@ -70,7 +75,7 @@
       <!-- MY JOB BOARD -->
       <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Job Board</h3>
-        <div id="learner-requests-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+        <div id="learner-requests-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
     </div>
 
@@ -112,6 +117,12 @@
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
           <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
         </div>
+        
+        <!-- NEW: Render Photo in Job Card if exists -->
+        <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F]">
+            <img id="card-photo" src="" class="w-full h-full object-cover">
+        </div>
+
         <div class="space-y-4">
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
           <div class="grid grid-cols-2 gap-4">
@@ -169,7 +180,8 @@
     async function submitJobRequest(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-job-btn');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verifying Postcode...'; btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; 
+      btn.disabled = true;
 
       const postcode = document.getElementById('job-postcode').value.trim();
       const address = document.getElementById('job-address').value.trim();
@@ -179,8 +191,31 @@
         const data = await res.json();
         
         if (data.status !== 200 || !data.result) {
-          showToast('Invalid Postcode.', 'error'); btn.innerHTML = 'Submit Job Request'; btn.disabled = false; return;
+          showToast('Invalid Postcode.', 'error'); 
+          btn.innerHTML = 'Submit Job Request'; btn.disabled = false; return;
         }
+
+        // NEW: Handle Photo Upload
+        let uploadedPhotoUrl = null;
+        const photoFile = document.getElementById('job-photo').files[0];
+        
+        if (photoFile) {
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading Image...';
+          const fileExt = photoFile.name.split('.').pop();
+          const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabaseClient.storage.from('job_photos').upload(fileName, photoFile);
+          
+          if (uploadError) {
+            showToast(`Failed to upload photo: ${uploadError.message}`, 'error');
+            btn.innerHTML = 'Submit Job Request'; btn.disabled = false; return;
+          }
+          
+          const { data: publicUrlData } = supabaseClient.storage.from('job_photos').getPublicUrl(fileName);
+          uploadedPhotoUrl = publicUrlData.publicUrl;
+        }
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving Job...';
 
         const { error } = await supabaseClient.from('job_requests').insert([{
           learner_id: currentProfile.id, 
@@ -192,15 +227,28 @@
           full_address: address, 
           latitude: data.result.latitude, 
           longitude: data.result.longitude,
-          status: 'open'
+          status: 'open',
+          photo_url: uploadedPhotoUrl // NEW
         }]);
 
         if (error) showToast(`Database Error: ${error.message}`, 'error');
-        else { showToast('Job posted to marketplace!', 'success'); document.getElementById('job-request-form').reset(); loadLearnerRequests(); }
+        else { 
+          showToast('Job posted to marketplace!', 'success'); 
+          document.getElementById('job-request-form').reset(); 
+          loadLearnerRequests(); 
+        }
       } catch (err) {
-        showToast('Network error while verifying postcode.', 'error');
+        showToast('Network error while processing request.', 'error');
       }
-      btn.innerHTML = 'Submit Job Request'; btn.disabled = false;
+      btn.innerHTML = 'Submit Job Request'; 
+      btn.disabled = false;
+    }
+
+    async function deleteJob(jobId) {
+      if(!confirm('Are you sure you want to permanently delete this job? This action cannot be undone.')) return;
+      const { error } = await supabaseClient.from('job_requests').delete().eq('id', jobId);
+      if (error) showToast(`Failed to delete: ${error.message}`, 'error');
+      else { showToast('Job permanently deleted.', 'success'); loadLearnerRequests(); }
     }
 
     async function loadLearnerRequests() {
@@ -213,7 +261,14 @@
       const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', loadedJobsData.map(r => r.tutor_id).filter(Boolean));
       loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
 
-      document.getElementById('learner-requests-list').innerHTML = loadedJobsData.map(job => {
+      const listContainer = document.getElementById('learner-requests-list');
+      
+      if (loadedJobsData.length === 0) {
+        listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic py-6">You have no active projects.</p>';
+        return;
+      }
+
+      listContainer.innerHTML = loadedJobsData.map(job => {
         let action = '';
         const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
         
@@ -238,27 +293,43 @@
           if (job.status === 'accepted') {
             action = `<div class="mt-3 pt-3 border-t border-[#233554] flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor to propose time & tools.</p></div>`;
           } else if (job.status === 'pending_payment') {
-            action = `<div class="mt-4 pt-4 border-t border-[#233554]"><p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p><div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3"><p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p><p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p></div><button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button></div>`;
+            action = `<div class="mt-4 pt-4 border-t border-[#233554]">
+                        <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
+                        <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
+                          <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
+                          <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
+                        </div>
+                        <button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button>
+                      </div>`;
           } else if (job.status === 'scheduled') {
-            action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2"><button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button><button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button></div>`;
+            action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                        <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                        <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
+                      </div>`;
           }
         }
 
-        let outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
+        const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
+        const deleteBtn = job.status !== 'scheduled' ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
+        const photoThumbnail = job.photo_url ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${job.photo_url}" class="w-full h-full object-cover"></div>` : '';
 
         return `
-          <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between">
-            <div>
-              <div class="flex justify-between items-start mb-2">
-                <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
-                <span class="px-2 py-0.5 rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+          <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between relative">
+            ${deleteBtn}
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <div class="flex justify-between items-start mb-2 pr-6">
+                  <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
+                </div>
+                <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+                <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
               </div>
-              <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
+              ${photoThumbnail}
             </div>
             ${action}
           </div>
         `;
-      }).join('') || '<p class="text-xs text-[#8892B0] text-center italic py-6">You have no active projects.</p>';
+      }).join('');
     }
 
     async function acceptOffer(offerId, jobId, tutorId) {
@@ -284,28 +355,50 @@
 
     async function processPayment(e) {
       e.preventDefault();
-      const btn = document.getElementById('pay-btn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; btn.disabled = true;
+      const btn = document.getElementById('pay-btn'); 
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; 
+      btn.disabled = true;
+      
       setTimeout(async () => {
         const { error } = await supabaseClient.from('job_requests').update({ status: 'scheduled', payment_status: 'paid' }).eq('id', document.getElementById('pay-job-id').value);
-        if (error) showToast(`Database Error: ${error.message}`, 'error');
-        else { document.getElementById('payment-modal').classList.add('hidden'); showToast('Payment successful! Job scheduled.', 'success'); loadLearnerRequests(); }
-        btn.innerHTML = 'Pay & Confirm Appointment'; btn.disabled = false;
+        if (error) {
+          showToast(`Database Error: ${error.message}`, 'error');
+        } else { 
+          document.getElementById('payment-modal').classList.add('hidden'); 
+          showToast('Payment successful! Job scheduled.', 'success'); 
+          loadLearnerRequests(); 
+        }
+        btn.innerHTML = 'Pay & Confirm Appointment'; 
+        btn.disabled = false;
       }, 1500);
     }
 
     function openJobCard(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
+      
+      // NEW: Show photo in Job Card if exists
+      const photoContainer = document.getElementById('card-photo-container');
+      if (job.photo_url) {
+        document.getElementById('card-photo').src = job.photo_url;
+        photoContainer.classList.remove('hidden');
+      } else {
+        photoContainer.classList.add('hidden');
+        document.getElementById('card-photo').src = '';
+      }
+
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-tutor').textContent = loadedTutorsMap[job.tutor_id] || 'Unknown';
       document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
       document.getElementById('card-desc').textContent = job.description;
+      
       document.getElementById('card-chat-btn').onclick = () => {
         document.getElementById('job-card-modal').classList.add('hidden');
         openChat(job.id, job.title, loadedTutorsMap[job.tutor_id]);
       };
+      
       document.getElementById('job-card-modal').classList.remove('hidden');
     }
 
@@ -324,7 +417,10 @@
       if (!currentChatJobId) return;
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const c = document.getElementById('chat-messages');
-      if (!data || data.length === 0) return c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet.</p>';
+      if (!data || data.length === 0) {
+        c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet.</p>';
+        return;
+      }
       
       const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 50;
       c.innerHTML = data.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg'} max-w-[85%] text-xs p-3 shadow-md">${m.content}</div>`).join('');
