@@ -118,13 +118,14 @@
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
         <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
+      
       <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
-        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects & Bids Won</h3>
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects</h3>
         <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
     </section>
 
-    <!-- OFFER MODAL -->
+    <!-- OFFER MODAL (BIDDING) -->
     <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
         <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35]"><i class="fa-solid fa-xmark"></i></button>
@@ -136,6 +137,45 @@
           <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Pitch</label><textarea id="offer-message" required rows="3" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white"></textarea></div>
           <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] text-white font-bold text-sm rounded-xl transition mt-2">Submit Offer</button>
         </form>
+      </div>
+    </div>
+
+    <!-- PROPOSE TIME & TOOLS MODAL -->
+    <div id="propose-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35]"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-lg font-bold text-white mb-1">Finalize Proposal</h3>
+        <p class="text-xs text-[#8892B0] mb-6">Propose the appointment time and list the tools the Learner needs to prepare.</p>
+        <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-4">
+          <input type="hidden" id="propose-job-id">
+          <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Proposed Appointment Time</label><input type="datetime-local" id="propose-time" required class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm"></div>
+          <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label><textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm"></textarea></div>
+          <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2">Send Proposal to Learner</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- JOB CARD MODAL -->
+    <div id="job-card-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
+          <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
+          <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
+        </div>
+        <div class="space-y-4">
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Learner</p><p id="card-learner" class="text-sm text-white"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
+          </div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-2 rounded border border-[#233554]"></p></div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-2 rounded border border-[#FF6B35]/20 italic"></p></div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF]"></p></div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+           <button id="card-chat-btn" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+        </div>
       </div>
     </div>
 
@@ -164,6 +204,8 @@
     let currentProfile = null;
     let currentChatJobId = null;
     let chatPollInterval = null;
+    let loadedJobsData = [];
+    let loadedLearnersMap = {};
 
     window.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -172,8 +214,7 @@
 
         const user = session.user;
         const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        
-        if (profile.role !== 'tutor') { window.location.href = 'login.html'; return; }
+        if (profile.role !== 'tutor') return window.location.href = 'login.html';
 
         currentProfile = profile;
         document.getElementById('header-user-name').textContent = profile.full_name || user.email;
@@ -187,82 +228,47 @@
           document.getElementById('tutor-pending-review').classList.remove('hidden');
         } else {
           document.getElementById('tutor-onboarding-section').classList.remove('hidden');
-          if (status === 'rejected' && profile.validation_notes) {
-            const noteDiv = document.getElementById('tutor-rejected-note');
-            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${profile.validation_notes}`;
-            noteDiv.classList.remove('hidden');
-          }
         }
       } catch (err) { showToast('Init error', 'error'); }
     });
 
-    // --- HAVERSINE DISTANCE CALCULATOR ---
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-      const R = 3958.8; // Earth radius in miles
+      const R = 3958.8; 
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
       return parseFloat((R * c).toFixed(1));
     }
 
-    // --- SAVE LOCATION ---
     async function saveTutorLocation() {
       const postcode = document.getElementById('tutor-location-input').value.trim();
       if (!postcode) return showToast('Please enter a postcode.', 'error');
-      
       const btn = document.getElementById('save-location-btn');
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      
       try {
         const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
         const data = await res.json();
-        
         if (data.status === 200 && data.result) {
           const { latitude, longitude } = data.result;
           await supabaseClient.from('profiles').update({ latitude, longitude }).eq('id', currentProfile.id);
-          
-          currentProfile.latitude = latitude;
-          currentProfile.longitude = longitude;
-          
+          currentProfile.latitude = latitude; currentProfile.longitude = longitude;
           showToast('Location saved! Distances updated.', 'success');
           loadTutorWorkspace();
-        } else {
-          showToast('Invalid postcode.', 'error');
-        }
-      } catch (error) {
-        showToast('Error verifying postcode.', 'error');
-      }
+        } else showToast('Invalid postcode.', 'error');
+      } catch (error) { showToast('Error verifying postcode.', 'error'); }
       btn.innerHTML = 'Update';
-    }
-
-    async function submitTutorDocuments(e) {
-      e.preventDefault();
-      const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
-      if (!skills.length) return showToast('Select at least one skill', 'error');
-      
-      await supabaseClient.from('profiles').update({ validation_status: 'submitted', skills }).eq('id', currentProfile.id);
-      showToast('Submitted for review!', 'success');
-      setTimeout(() => window.location.reload(), 1500);
     }
 
     async function loadTutorWorkspace() {
       const { data: rawJobs } = await supabaseClient.from('job_requests').select('*').eq('status', 'open');
-      const { data: acceptedJobs } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'completed']);
+      const { data: activeJobs } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'pending_payment', 'scheduled', 'completed']);
       const { data: myOffers } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
 
-      // Filter and Calculate Distances
       let openJobs = (rawJobs || []).filter(j => (j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier) && currentProfile.skills?.includes(j.category));
       
-      openJobs = openJobs.map(job => {
-        job.distance = calculateDistanceMiles(currentProfile.latitude, currentProfile.longitude, job.latitude, job.longitude);
-        return job;
-      });
-
-      // Sort by distance (closest first), fallback to creation date if distance is null
+      openJobs = openJobs.map(job => { job.distance = calculateDistanceMiles(currentProfile.latitude, currentProfile.longitude, job.latitude, job.longitude); return job; });
       openJobs.sort((a, b) => {
         if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
         if (a.distance !== null) return -1;
@@ -270,42 +276,45 @@
         return new Date(b.created_at) - new Date(a.created_at);
       });
       
-      const learnerIds = [...new Set([...openJobs, ...(acceptedJobs || [])].map(j => j.learner_id))];
+      const learnerIds = [...new Set([...openJobs, ...(activeJobs || [])].map(j => j.learner_id))];
       const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', learnerIds);
-      const learnerMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
+      loadedLearnersMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
+      loadedJobsData = activeJobs || [];
 
       document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
         const bid = (myOffers || []).find(o => o.job_id === j.id);
-        const distanceHtml = j.distance !== null 
-          ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow"></i> ${j.distance} miles away</span>` 
-          : `<span class="text-[#8892B0]"><i class="fa-solid fa-location-dot"></i> Distance unknown</span>`;
-
+        const distanceHtml = j.distance !== null ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow"></i> ${j.distance} miles away</span>` : `<span class="text-[#8892B0]"><i class="fa-solid fa-location-dot"></i> Distance unknown</span>`;
         return `
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-2 relative overflow-hidden">
-            <div class="flex justify-between items-start">
-              <span class="font-bold text-white text-sm pr-2">${j.title}</span>
-              <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Match</span>
-            </div>
-            <div class="flex justify-between items-center bg-[#112240] p-2 rounded text-[10px]">
-              ${distanceHtml}
-              <span class="text-[#8892B0]">Budget: £${j.budget_estimate}</span>
-            </div>
+            <div class="flex justify-between"><span class="font-bold text-white text-sm">${j.title}</span><span class="text-[9px] uppercase bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded">Match</span></div>
+            <div class="flex justify-between items-center bg-[#112240] p-2 rounded text-[10px]">${distanceHtml}<span class="text-[#8892B0]">Budget: £${j.budget_estimate}</span></div>
             <p class="text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2">"${j.description}"</p>
             ${bid ? `<button disabled class="w-full mt-2 py-1.5 bg-[#233554]/50 text-[#8892B0] font-bold rounded">Offer Pending: £${bid.offer_price}</button>` : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded transition">Make Offer</button>`}
           </div>
         `;
       }).join('') : '<p class="text-xs text-[#8892B0] text-center">No matching open jobs right now.</p>';
 
-      document.getElementById('tutor-accepted-jobs-list').innerHTML = acceptedJobs?.length ? acceptedJobs.map(j => {
-        const lName = learnerMap[j.learner_id] || 'Learner';
+      document.getElementById('tutor-accepted-jobs-list').innerHTML = activeJobs?.length ? activeJobs.map(j => {
+        const lName = loadedLearnersMap[j.learner_id] || 'Learner';
+        let actionHtml = '';
+        if (j.status === 'accepted') {
+          actionHtml = `<button onclick="openProposeModal('${j.id}')" class="w-full py-1.5 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 font-bold rounded transition text-xs"><i class="fa-solid fa-calendar-plus mr-1"></i> Propose Time & Tools</button>`;
+        } else if (j.status === 'pending_payment') {
+          actionHtml = `<p class="text-amber-500 text-xs font-bold text-center w-full py-1.5 border border-amber-500/30 rounded"><i class="fa-solid fa-hourglass-half mr-1"></i> Awaiting Learner Payment</p>`;
+        } else if (j.status === 'scheduled') {
+          actionHtml = `<button onclick="openJobCard('${j.id}')" class="w-full py-1.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Open Job Card</button>`;
+        }
+
         return `
-          <div class="p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl text-xs space-y-2">
+          <div class="p-4 bg-[#0A192F] border ${j.status==='scheduled'?'border-emerald-500/50':'border-[#FF6B35]/30'} rounded-xl text-xs space-y-3">
             <div class="flex justify-between items-start">
               <span class="font-bold text-white text-sm">${j.title}</span>
-              <span class="text-[9px] uppercase text-[#FF6B35]">Won</span>
+              <span class="text-[9px] uppercase font-bold ${j.status==='scheduled'?'text-emerald-400':'text-[#FF6B35]'}">${j.status.replace('_', ' ')}</span>
             </div>
-            ${j.appointment_time ? `<p class="text-emerald-400 font-bold"><i class="fa-solid fa-calendar-check mr-1"></i> Scheduled: ${new Date(j.appointment_time).toLocaleString()}</p>` : `<p class="text-amber-500 font-bold"><i class="fa-solid fa-clock mr-1"></i> Awaiting schedule confirmation</p>`}
-            <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="w-full mt-2 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded transition"><i class="fa-solid fa-comments mr-2"></i> Chat with ${lName}</button>
+            <div class="flex gap-2">
+              <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="flex-1 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded transition"><i class="fa-solid fa-comments"></i> Chat</button>
+              ${actionHtml ? `<div class="flex-1">${actionHtml}</div>` : ''}
+            </div>
           </div>
         `;
       }).join('') : '<p class="text-xs text-[#8892B0] text-center">No active projects yet.</p>';
@@ -319,15 +328,45 @@
 
     async function submitOffer(e) {
       e.preventDefault();
-      await supabaseClient.from('job_offers').insert([{
-        job_id: document.getElementById('offer-job-id').value,
-        tutor_id: currentProfile.id,
-        offer_price: document.getElementById('offer-price').value,
-        message: document.getElementById('offer-message').value
-      }]);
+      await supabaseClient.from('job_offers').insert([{ job_id: document.getElementById('offer-job-id').value, tutor_id: currentProfile.id, offer_price: document.getElementById('offer-price').value, message: document.getElementById('offer-message').value }]);
       document.getElementById('offer-modal').classList.add('hidden');
       showToast('Offer submitted!', 'success');
       loadTutorWorkspace();
+    }
+
+    function openProposeModal(jobId) {
+      document.getElementById('propose-job-id').value = jobId;
+      document.getElementById('propose-modal').classList.remove('hidden');
+    }
+
+    async function submitProposal(e) {
+      e.preventDefault();
+      const jobId = document.getElementById('propose-job-id').value;
+      const time = document.getElementById('propose-time').value;
+      const tools = document.getElementById('propose-tools').value;
+
+      const { error } = await supabaseClient.from('job_requests').update({ appointment_time: new Date(time).toISOString(), required_tools: tools, status: 'pending_payment' }).eq('id', jobId);
+      if (error) { showToast('Failed to send proposal', 'error'); return; }
+      
+      document.getElementById('propose-modal').classList.add('hidden');
+      showToast('Proposal sent to learner!', 'success');
+      loadTutorWorkspace();
+    }
+
+    function openJobCard(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      if(!job) return;
+      document.getElementById('card-title').textContent = job.title;
+      document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
+      document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
+      document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
+      document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
+      document.getElementById('card-desc').textContent = job.description;
+      document.getElementById('card-chat-btn').onclick = () => {
+        document.getElementById('job-card-modal').classList.add('hidden');
+        openChat(job.id, job.title, loadedLearnersMap[job.learner_id]);
+      };
+      document.getElementById('job-card-modal').classList.remove('hidden');
     }
 
     function openChat(jobId, jobTitle, participantName) {
@@ -338,6 +377,7 @@
       loadMessages();
       chatPollInterval = setInterval(loadMessages, 3000);
     }
+    
     function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); currentChatJobId = null; clearInterval(chatPollInterval); }
     async function loadMessages() {
       if (!currentChatJobId) return;
