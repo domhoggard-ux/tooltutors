@@ -67,10 +67,11 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
+      <!-- CREATE A JOB REQUEST -->
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-2">Request DIY Assistance</h2>
-          <p class="text-xs text-[#8892B0] mb-6">Describe your project space and budget. <strong>Note: Your browser will request location access to help local tutors find you.</strong></p>
+          <p class="text-xs text-[#8892B0] mb-6">Describe your project and provide the postcode so we can match you with local tutors.</p>
           
           <form id="job-request-form" onsubmit="submitJobRequest(event)" class="space-y-4">
             <div>
@@ -91,8 +92,8 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Timing</label>
-                <input type="text" id="job-time" required placeholder="e.g. This Saturday Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Project Postcode</label>
+                <input type="text" id="job-postcode" required placeholder="e.g. SW1A 1AA" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35] uppercase">
               </div>
             </div>
 
@@ -111,6 +112,13 @@
               </div>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
+               <div>
+                <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Preferred Timing</label>
+                <input type="text" id="job-time" required placeholder="e.g. This Saturday Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              </div>
+            </div>
+
             <div>
               <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Detailed Description</label>
               <textarea id="job-desc" required rows="3" placeholder="Describe the current state and what you want to achieve..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
@@ -126,12 +134,13 @@
             </div>
 
             <button type="submit" id="submit-job-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center">
-              <i class="fa-solid fa-location-dot mr-2"></i> Submit Job to Local Marketplace
+              Submit Job to Local Marketplace
             </button>
           </form>
         </div>
       </div>
 
+      <!-- MY ACTIVE REQUESTS & OFFERS -->
       <div class="space-y-6">
         <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
           <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Job Board</h3>
@@ -188,32 +197,46 @@
         loadLearnerRequests();
 
       } catch (err) {
+        console.error(err);
         showToast('Authentication error. Please log in again.', 'error');
       }
     });
 
-    // --- GEOLOCATION HELPER ---
-    const getCoordinates = () => new Promise((resolve) => {
-      if (!navigator.geolocation) return resolve({ lat: null, lng: null });
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => {
-          console.warn('Geolocation blocked or failed:', err);
-          resolve({ lat: null, lng: null });
-        },
-        { timeout: 10000, maximumAge: 60000 }
-      );
-    });
+    // --- UK POSTCODE API HELPER ---
+    async function getCoordinatesFromPostcode(postcode) {
+      try {
+        // Call the free UK postcodes.io API
+        const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await response.json();
+        
+        if (data.status === 200 && data.result) {
+          return { lat: data.result.latitude, lng: data.result.longitude };
+        }
+        return null;
+      } catch (error) {
+        console.error('Postcode API error:', error);
+        return null;
+      }
+    }
 
     // --- JOB SUBMISSION ---
     async function submitJobRequest(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-job-btn');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Capturing Location...';
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verifying Postcode...';
       btn.disabled = true;
 
-      showToast('Fetching local coordinates...', 'info');
-      const coords = await getCoordinates();
+      const postcode = document.getElementById('job-postcode').value.trim();
+      
+      // Look up coordinates
+      const coords = await getCoordinatesFromPostcode(postcode);
+      
+      if (!coords) {
+        showToast('Invalid UK Postcode. Please check it and try again.', 'error');
+        btn.innerHTML = 'Submit Job to Local Marketplace';
+        btn.disabled = false;
+        return;
+      }
 
       const title = document.getElementById('job-title').value;
       const category = document.getElementById('job-category').value;
@@ -234,6 +257,7 @@
         waiver_signed: waiver,
         preferred_tier: preferredTier,
         budget_estimate: budget,
+        postcode: postcode.toUpperCase(),
         latitude: coords.lat,
         longitude: coords.lng
       }]);
@@ -241,14 +265,12 @@
       if (error) {
         showToast('Failed to submit request.', 'error');
       } else {
-        if (coords.lat) showToast('Job added with precise location!', 'success');
-        else showToast('Job added (Location not provided)', 'success');
-        
+        showToast('Job added to marketplace!', 'success');
         document.getElementById('job-request-form').reset();
         loadLearnerRequests();
       }
       
-      btn.innerHTML = '<i class="fa-solid fa-location-dot mr-2"></i> Submit Job to Local Marketplace';
+      btn.innerHTML = 'Submit Job to Local Marketplace';
       btn.disabled = false;
     }
 
@@ -269,7 +291,7 @@
       listContainer.innerHTML = requests.map(job => {
         let contentHtml = '';
         const jobOffers = (offers || []).filter(o => o.job_id === job.id);
-        const geoIcon = job.latitude ? `<span class="text-emerald-400 ml-2" title="Location Tracked"><i class="fa-solid fa-location-dot"></i></span>` : '';
+        const geoIcon = job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]" title="Location Set"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : '';
 
         if (job.status === 'open') {
           if (jobOffers.length > 0) {
