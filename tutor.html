@@ -157,8 +157,7 @@
           <input type="hidden" id="propose-job-id">
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Proposed Appointment Time</label>
-            <input type="datetime-local" id="propose-time" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
-          </div>
+            <input type="datetime-local" id="propose-time" required onchange="this.blur()" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">          </div>
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
             <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
