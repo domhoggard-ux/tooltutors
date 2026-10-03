@@ -1,75 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-[#0A192F]">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About ToolTutors | Our Mission</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
 </head>
-<body>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <header class="site-header">
-    <div class="header-container">
-      <a href="index.html" class="brand-container">
-        <img src="logo.svg" alt="ToolTutors Logo" class="brand-logo">
-      </a>
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="nav-overlay" id="navOverlay"></div>
-      <nav class="nav-menu" id="navMenu">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="about.html" class="nav-link active">About</a>
-        <a href="waiver.html" class="nav-link">Safety & Waiver</a>
-        <a href="apply.html" class="nav-cta-btn">Join Platform</a>
+  <!-- HEADER NAVIGATION -->
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-4 sm:px-8">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+        <a href="index.html" class="text-[#8892B0] hover:text-white transition">Home</a>
+        <a href="about.html" class="text-[#FF6B35] transition">About</a>
+        <a href="join.html" class="text-[#8892B0] hover:text-white transition">Join as Tutor</a>
       </nav>
+
+      <div class="flex items-center space-x-3">
+        <a href="login.html" class="px-4 py-2 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35] transition flex items-center space-x-2">
+          <i class="fa-solid fa-user text-[#FF6B35]"></i>
+          <span>Sign In</span>
+        </a>
+        <a href="signup.html" class="hidden sm:inline-block px-4 py-2 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">
+          Get Started
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <div style="max-width: 800px; margin: 0 auto;">
-      <h1 class="section-title">Bridging the DIY Skill Gap</h1>
-      <p class="section-subtitle">ToolTutors connects homeowners with experienced mentors to make practical knowledge accessible to everyone.</p>
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-8 py-12 lg:py-16 space-y-12">
+    <div class="text-center space-y-4">
+      <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">
+        Our Mission
+      </span>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+        Bridging the DIY Skill Gap
+      </h1>
+      <p class="text-sm sm:text-base text-[#8892B0] max-w-2xl mx-auto leading-relaxed">
+        ToolTutors connects homeowners with experienced mentors to make practical knowledge accessible to everyone.
+      </p>
+    </div>
 
-      <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="color:#FF6B35; font-size:1.4rem; margin-bottom:1rem;">Our Vision</h3>
-        <p style="color:var(--text-light); margin-bottom:1rem;">
-          We believe everyone should feel empowered to build, repair, and improve their homes. While video tutorials are helpful, nothing replaces having an experienced mentor standing beside you, ensuring safety, demonstrating proper technique, and giving you confidence.
+    <div class="bg-[#112240] border border-[#233554] p-8 sm:p-10 rounded-3xl shadow-2xl space-y-6">
+      <h3 class="text-xl font-bold text-white flex items-center">
+        <i class="fa-solid fa-lightbulb text-[#FF6B35] mr-3"></i> Our Vision
+      </h3>
+      <p class="text-sm text-[#8892B0] leading-relaxed">
+        We believe everyone should feel empowered to build, repair, and improve their homes. While video tutorials are helpful, nothing replaces having an experienced mentor standing beside you, ensuring safety, demonstrating proper technique, and giving you confidence.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-[#112240] border border-[#233554] p-6 rounded-2xl shadow-xl space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35]">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h4 class="text-base font-bold text-white">Safety & Terms First</h4>
+        <p class="text-xs text-[#8892B0] leading-relaxed">
+          Safety protocols and liability agreements are integrated directly into every job booking process, ensuring complete clarity and peace of mind for both parties.
         </p>
       </div>
 
-      <div class="grid-cards">
-        <div class="card">
-          <h4 style="font-size:1.1rem; color:#FFFFFF; margin-bottom:0.5rem;">Safety First</h4>
-          <p style="color:var(--text-muted); font-size:0.9rem;">Every mentor and learner agrees to strict community guidelines and safety protocols before starting.</p>
+      <div class="bg-[#112240] border border-[#233554] p-6 rounded-2xl shadow-xl space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35]">
+          <i class="fa-solid fa-users"></i>
         </div>
-        <div class="card">
-          <h4 style="font-size:1.1rem; color:#FFFFFF; margin-bottom:0.5rem;">Community Driven</h4>
-          <p style="color:var(--text-muted); font-size:0.9rem;">Building stronger local neighborhoods through shared knowledge, practical work, and mutual trust.</p>
-        </div>
+        <h4 class="text-base font-bold text-white">Community Driven</h4>
+        <p class="text-xs text-[#8892B0] leading-relaxed">
+          Building stronger local neighborhoods through shared knowledge, practical collaboration, and mutual trust.
+        </p>
       </div>
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <img src="logo.svg" alt="ToolTutors" style="height:38px; width:auto;">
-        <p>Empowering local communities through peer-to-peer DIY skills.</p>
+  <!-- FOOTER -->
+  <footer class="bg-[#112240] border-t border-[#233554] py-8 px-4 sm:px-8 text-center text-xs text-[#8892B0]">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>&copy; <span id="currentYear"></span> ToolTutors. All rights reserved.</div>
+      <div class="flex space-x-6">
+        <a href="index.html" class="hover:text-white transition">Home</a>
+        <a href="about.html" class="hover:text-white transition">About Us</a>
+        <a href="join.html" class="hover:text-white transition">Join</a>
+        <a href="login.html" class="hover:text-white transition">Sign In</a>
       </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="apply.html">Apply / Register</a>
-        <a href="waiver.html">Safety & Liability Waiver</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
