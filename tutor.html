@@ -49,8 +49,13 @@
     </div>
   </header>
 
-  <!-- CRITICAL FIX: z-[9999] ensures toasts appear ABOVE all modals -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- FULL SCREEN IMAGE MODAL -->
+  <div id="image-modal" class="fixed inset-0 z-[10000] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
+    <button class="absolute top-6 right-6 text-[#8892B0] hover:text-white text-3xl transition"><i class="fa-solid fa-xmark"></i></button>
+    <img id="expanded-image" src="" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl border border-[#233554] object-contain">
+  </div>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
 
@@ -117,12 +122,12 @@
 
       <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
-        <div id="tutor-open-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+        <div id="tutor-open-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
       
       <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects</h3>
-        <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+        <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
     </section>
 
@@ -151,13 +156,15 @@
     <div id="propose-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
         <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
-        <h3 class="text-lg font-bold text-white mb-1">Finalize Proposal</h3>
+        <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
         <p class="text-xs text-[#8892B0] mb-6">Propose the appointment time and list the tools the Learner needs to prepare.</p>
         <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-4">
           <input type="hidden" id="propose-job-id">
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Proposed Appointment Time</label>
-            <input type="datetime-local" id="propose-time" required onchange="this.blur()" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">          </div>
+            <!-- FIX: onchange="this.blur()" forces the calendar picker to close immediately on selection -->
+            <input type="datetime-local" id="propose-time" required onchange="this.blur()" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+          </div>
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
             <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
@@ -175,6 +182,11 @@
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
           <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
         </div>
+        
+        <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F] cursor-pointer" onclick="openImageModal(document.getElementById('card-photo').src)">
+            <img id="card-photo" src="" class="w-full h-full object-cover hover:opacity-80 transition" title="Click to enlarge">
+        </div>
+
         <div class="space-y-4">
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
           <div class="grid grid-cols-2 gap-4">
@@ -248,6 +260,17 @@
         }
       } catch (err) { showToast('Init error', 'error'); }
     });
+
+    function openImageModal(url) {
+      if(!url) return;
+      document.getElementById('expanded-image').src = url;
+      document.getElementById('image-modal').classList.remove('hidden');
+    }
+    
+    function closeImageModal() {
+      document.getElementById('image-modal').classList.add('hidden');
+      document.getElementById('expanded-image').src = '';
+    }
 
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -326,17 +349,29 @@
           ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow mr-1"></i> ${j.distance} miles away</span>` 
           : `<span class="text-[#8892B0]"><i class="fa-solid fa-location-dot mr-1"></i> Distance unknown</span>`;
 
+        const photoThumbnail = j.photo_url 
+          ? `<div class="w-16 h-16 rounded overflow-hidden border border-[#233554] flex-shrink-0 cursor-pointer" onclick="openImageModal('${j.photo_url}')" title="Click to enlarge">
+               <img src="${j.photo_url}" class="w-full h-full object-cover hover:scale-110 transition duration-300">
+             </div>` 
+          : '';
+
         return `
           <div class="p-5 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-3 relative overflow-hidden">
             <div class="flex justify-between items-start">
               <span class="font-bold text-white text-sm pr-2">${j.title}</span>
               <span class="text-[9px] uppercase bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold">Match</span>
             </div>
+            
             <div class="flex justify-between items-center bg-[#112240] p-3 rounded-lg border border-[#233554]">
               ${distanceHtml}
               <span class="text-[#8892B0] font-bold">Budget: £${j.budget_estimate}</span>
             </div>
-            <p class="text-[#E6F1FF] italic border-l-2 border-[#233554] pl-3 leading-relaxed">"${j.description}"</p>
+            
+            <div class="flex gap-3">
+              <p class="text-[#E6F1FF] italic border-l-2 border-[#233554] pl-3 leading-relaxed flex-1">"${j.description}"</p>
+              ${photoThumbnail}
+            </div>
+
             ${bid ? `<button disabled class="w-full mt-2 py-2 bg-[#233554]/50 text-[#8892B0] font-bold rounded-lg">Offer Pending: £${bid.offer_price}</button>` : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition shadow">Make Offer</button>`}
           </div>
         `;
@@ -354,12 +389,24 @@
           actionHtml = `<button onclick="openJobCard('${j.id}')" class="w-full py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Open Job Card</button>`;
         }
 
+        const photoThumbnail = j.photo_url 
+          ? `<div class="w-16 h-16 rounded overflow-hidden border border-[#233554] flex-shrink-0 cursor-pointer" onclick="openImageModal('${j.photo_url}')" title="Click to enlarge">
+               <img src="${j.photo_url}" class="w-full h-full object-cover hover:scale-110 transition duration-300">
+             </div>` 
+          : '';
+
         return `
           <div class="p-5 bg-[#0A192F] border ${j.status==='scheduled'?'border-emerald-500/50':'border-[#FF6B35]/30'} rounded-xl text-xs space-y-3">
             <div class="flex justify-between items-start mb-2">
               <span class="font-bold text-white text-sm pr-2">${j.title}</span>
               <span class="text-[9px] uppercase font-bold ${j.status==='scheduled'?'text-emerald-400 bg-emerald-400/10':'text-[#FF6B35] bg-[#FF6B35]/10'} px-2 py-1 rounded">${j.status.replace('_', ' ')}</span>
             </div>
+            
+            <div class="flex gap-3 mb-3">
+               <div class="flex-1"></div> <!-- Spacer if needed -->
+               ${photoThumbnail}
+            </div>
+
             <div class="flex flex-col sm:flex-row gap-2">
               <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
               ${actionHtml ? `<div class="flex-[2]">${actionHtml}</div>` : ''}
@@ -430,7 +477,6 @@
         loadTutorWorkspace();
 
       } catch (error) {
-        // Outputting the EXACT error message to the high z-index toast
         showToast(`Database Error: ${error.message || error.details || 'Unknown error'}`, 'error');
       } finally {
         btn.disabled = false;
@@ -441,6 +487,16 @@
     function openJobCard(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
+
+      const photoContainer = document.getElementById('card-photo-container');
+      if (job.photo_url) {
+        document.getElementById('card-photo').src = job.photo_url;
+        photoContainer.classList.remove('hidden');
+      } else {
+        photoContainer.classList.add('hidden');
+        document.getElementById('card-photo').src = '';
+      }
+
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
       document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
@@ -492,7 +548,7 @@
       toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='error'?'border-rose-500/50 text-rose-400':'border-emerald-500/50 text-emerald-400'} text-sm font-bold shadow-2xl`;
       toast.innerHTML = `<div class="flex items-start"><i class="fa-solid ${type==='error'?'fa-circle-exclamation':'fa-circle-check'} mt-0.5 mr-2"></i><span>${msg}</span></div>`;
       c.appendChild(toast);
-      setTimeout(() => toast.remove(), 6000); // 6 seconds to ensure you can read the error
+      setTimeout(() => toast.remove(), 6000); 
     }
   </script>
 </body>
