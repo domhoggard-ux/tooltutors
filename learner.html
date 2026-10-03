@@ -156,6 +156,60 @@
 
     </div>
 
+    <!-- PAYMENT MODAL -->
+    <div id="payment-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('payment-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-credit-card text-emerald-400 mr-2"></i>Confirm Appointment</h3>
+        <p class="text-xs text-[#8892B0] mb-4">Review the Tutor's proposed time and tools, then complete payment to lock in your mentorship session.</p>
+        
+        <div class="bg-[#0A192F] p-4 rounded-xl border border-[#233554] space-y-3 mb-6 text-sm">
+          <div><span class="text-[10px] uppercase font-bold text-[#8892B0]">Proposed Time</span><p id="pay-time" class="text-emerald-400 font-bold"></p></div>
+          <div><span class="text-[10px] uppercase font-bold text-[#8892B0]">Required Tools</span><p id="pay-tools" class="text-white italic"></p></div>
+          <div class="pt-2 border-t border-[#233554]"><span class="text-[10px] uppercase font-bold text-[#8892B0]">Agreed Price</span><p id="pay-price" class="text-xl font-extrabold text-white"></p></div>
+        </div>
+
+        <form id="dummy-payment-form" onsubmit="processPayment(event)" class="space-y-4">
+          <input type="hidden" id="pay-job-id">
+          <div>
+            <label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">Card Number (Dummy)</label>
+            <input type="text" required placeholder="0000 0000 0000 0000" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">Expiry</label><input type="text" required placeholder="MM/YY" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500"></div>
+            <div><label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">CVC</label><input type="text" required placeholder="123" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500"></div>
+          </div>
+          <button type="submit" id="pay-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">
+            Pay & Confirm Appointment
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- JOB CARD MODAL -->
+    <div id="job-card-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
+          <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
+          <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
+        </div>
+        <div class="space-y-4">
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tutor</p><p id="card-tutor" class="text-sm text-white"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
+          </div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-2 rounded border border-[#233554]"></p></div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-2 rounded border border-[#FF6B35]/20 italic"></p></div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF]"></p></div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+           <button id="card-chat-btn" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+        </div>
+      </div>
+    </div>
+
     <!-- CHAT MODAL -->
     <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
@@ -184,6 +238,9 @@
     let currentProfile = null;
     let currentChatJobId = null;
     let chatPollInterval = null;
+    let loadedJobsData = [];
+    let loadedTutorsMap = {};
+    let loadedAcceptedOffers = {};
 
     window.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -201,28 +258,19 @@
         loadLearnerRequests();
 
       } catch (err) {
-        console.error(err);
         showToast('Authentication error. Please log in again.', 'error');
       }
     });
 
-    // --- UK POSTCODE API HELPER ---
     async function getCoordinatesFromPostcode(postcode) {
       try {
         const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
         const data = await response.json();
-        
-        if (data.status === 200 && data.result) {
-          return { lat: data.result.latitude, lng: data.result.longitude };
-        }
+        if (data.status === 200 && data.result) return { lat: data.result.latitude, lng: data.result.longitude };
         return null;
-      } catch (error) {
-        console.error('Postcode API error:', error);
-        return null;
-      }
+      } catch (error) { return null; }
     }
 
-    // --- JOB SUBMISSION ---
     async function submitJobRequest(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-job-btn');
@@ -233,7 +281,6 @@
       const address = document.getElementById('job-address').value.trim();
       
       const coords = await getCoordinatesFromPostcode(postcode);
-      
       if (!coords) {
         showToast('Invalid UK Postcode. Please check it and try again.', 'error');
         btn.innerHTML = 'Submit Job to Local Marketplace';
@@ -252,33 +299,21 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
 
       const { error } = await supabaseClient.from('job_requests').insert([{
-        learner_id: currentProfile.id, 
-        title, 
-        category, 
-        preferred_time: time, 
-        description: desc, 
-        waiver_signed: waiver,
-        preferred_tier: preferredTier,
-        budget_estimate: budget,
-        postcode: postcode.toUpperCase(),
-        full_address: address,
-        latitude: coords.lat,
-        longitude: coords.lng
+        learner_id: currentProfile.id, title, category, preferred_time: time, description: desc, 
+        waiver_signed: waiver, preferred_tier: preferredTier, budget_estimate: budget,
+        postcode: postcode.toUpperCase(), full_address: address, latitude: coords.lat, longitude: coords.lng
       }]);
 
-      if (error) {
-        showToast('Failed to submit request.', 'error');
-      } else {
+      if (error) { showToast('Failed to submit request.', 'error'); } 
+      else {
         showToast('Job added to marketplace!', 'success');
         document.getElementById('job-request-form').reset();
         loadLearnerRequests();
       }
-      
       btn.innerHTML = 'Submit Job to Local Marketplace';
       btn.disabled = false;
     }
 
-    // --- LOAD DASHBOARD ---
     async function loadLearnerRequests() {
       const listContainer = document.getElementById('learner-requests-list');
       
@@ -287,22 +322,28 @@
       if (error) { listContainer.innerHTML = '<p class="text-xs text-rose-400">Error loading jobs.</p>'; return; }
       if (!requests || requests.length === 0) { listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic">You have no active projects.</p>'; return; }
 
+      loadedJobsData = requests;
       const jobIds = requests.map(r => r.id);
-      const { data: offers } = await supabaseClient.from('job_offers').select('*, tutor:profiles!tutor_id(full_name, tutor_tier)').in('job_id', jobIds).eq('status', 'pending');
+      
+      const { data: offers } = await supabaseClient.from('job_offers').select('*, tutor:profiles!tutor_id(full_name, tutor_tier)').in('job_id', jobIds);
+      
+      // Store accepted offers to look up pricing later
+      offers.forEach(o => { if (o.status === 'accepted') loadedAcceptedOffers[o.job_id] = o; });
+
       const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', requests.map(r => r.tutor_id).filter(Boolean));
-      const tutorMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
+      loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
 
       listContainer.innerHTML = requests.map(job => {
         let contentHtml = '';
-        const jobOffers = (offers || []).filter(o => o.job_id === job.id);
+        const pendingOffers = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
         const geoIcon = job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]" title="Location Set"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : '';
 
         if (job.status === 'open') {
-          if (jobOffers.length > 0) {
+          if (pendingOffers.length > 0) {
             contentHtml = `
               <div class="mt-4 border-t border-[#233554] pt-3 space-y-3">
-                <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${jobOffers.length} Bids Received</h4>
-                ${jobOffers.map(o => {
+                <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingOffers.length} Bids Received</h4>
+                ${pendingOffers.map(o => {
                   const tName = o.tutor?.full_name || 'Tutor';
                   const tTier = (o.tutor?.tutor_tier || 'unknown').replace('_', ' ');
                   const tierColor = o.tutor?.tutor_tier === 'professional' ? 'text-purple-400' : 'text-blue-400';
@@ -315,9 +356,7 @@
                       </div>
                       <span class="text-[9px] uppercase font-bold tracking-wide ${tierColor}">${tTier}</span>
                       <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
-                      <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">
-                        Accept This Tutor
-                      </button>
+                      <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept This Tutor</button>
                     </div>
                   `;
                 }).join('')}
@@ -326,56 +365,45 @@
           } else {
             contentHtml = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
           }
-        } else if (job.status === 'accepted') {
-          let scheduleHtml = '';
-          let cancelBtn = '';
-          const tName = tutorMap[job.tutor_id] || 'Tutor';
+        } else {
+          // It's accepted, pending_payment, or scheduled
+          const tName = loadedTutorsMap[job.tutor_id] || 'Tutor';
+          let actionHtml = '';
 
-          if (job.appointment_time) {
-            scheduleHtml = `<p class="text-sm text-emerald-400 font-bold mb-3"><i class="fa-solid fa-calendar-check mr-2"></i> Locked: ${new Date(job.appointment_time).toLocaleString()}</p>`;
-            const msUntil = new Date(job.appointment_time).getTime() - new Date().getTime();
-            if (msUntil > 0 && (msUntil / (1000 * 60 * 60)) < 48) {
-              cancelBtn = `<button disabled class="px-4 py-2 bg-rose-500/10 text-rose-400/50 text-xs font-bold rounded-lg cursor-not-allowed border border-rose-500/10" title="Cannot cancel within 48 hours of appointment">Too Close (<48h)</button>`;
-            } else {
-              cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
-            }
-          } else {
-            scheduleHtml = `
-              <div class="mb-4 p-3 bg-[#0A192F] rounded-lg border border-[#233554]">
-                <label class="block text-[10px] text-[#8892B0] uppercase font-bold mb-2">Set Agreed Appointment Time</label>
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <input type="datetime-local" id="dt-${job.id}" class="flex-1 text-xs px-3 py-2 bg-[#112240] border border-[#233554] text-white rounded-lg focus:border-[#FF6B35] focus:outline-none">
-                  <button onclick="setAppointment('${job.id}')" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white text-xs font-bold rounded-lg transition">Lock Time</button>
+          if (job.status === 'accepted') {
+            actionHtml = `<div class="mt-3 pt-3 border-t border-[#233554] flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor to propose time & tools.</p></div>`;
+          } else if (job.status === 'pending_payment') {
+            actionHtml = `
+              <div class="mt-4 pt-4 border-t border-[#233554]">
+                <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
+                <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
+                   <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
+                   <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
                 </div>
+                <button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button>
               </div>
             `;
-            cancelBtn = `<button onclick="cancelJob('${job.id}')" class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold rounded-lg transition">Cancel Job</button>`;
-          }
-
-          contentHtml = `
-            <div class="mt-4 border-t border-[#233554] pt-4">
-              ${scheduleHtml}
-              <div class="flex gap-2">
-                <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition flex justify-center items-center">
-                  <i class="fa-solid fa-comments mr-2"></i> Chat with ${tName.split(' ')[0]}
-                </button>
-                ${cancelBtn}
+          } else if (job.status === 'scheduled') {
+             actionHtml = `
+              <div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
               </div>
-            </div>
-          `;
+             `;
+          }
+          contentHtml = actionHtml;
         }
 
-        let outerBorder = job.status === 'accepted' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]';
+        let outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
 
         return `
           <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-2">
                 <span class="font-bold text-white text-sm pr-2">${job.title} ${geoIcon}</span>
-                <span class="px-2 py-0.5 rounded ${job.status === 'accepted' ? 'bg-[#FF6B35]/10 text-[#FF6B35]' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status}</span>
+                <span class="px-2 py-0.5 rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
               </div>
               <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
-              <p class="text-[#8892B0] mt-1"><i class="fa-solid fa-clock w-4"></i> Prefers: ${job.preferred_time}</p>
             </div>
             ${contentHtml}
           </div>
@@ -383,36 +411,69 @@
       }).join('');
     }
 
-    // --- ACTIONS ---
     async function acceptOffer(offerId, jobId, tutorId) {
-      if(!confirm("Are you sure you want to accept this tutor's bid? This will lock the job and open the chat.")) return;
+      if(!confirm("Are you sure you want to select this tutor? They will review your job and propose a time.")) return;
 
       const { error: reqErr } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: tutorId }).eq('id', jobId);
       const { error: offErr } = await supabaseClient.from('job_offers').update({ status: 'accepted' }).eq('id', offerId);
       await supabaseClient.from('job_offers').update({ status: 'rejected' }).eq('job_id', jobId).neq('id', offerId);
 
       if (reqErr || offErr) showToast('Error accepting offer.', 'error');
-      else { showToast('Offer accepted! You can now chat and schedule.', 'success'); loadLearnerRequests(); }
+      else { showToast('Tutor selected! Waiting for their proposal.', 'success'); loadLearnerRequests(); }
     }
 
-    async function setAppointment(jobId) {
-      const val = document.getElementById(`dt-${jobId}`).value;
-      if(!val) return showToast('Please select a date and time.', 'error');
+    function openPaymentModal(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      const offer = loadedAcceptedOffers[jobId];
+      if(!job || !offer) return;
+
+      document.getElementById('pay-job-id').value = job.id;
+      document.getElementById('pay-time').textContent = new Date(job.appointment_time).toLocaleString();
+      document.getElementById('pay-tools').textContent = job.required_tools || 'None specified';
+      document.getElementById('pay-price').textContent = `£${offer.offer_price}`;
       
-      const { error } = await supabaseClient.from('job_requests').update({ appointment_time: new Date(val).toISOString() }).eq('id', jobId);
-      if (error) showToast('Failed to lock time.', 'error');
-      else { showToast('Appointment scheduled successfully!', 'success'); loadLearnerRequests(); }
+      document.getElementById('payment-modal').classList.remove('hidden');
     }
 
-    async function cancelJob(jobId) {
-      if(!confirm('Are you sure you want to cancel this job request?')) return;
+    async function processPayment(e) {
+      e.preventDefault();
+      const btn = document.getElementById('pay-btn');
+      const jobId = document.getElementById('pay-job-id').value;
       
-      const { error } = await supabaseClient.from('job_requests').update({ status: 'cancelled' }).eq('id', jobId);
-      if (error) showToast('Failed to cancel job.', 'error');
-      else { showToast('Job cancelled.', 'success'); loadLearnerRequests(); }
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing Payment...';
+      btn.disabled = true;
+
+      setTimeout(async () => {
+        const { error } = await supabaseClient.from('job_requests').update({ status: 'scheduled', payment_status: 'paid' }).eq('id', jobId);
+        
+        btn.innerHTML = 'Pay & Confirm Appointment';
+        btn.disabled = false;
+        document.getElementById('payment-modal').classList.add('hidden');
+
+        if (error) { showToast('Payment processing failed.', 'error'); }
+        else { showToast('Payment successful! Job is officially scheduled.', 'success'); loadLearnerRequests(); }
+      }, 1500);
     }
 
-    // --- CHAT LOGIC ---
+    function openJobCard(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      if(!job) return;
+
+      document.getElementById('card-title').textContent = job.title;
+      document.getElementById('card-tutor').textContent = loadedTutorsMap[job.tutor_id] || 'Unknown';
+      document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
+      document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
+      document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
+      document.getElementById('card-desc').textContent = job.description;
+      
+      document.getElementById('card-chat-btn').onclick = () => {
+        document.getElementById('job-card-modal').classList.add('hidden');
+        openChat(job.id, job.title, loadedTutorsMap[job.tutor_id]);
+      };
+      
+      document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
     function openChat(jobId, jobTitle, participantName) {
       currentChatJobId = jobId;
       document.getElementById('chat-job-title').textContent = jobTitle;
@@ -422,18 +483,13 @@
       chatPollInterval = setInterval(loadMessages, 3000);
     }
     
-    function closeChat() { 
-      document.getElementById('chat-modal').classList.add('hidden'); 
-      currentChatJobId = null; 
-      clearInterval(chatPollInterval); 
-    }
-    
+    function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); currentChatJobId = null; clearInterval(chatPollInterval); }
     async function loadMessages() {
       if (!currentChatJobId) return;
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const container = document.getElementById('chat-messages');
       
-      if (!data || data.length === 0) return container.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello and lock in your times!</p>';
+      if (!data || data.length === 0) return container.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet.</p>';
       
       const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
       container.innerHTML = data.map(m => `
@@ -454,9 +510,7 @@
       loadMessages();
     }
 
-    // --- UTILS ---
     async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
-    
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       if (!container) return;
