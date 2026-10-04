@@ -159,7 +159,7 @@
       else { showToast('Job permanently deleted.', 'success'); loadLearnerRequests(); }
     }
 
-    // Safely extract names/tiers from Supabase joins to prevent undefined text
+    // Safely extract names/tiers from Supabase joins
     const getSafeName = (obj) => {
       if (!obj) return 'Local Tutor';
       if (Array.isArray(obj)) return obj[0]?.full_name || 'Local Tutor';
@@ -172,6 +172,15 @@
       return (obj.tutor_tier || 'Tutor').replace('_', ' ');
     };
 
+    // Safely extract the first photo URL regardless of whether the database stores it as an array or a string
+    const getFirstPhoto = (job) => {
+      let photoData = job.photo_urls || job.photo_url;
+      if (!photoData) return null;
+      if (Array.isArray(photoData)) return photoData[0]; // If the DB returns an Array
+      if (typeof photoData === 'string') return photoData.split(',')[0]; // If the DB returns a comma-separated String
+      return null;
+    };
+
     async function loadLearnerRequests() {
       try {
         const listContainer = document.getElementById('learner-requests-list');
@@ -181,15 +190,12 @@
         
         loadedJobsData = requests || [];
         
-        // Stop here if there are no jobs (prevents Supabase throwing an empty array error)
         if (loadedJobsData.length === 0) {
           listContainer.innerHTML = '<div class="py-12 text-center border-2 border-dashed border-[#233554] rounded-xl"><p class="text-sm text-[#8892B0] font-bold">You have no active projects.</p><p class="text-xs text-[#8892B0] mt-1">Use the button on the left to create your first request!</p></div>';
           return;
         }
 
         const jobIds = loadedJobsData.map(r => r.id);
-        
-        // This is the line that was crashing - fixed the relationship to profiles()!
         const { data: offers, error: offersErr } = await supabaseClient.from('job_offers').select('*, profiles(full_name, tutor_tier)').in('job_id', jobIds);
         if (offersErr) console.error("Database note on offers:", offersErr);
 
@@ -245,7 +251,7 @@
           const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
           const deleteBtn = job.status !== 'scheduled' ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
           
-          const firstPhoto = job.photo_urls ? job.photo_urls.split(',')[0] : (job.photo_url ? job.photo_url.split(',')[0] : null);
+          const firstPhoto = getFirstPhoto(job);
           const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
 
           return `
@@ -317,7 +323,7 @@
       if(!job) return;
       
       const photoContainer = document.getElementById('card-photo-container');
-      const firstPhoto = job.photo_urls ? job.photo_urls.split(',')[0] : (job.photo_url ? job.photo_url.split(',')[0] : null);
+      const firstPhoto = getFirstPhoto(job);
       
       if (firstPhoto) {
         document.getElementById('card-photo').src = firstPhoto;
