@@ -403,7 +403,7 @@
           longitude: data.result.longitude,
           status: 'open',
           // Join array to string for the existing photo_url column format
-          photo_url: uploadedUrls.length > 0 ? uploadedUrls.join(',') : null 
+          photo_urls: uploadedUrls.length > 0 ? uploadedUrls.join(',') : null 
         }]);
 
         if (error) {
