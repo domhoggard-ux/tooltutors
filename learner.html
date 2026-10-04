@@ -121,7 +121,7 @@
         <div class="space-y-4">
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
           <div class="grid grid-cols-2 gap-4">
-            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tutor</p><p id="card-tutor" class="text-sm text-white"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tutor</p><div id="card-tutor"></div></div>
             <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
           </div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-3 rounded-lg border border-[#233554]"></p></div>
@@ -130,6 +130,32 @@
         </div>
         <div class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
            <button id="card-chat-btn" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TUTOR PROFILE MODAL -->
+    <div id="tutor-profile-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
+        <button onclick="document.getElementById('tutor-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+
+        <div class="flex items-center space-x-4 mb-6 pb-6 border-b border-[#233554]">
+          <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-[#FF6B35] shadow-lg flex-shrink-0" id="tutor-profile-avatar"></div>
+          <div>
+            <h3 id="tutor-profile-name" class="text-xl font-bold text-white leading-tight"></h3>
+            <span id="tutor-profile-tier" class="text-[10px] uppercase font-bold text-[#8892B0] tracking-wide inline-block mt-0.5 border border-[#233554] px-2 py-0.5 rounded-full"></span>
+            <div id="tutor-profile-rating" class="mt-1.5 flex items-center gap-2"></div>
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <p class="text-[10px] text-[#8892B0] uppercase font-bold mb-2">Verified Skills</p>
+          <div id="tutor-profile-skills" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+          <p class="text-[10px] text-[#8892B0] uppercase font-bold mb-3 border-b border-[#233554] pb-2">Learner Reviews</p>
+          <div id="tutor-profile-reviews" class="space-y-3"></div>
         </div>
       </div>
     </div>
@@ -172,6 +198,51 @@
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       loadLearnerRequests();
     });
+
+    async function openTutorProfile(tutorId) {
+      if (!tutorId || tutorId === 'null') return;
+      
+      const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', tutorId).single();
+      if (error || !profile) {
+        showToast('Could not load tutor profile.', 'error');
+        return;
+      }
+
+      document.getElementById('tutor-profile-name').textContent = profile.full_name || 'Tutor';
+      document.getElementById('tutor-profile-tier').textContent = (profile.tutor_tier || 'Self Taught').replace('_', ' ');
+      
+      const avatarHTML = profile.profile_picture_url 
+        ? `<img src="${profile.profile_picture_url}" class="w-full h-full object-cover">`
+        : `<div class="w-full h-full bg-[#233554] flex items-center justify-center text-white text-xl font-bold">${(profile.full_name||'T').charAt(0)}</div>`;
+      document.getElementById('tutor-profile-avatar').innerHTML = avatarHTML;
+
+      const skillsHTML = profile.skills && profile.skills.length 
+        ? profile.skills.map(s => `<span class="px-2 py-1 bg-[#233554] text-[#8892B0] rounded text-[10px] uppercase font-bold border border-[#FF6B35]/30">${s}</span>`).join('')
+        : '<span class="text-xs text-[#8892B0] italic">No skills listed yet</span>';
+      document.getElementById('tutor-profile-skills').innerHTML = skillsHTML;
+
+      // Dummy Reviews Check (Fires query to check if you add a table later, defaults to static UI if missing)
+      const { data: reviews } = await supabaseClient.from('reviews').select('*').eq('tutor_id', tutorId).limit(5);
+      
+      if (reviews && reviews.length > 0) {
+         const avg = reviews.reduce((a, b) => a + b.rating, 0) / reviews.length;
+         document.getElementById('tutor-profile-rating').innerHTML = `<span class="text-amber-400 font-bold text-lg"><i class="fa-solid fa-star"></i> ${avg.toFixed(1)}</span> <span class="text-xs text-[#8892B0]">(${reviews.length} reviews)</span>`;
+         document.getElementById('tutor-profile-reviews').innerHTML = reviews.map(r => `
+           <div class="bg-[#0A192F] p-3 rounded-lg border border-[#233554]">
+             <div class="flex justify-between items-center mb-1">
+               <span class="text-xs font-bold text-white">${r.reviewer_name || 'Anonymous Learner'}</span>
+               <span class="text-amber-400 text-[10px]">${Array(r.rating).fill('<i class="fa-solid fa-star"></i>').join('')}</span>
+             </div>
+             <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2">"${r.comment}"</p>
+           </div>
+         `).join('');
+      } else {
+         document.getElementById('tutor-profile-rating').innerHTML = `<span class="text-amber-400 font-bold text-sm"><i class="fa-solid fa-star"></i> 5.0</span> <span class="text-xs text-[#8892B0]">(New Tutor)</span>`;
+         document.getElementById('tutor-profile-reviews').innerHTML = `<div class="bg-[#0A192F] p-5 rounded-lg border border-[#233554] text-center"><i class="fa-solid fa-ranking-star text-2xl text-[#233554] mb-2"></i><p class="text-xs text-[#8892B0]">This tutor has no completed reviews yet. Be the first to leave one after your project!</p></div>`;
+      }
+
+      document.getElementById('tutor-profile-modal').classList.remove('hidden');
+    }
 
     async function deleteJob(jobId) {
       if(!confirm('Are you sure you want to permanently delete this job? This action cannot be undone.')) return;
@@ -240,8 +311,8 @@
                   return `
                   <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
                     <div class="flex justify-between items-center mb-1">
-                      <span class="text-sm font-bold text-white">${getSafeName(o.profiles)}</span>
-                      <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded">£${o.offer_price}</span>
+                      <button onclick="openTutorProfile('${o.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 text-left transition" title="View Profile">${getSafeName(o.profiles)}</button>
+                      <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded flex-shrink-0 ml-2">£${o.offer_price}</span>
                     </div>
                     <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${getSafeTier(o.profiles)}</span>
                     <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
@@ -367,7 +438,10 @@
       }
 
       document.getElementById('card-title').textContent = job.title;
-      document.getElementById('card-tutor').textContent = loadedTutorsMap[job.tutor_id] || 'Unknown';
+      
+      const tName = loadedTutorsMap[job.tutor_id] || 'Unknown';
+      document.getElementById('card-tutor').innerHTML = `<button onclick="openTutorProfile('${job.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 transition">${tName}</button>`;
+      
       document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
@@ -383,7 +457,7 @@
 
     function openChat(jobId, jobTitle, participantName, receiverId) {
       currentChatJobId = jobId;
-      currentChatReceiverId = receiverId; // Tracking specific user chat
+      currentChatReceiverId = receiverId; 
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
       document.getElementById('chat-modal').classList.remove('hidden');
@@ -404,7 +478,6 @@
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const c = document.getElementById('chat-messages');
       
-      // Filter out messages to only show thread between the logged in Learner and specific Tutor
       const filteredData = (data || []).filter(m => 
         (m.sender_id === currentProfile.id && m.receiver_id === currentChatReceiverId) ||
         (m.sender_id === currentChatReceiverId && m.receiver_id === currentProfile.id)
@@ -426,7 +499,6 @@
       if (!text || !currentChatJobId || !currentChatReceiverId) return;
       document.getElementById('chat-input').value = '';
       
-      // Insert with explicit receiver_id
       await supabaseClient.from('messages').insert([{ 
         job_id: currentChatJobId, 
         sender_id: currentProfile.id, 
