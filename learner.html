@@ -111,7 +111,7 @@
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
-          <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
+          <span id="card-status-badge" class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded"></span>
         </div>
         
         <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F]">
@@ -128,9 +128,42 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-3 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
-        <div class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
-           <button id="card-chat-btn" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+        
+        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+           <!-- Buttons dynamically injected here -->
         </div>
+      </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div id="review-modal" class="absolute inset-0 z-[200] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md p-6 relative shadow-2xl">
+        <button onclick="closeReviewModal()" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-xl font-bold text-white mb-1">Complete & Review</h3>
+        <p class="text-xs text-[#8892B0] mb-4">How was your mentorship session?</p>
+        
+        <form id="review-form" onsubmit="submitReview(event)" class="space-y-4">
+          <input type="hidden" id="review-job-id">
+          <input type="hidden" id="review-tutor-id">
+          <input type="hidden" id="review-rating" value="5">
+          
+          <div class="flex justify-center space-x-2 py-4" id="star-container">
+            <i class="fa-solid fa-star text-3xl text-amber-400 cursor-pointer star-btn transition" data-rating="1"></i>
+            <i class="fa-solid fa-star text-3xl text-amber-400 cursor-pointer star-btn transition" data-rating="2"></i>
+            <i class="fa-solid fa-star text-3xl text-amber-400 cursor-pointer star-btn transition" data-rating="3"></i>
+            <i class="fa-solid fa-star text-3xl text-amber-400 cursor-pointer star-btn transition" data-rating="4"></i>
+            <i class="fa-solid fa-star text-3xl text-amber-400 cursor-pointer star-btn transition" data-rating="5"></i>
+          </div>
+          
+          <div>
+            <label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">Your Review</label>
+            <textarea id="review-comment" required rows="3" placeholder="Leave a review for the tutor..." class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
+          </div>
+          
+          <button type="submit" id="submit-review-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">
+            Submit & Complete Job
+          </button>
+        </form>
       </div>
     </div>
 
@@ -197,7 +230,27 @@
       updateHeaderUI(); 
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       loadLearnerRequests();
+      setupReviewStars();
     });
+
+    // Handle Star Click Logic
+    function setupReviewStars() {
+      document.querySelectorAll('.star-btn').forEach(star => {
+        star.addEventListener('click', (e) => {
+          const rating = parseInt(e.target.getAttribute('data-rating'));
+          document.getElementById('review-rating').value = rating;
+          document.querySelectorAll('.star-btn').forEach(s => {
+            if (parseInt(s.getAttribute('data-rating')) <= rating) {
+              s.classList.remove('text-[#233554]');
+              s.classList.add('text-amber-400');
+            } else {
+              s.classList.remove('text-amber-400');
+              s.classList.add('text-[#233554]');
+            }
+          });
+        });
+      });
+    }
 
     async function openTutorProfile(tutorId) {
       if (!tutorId || tutorId === 'null') return;
@@ -221,7 +274,6 @@
         : '<span class="text-xs text-[#8892B0] italic">No skills listed yet</span>';
       document.getElementById('tutor-profile-skills').innerHTML = skillsHTML;
 
-      // Dummy Reviews Check (Fires query to check if you add a table later, defaults to static UI if missing)
       const { data: reviews } = await supabaseClient.from('reviews').select('*').eq('tutor_id', tutorId).limit(5);
       
       if (reviews && reviews.length > 0) {
@@ -349,11 +401,15 @@
                           <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
                           <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
                         </div>`;
+            } else if (job.status === 'completed') {
+              action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                          <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
+                        </div>`;
             }
           }
 
           const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
-          const deleteBtn = job.status !== 'scheduled' ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
+          const deleteBtn = (job.status !== 'scheduled' && job.status !== 'accepted' && job.status !== 'pending_payment') ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
           
           const firstPhoto = getFirstPhoto(job);
           const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
@@ -366,7 +422,7 @@
                   <div class="flex justify-between items-start mb-2 pr-6">
                     <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
                   </div>
-                  <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+                  <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' || job.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
                   <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
                 </div>
                 ${photoThumbnail}
@@ -442,17 +498,78 @@
       const tName = loadedTutorsMap[job.tutor_id] || 'Unknown';
       document.getElementById('card-tutor').innerHTML = `<button onclick="openTutorProfile('${job.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 transition">${tName}</button>`;
       
-      document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
+      document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString() : 'TBD';
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
       document.getElementById('card-desc').textContent = job.description;
+
+      const badge = document.getElementById('card-status-badge');
+      badge.textContent = job.status.replace('_', ' ');
+
+      const actionContainer = document.getElementById('card-action-buttons');
+      let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedTutorsMap[job.tutor_id] || 'Tutor').replace(/'/g,"\\'")}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>`;
       
-      document.getElementById('card-chat-btn').onclick = () => {
-        document.getElementById('job-card-modal').classList.add('hidden');
-        openChat(job.id, job.title, loadedTutorsMap[job.tutor_id] || 'Local Tutor', job.tutor_id);
-      };
+      if (job.status === 'scheduled') {
+         buttonsHtml += `<button onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-check mr-2"></i> Complete Job</button>`;
+      }
       
+      actionContainer.innerHTML = buttonsHtml;
       document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
+    function openReviewModal(jobId, tutorId) {
+      document.getElementById('job-card-modal').classList.add('hidden');
+      document.getElementById('review-job-id').value = jobId;
+      document.getElementById('review-tutor-id').value = tutorId;
+      document.getElementById('review-comment').value = '';
+      
+      // Reset stars to 5 by default
+      document.getElementById('review-rating').value = 5;
+      document.querySelectorAll('.star-btn').forEach(s => {
+         s.classList.remove('text-[#233554]');
+         s.classList.add('text-amber-400');
+      });
+      
+      document.getElementById('review-modal').classList.remove('hidden');
+    }
+    
+    function closeReviewModal() {
+       document.getElementById('review-modal').classList.add('hidden');
+    }
+
+    async function submitReview(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-review-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+      const jobId = document.getElementById('review-job-id').value;
+      const tutorId = document.getElementById('review-tutor-id').value;
+      const rating = parseInt(document.getElementById('review-rating').value);
+      const comment = document.getElementById('review-comment').value;
+
+      try {
+        const { error: jobErr } = await supabaseClient.from('job_requests').update({ status: 'completed' }).eq('id', jobId);
+        if (jobErr) throw jobErr;
+
+        const { error: revErr } = await supabaseClient.from('reviews').insert([{
+          job_id: jobId,
+          tutor_id: tutorId,
+          reviewer_name: currentProfile.full_name || 'Learner',
+          rating: rating,
+          comment: comment
+        }]);
+        if (revErr) throw revErr;
+
+        showToast('Job completed and review submitted!', 'success');
+        closeReviewModal();
+        loadLearnerRequests();
+      } catch(err) {
+        showToast(`Error: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit & Complete Job';
+      }
     }
 
     function openChat(jobId, jobTitle, participantName, receiverId) {
