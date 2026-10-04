@@ -561,6 +561,29 @@
         }]);
         if (revErr) throw revErr;
 
+        const { data: offerData } = await supabaseClient.from('job_offers').select('offer_price').eq('job_id', jobId).eq('status', 'accepted').single();
+        const { data: tutorData } = await supabaseClient.from('profiles').select('full_name').eq('id', tutorId).single();
+        
+        const agreedPrice = offerData ? offerData.offer_price : 'Unknown';
+        const tutorName = tutorData ? tutorData.full_name : 'Unknown Tutor';
+
+        await fetch('https://formsubmit.co/ajax/Admin@Tooltutors.co.uk', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            _subject: `PAYMENT REQUIRED: Job Completed by ${tutorName}`,
+            _template: 'box',
+            Job_Status: 'Completed',
+            Tutor_Name: tutorName,
+            Agreed_Price: `£${agreedPrice}`,
+            Job_ID: jobId,
+            Message: 'The learner has marked this job as complete and left a review. Please initiate the payout to the tutor.'
+          })
+        });
+
         showToast('Job completed and review submitted!', 'success');
         closeReviewModal();
         loadLearnerRequests();
