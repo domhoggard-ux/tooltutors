@@ -43,7 +43,7 @@
         </div>
         <h2 class="text-xl font-bold text-white mb-2">Start a New Project</h2>
         <p class="text-xs text-[#8892B0] mb-6 max-w-sm">Need help with a DIY task? Use our project wizard to list your tools, upload photos, and connect with local mentors.</p>
-        <a href="create-job.html" class="px-8 py-3.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg w-full max-w-xs block">
+        <a href="create-job.html" class="px-8 py-3.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg w-full max-w-xs block mx-auto">
           Create Job Request
         </a>
       </div>
@@ -159,90 +159,116 @@
       else { showToast('Job permanently deleted.', 'success'); loadLearnerRequests(); }
     }
 
+    // Safely extract names/tiers from Supabase joins to prevent undefined text
+    const getSafeName = (obj) => {
+      if (!obj) return 'Local Tutor';
+      if (Array.isArray(obj)) return obj[0]?.full_name || 'Local Tutor';
+      return obj.full_name || 'Local Tutor';
+    };
+    
+    const getSafeTier = (obj) => {
+      if (!obj) return 'Tutor';
+      if (Array.isArray(obj)) return (obj[0]?.tutor_tier || 'Tutor').replace('_', ' ');
+      return (obj.tutor_tier || 'Tutor').replace('_', ' ');
+    };
+
     async function loadLearnerRequests() {
-      const { data: requests } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
-      loadedJobsData = requests || [];
-      
-      // Updated query to safely pull from profiles to prevent the "undefined" error
-      const { data: offers } = await supabaseClient.from('job_offers').select('*, profiles(full_name, tutor_tier)').in('job_id', loadedJobsData.map(r => r.id));
-      (offers || []).forEach(o => { if (o.status === 'accepted') loadedAcceptedOffers[o.job_id] = o; });
-
-      const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', loadedJobsData.map(r => r.tutor_id).filter(Boolean));
-      loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
-
-      const listContainer = document.getElementById('learner-requests-list');
-      
-      if (loadedJobsData.length === 0) {
-        listContainer.innerHTML = '<p class="text-xs text-[#8892B0] text-center italic py-6">You have no active projects.</p>';
-        return;
-      }
-
-      listContainer.innerHTML = loadedJobsData.map(job => {
-        let action = '';
-        const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
+      try {
+        const listContainer = document.getElementById('learner-requests-list');
         
-        if (job.status === 'open') {
-          if (pendingBids.length > 0) {
-            action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
-              <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingBids.length} Bids Received</h4>
-              ${pendingBids.map(o => `
-                <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
-                  <div class="flex justify-between items-center mb-1">
-                    <!-- Updated fallback names here -->
-                    <span class="text-sm font-bold text-white">${o.profiles?.full_name || o.tutor?.full_name || 'Local Tutor'}</span>
-                    <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded">£${o.offer_price}</span>
-                  </div>
-                  <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${(o.profiles?.tutor_tier || o.tutor?.tutor_tier || 'Tutor').replace('_', ' ')}</span>
-                  <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
-                  <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept This Tutor</button>
-                </div>
-              `).join('')}</div>`;
-          } else action = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
-        } else {
-          const tName = loadedTutorsMap[job.tutor_id] || 'Local Tutor';
-          if (job.status === 'accepted') {
-            action = `<div class="mt-3 pt-3 border-t border-[#233554] flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor to propose time & tools.</p></div>`;
-          } else if (job.status === 'pending_payment') {
-            action = `<div class="mt-4 pt-4 border-t border-[#233554]">
-                        <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
-                        <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
-                          <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
-                          <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
-                        </div>
-                        <button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button>
-                      </div>`;
-          } else if (job.status === 'scheduled') {
-            action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                        <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
-                        <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
-                      </div>`;
-          }
+        const { data: requests, error: reqErr } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
+        if (reqErr) throw reqErr;
+        
+        loadedJobsData = requests || [];
+        
+        // Stop here if there are no jobs (prevents Supabase throwing an empty array error)
+        if (loadedJobsData.length === 0) {
+          listContainer.innerHTML = '<div class="py-12 text-center border-2 border-dashed border-[#233554] rounded-xl"><p class="text-sm text-[#8892B0] font-bold">You have no active projects.</p><p class="text-xs text-[#8892B0] mt-1">Use the button on the left to create your first request!</p></div>';
+          return;
         }
 
-        const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
-        const deleteBtn = job.status !== 'scheduled' ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
+        const jobIds = loadedJobsData.map(r => r.id);
         
-        // Handle comma separated multiple photos
-        const firstPhoto = job.photo_urls ? job.photo_urls.split(',')[0] : (job.photo_url ? job.photo_url.split(',')[0] : null);
-        const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
+        // This is the line that was crashing - fixed the relationship to profiles()!
+        const { data: offers, error: offersErr } = await supabaseClient.from('job_offers').select('*, profiles(full_name, tutor_tier)').in('job_id', jobIds);
+        if (offersErr) console.error("Database note on offers:", offersErr);
 
-        return `
-          <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between relative">
-            ${deleteBtn}
-            <div class="flex gap-4">
-              <div class="flex-1">
-                <div class="flex justify-between items-start mb-2 pr-6">
-                  <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
+        (offers || []).forEach(o => { if (o.status === 'accepted') loadedAcceptedOffers[o.job_id] = o; });
+
+        const tutorIds = loadedJobsData.map(r => r.tutor_id).filter(Boolean);
+        if (tutorIds.length > 0) {
+          const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', tutorIds);
+          loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
+        }
+
+        listContainer.innerHTML = loadedJobsData.map(job => {
+          let action = '';
+          const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
+          
+          if (job.status === 'open') {
+            if (pendingBids.length > 0) {
+              action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
+                <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingBids.length} Bids Received</h4>
+                ${pendingBids.map(o => `
+                  <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="text-sm font-bold text-white">${getSafeName(o.profiles)}</span>
+                      <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded">£${o.offer_price}</span>
+                    </div>
+                    <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${getSafeTier(o.profiles)}</span>
+                    <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
+                    <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept This Tutor</button>
+                  </div>
+                `).join('')}</div>`;
+            } else action = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
+          } else {
+            const tName = loadedTutorsMap[job.tutor_id] || 'Local Tutor';
+            if (job.status === 'accepted') {
+              action = `<div class="mt-3 pt-3 border-t border-[#233554] flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor to propose time & tools.</p></div>`;
+            } else if (job.status === 'pending_payment') {
+              action = `<div class="mt-4 pt-4 border-t border-[#233554]">
+                          <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
+                          <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
+                            <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
+                            <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
+                          </div>
+                          <button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button>
+                        </div>`;
+            } else if (job.status === 'scheduled') {
+              action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                          <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                          <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
+                        </div>`;
+            }
+          }
+
+          const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
+          const deleteBtn = job.status !== 'scheduled' ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
+          
+          const firstPhoto = job.photo_urls ? job.photo_urls.split(',')[0] : (job.photo_url ? job.photo_url.split(',')[0] : null);
+          const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
+
+          return `
+            <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between relative">
+              ${deleteBtn}
+              <div class="flex gap-4">
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-2 pr-6">
+                    <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
+                  </div>
+                  <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+                  <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
                 </div>
-                <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
-                <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
+                ${photoThumbnail}
               </div>
-              ${photoThumbnail}
+              ${action}
             </div>
-            ${action}
-          </div>
-        `;
-      }).join('');
+          `;
+        }).join('');
+      } catch (err) {
+        console.error("Dashboard Load Error:", err);
+        document.getElementById('learner-requests-list').innerHTML = `<p class="text-xs text-rose-400 text-center py-6">Error loading jobs: ${err.message}. Check console.</p>`;
+      }
     }
 
     async function acceptOffer(offerId, jobId, tutorId) {
