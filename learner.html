@@ -137,6 +137,7 @@
     
     let currentProfile = null;
     let currentChatJobId = null;
+    let currentChatReceiverId = null; // New tracking for specific tutor chat
     let chatPollInterval = null;
     let loadedJobsData = [];
     let loadedAcceptedOffers = {};
@@ -159,7 +160,6 @@
       else { showToast('Job permanently deleted.', 'success'); loadLearnerRequests(); }
     }
 
-    // Safely extract names/tiers from Supabase joins
     const getSafeName = (obj) => {
       if (!obj) return 'Local Tutor';
       if (Array.isArray(obj)) return obj[0]?.full_name || 'Local Tutor';
@@ -172,12 +172,11 @@
       return (obj.tutor_tier || 'Tutor').replace('_', ' ');
     };
 
-    // Safely extract the first photo URL regardless of whether the database stores it as an array or a string
     const getFirstPhoto = (job) => {
       let photoData = job.photo_urls || job.photo_url;
       if (!photoData) return null;
-      if (Array.isArray(photoData)) return photoData[0]; // If the DB returns an Array
-      if (typeof photoData === 'string') return photoData.split(',')[0]; // If the DB returns a comma-separated String
+      if (Array.isArray(photoData)) return photoData[0]; 
+      if (typeof photoData === 'string') return photoData.split(',')[0]; 
       return null;
     };
 
@@ -210,12 +209,15 @@
         listContainer.innerHTML = loadedJobsData.map(job => {
           let action = '';
           const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
-          
+          const safeJobTitle = job.title.replace(/'/g, "\\'");
+
           if (job.status === 'open') {
             if (pendingBids.length > 0) {
               action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
                 <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingBids.length} Bids Received</h4>
-                ${pendingBids.map(o => `
+                ${pendingBids.map(o => {
+                  const safeTutorName = getSafeName(o.profiles).replace(/'/g, "\\'");
+                  return `
                   <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
                     <div class="flex justify-between items-center mb-1">
                       <span class="text-sm font-bold text-white">${getSafeName(o.profiles)}</span>
@@ -223,14 +225,22 @@
                     </div>
                     <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${getSafeTier(o.profiles)}</span>
                     <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
-                    <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept This Tutor</button>
+                    <div class="flex gap-2">
+                      <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTutorName}', '${o.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg text-xs transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                      <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="flex-1 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept</button>
+                    </div>
                   </div>
-                `).join('')}</div>`;
+                `}).join('')}</div>`;
             } else action = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
           } else {
             const tName = loadedTutorsMap[job.tutor_id] || 'Local Tutor';
+            const safeTName = tName.replace(/'/g, "\\'");
+            
             if (job.status === 'accepted') {
-              action = `<div class="mt-3 pt-3 border-t border-[#233554] flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor to propose time & tools.</p></div>`;
+              action = `<div class="mt-3 pt-3 border-t border-[#233554] flex flex-col gap-2">
+                          <div class="flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor proposal.</p></div>
+                          <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat with Tutor</button>
+                        </div>`;
             } else if (job.status === 'pending_payment') {
               action = `<div class="mt-4 pt-4 border-t border-[#233554]">
                           <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
@@ -238,11 +248,14 @@
                             <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
                             <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
                           </div>
-                          <button onclick="openPaymentModal('${job.id}')" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay to Confirm</button>
+                          <div class="flex gap-2">
+                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                            <button onclick="openPaymentModal('${job.id}')" class="flex-[2] py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay</button>
+                          </div>
                         </div>`;
             } else if (job.status === 'scheduled') {
               action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                          <button onclick="openChat('${job.id}', '${job.title.replace(/'/g, "\\'")}', '${tName}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                          <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
                           <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
                         </div>`;
             }
@@ -342,14 +355,15 @@
       
       document.getElementById('card-chat-btn').onclick = () => {
         document.getElementById('job-card-modal').classList.add('hidden');
-        openChat(job.id, job.title, loadedTutorsMap[job.tutor_id]);
+        openChat(job.id, job.title, loadedTutorsMap[job.tutor_id] || 'Local Tutor', job.tutor_id);
       };
       
       document.getElementById('job-card-modal').classList.remove('hidden');
     }
 
-    function openChat(jobId, jobTitle, participantName) {
+    function openChat(jobId, jobTitle, participantName, receiverId) {
       currentChatJobId = jobId;
+      currentChatReceiverId = receiverId; // Tracking specific user chat
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
       document.getElementById('chat-modal').classList.remove('hidden');
@@ -357,28 +371,48 @@
       chatPollInterval = setInterval(loadMessages, 3000);
     }
     
-    function closeChat() { document.getElementById('chat-modal').classList.add('hidden'); currentChatJobId = null; clearInterval(chatPollInterval); }
+    function closeChat() { 
+      document.getElementById('chat-modal').classList.add('hidden'); 
+      currentChatJobId = null; 
+      currentChatReceiverId = null; 
+      clearInterval(chatPollInterval); 
+    }
     
     async function loadMessages() {
-      if (!currentChatJobId) return;
+      if (!currentChatJobId || !currentChatReceiverId) return;
+      
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const c = document.getElementById('chat-messages');
-      if (!data || data.length === 0) {
-        c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet.</p>';
+      
+      // Filter out messages to only show thread between the logged in Learner and specific Tutor
+      const filteredData = (data || []).filter(m => 
+        (m.sender_id === currentProfile.id && m.receiver_id === currentChatReceiverId) ||
+        (m.sender_id === currentChatReceiverId && m.receiver_id === currentProfile.id)
+      );
+
+      if (filteredData.length === 0) {
+        c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello!</p>';
         return;
       }
       
       const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 50;
-      c.innerHTML = data.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg'} max-w-[85%] text-xs p-3 shadow-md">${m.content}</div>`).join('');
+      c.innerHTML = filteredData.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg'} max-w-[85%] text-xs p-3 shadow-md">${m.content}</div>`).join('');
       if (isScrolledToBottom) c.scrollTop = c.scrollHeight;
     }
     
     async function sendMessage(e) {
       e.preventDefault();
       const text = document.getElementById('chat-input').value.trim();
-      if (!text || !currentChatJobId) return;
+      if (!text || !currentChatJobId || !currentChatReceiverId) return;
       document.getElementById('chat-input').value = '';
-      await supabaseClient.from('messages').insert([{ job_id: currentChatJobId, sender_id: currentProfile.id, content: text }]);
+      
+      // Insert with explicit receiver_id
+      await supabaseClient.from('messages').insert([{ 
+        job_id: currentChatJobId, 
+        sender_id: currentProfile.id, 
+        receiver_id: currentChatReceiverId, 
+        content: text 
+      }]);
       loadMessages();
     }
 
