@@ -54,13 +54,36 @@
     <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
       <form id="job-request-form" class="space-y-6">
         
-        <!-- STEP 1: TITLE & SKILL -->
+        <!-- STEP 1: TITLE, JOB TYPE & SKILL -->
         <div id="step-1" class="step-container space-y-6">
           <div>
             <h2 class="text-xl font-extrabold text-white mb-1">What are you working on?</h2>
-            <p class="text-xs text-[#8892B0]">Give your project a clear title and select the relevant trade category.</p>
+            <p class="text-xs text-[#8892B0]">Choose how you want to work with a tradesperson, give your project a title, and select a category.</p>
           </div>
           
+          <!-- NEW: JOB TYPE SELECTION -->
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-2">Job Type</label>
+            <div class="grid grid-cols-2 gap-4">
+              <label class="cursor-pointer">
+                <input type="radio" name="job_type" value="teach_me" checked class="peer sr-only">
+                <div class="p-4 rounded-xl bg-[#0A192F] border border-[#233554] text-center peer-checked:border-[#FF6B35] peer-checked:bg-[#FF6B35]/10 transition hover:border-[#FF6B35]/50 h-full flex flex-col items-center justify-center">
+                  <i class="fa-solid fa-chalkboard-user text-[#FF6B35] text-xl mb-2"></i>
+                  <h4 class="text-white font-bold text-sm">Teach Me</h4>
+                  <p class="text-[10px] text-[#8892B0] mt-1">Guide me while I do it.</p>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="job_type" value="complete_for_me" class="peer sr-only">
+                <div class="p-4 rounded-xl bg-[#0A192F] border border-[#233554] text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 transition hover:border-emerald-500/50 h-full flex flex-col items-center justify-center">
+                  <i class="fa-solid fa-toolbox text-emerald-400 text-xl mb-2"></i>
+                  <h4 class="text-white font-bold text-sm">Complete For Me</h4>
+                  <p class="text-[10px] text-[#8892B0] mt-1">Do the work for me.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div>
             <label class="block text-xs font-bold text-[#8892B0] uppercase mb-2">Project Title</label>
             <input type="text" id="job-title" placeholder="e.g. Help replacing a leaky bathroom tap" class="w-full px-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
@@ -390,19 +413,19 @@
         const { error } = await supabaseClient.from('job_requests').insert([{
           learner_id: currentProfile.id, 
           title: document.getElementById('job-title').value, 
+          job_type: document.querySelector('input[name="job_type"]:checked').value, // Added Job Type
           category: document.querySelector('input[name="job_category"]:checked').value, 
           preferred_time: document.getElementById('job-time').value,
           preferred_tier: document.getElementById('job-preferred-tier').value,
           budget_estimate: document.getElementById('job-budget').value,
           description: document.getElementById('job-desc').value,
-          materials: document.getElementById('job-materials').value, // New column
+          materials: document.getElementById('job-materials').value,
           waiver_signed: document.getElementById('job-waiver').checked,
           postcode: postcode.toUpperCase(), 
           full_address: address, 
           latitude: data.result.latitude, 
           longitude: data.result.longitude,
           status: 'open',
-          // Join array to string for the existing photo_url column format
           photo_urls: uploadedUrls.length > 0 ? uploadedUrls.join(',') : null 
         }]);
 
