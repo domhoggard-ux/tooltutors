@@ -37,10 +37,25 @@
           </div>
         </div>
       </div>
-      <div class="flex items-center space-x-4">
-        <div class="hidden sm:block text-right">
-          <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
-          <div class="text-[10px] text-[#FF6B35] uppercase">Verified Tutor</div>
+      
+      <!-- Clickable Avatar Header Section -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 pr-2">
+          
+          <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
+              <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
+            </div>
+            <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
+              <i class="fa-solid fa-camera text-white text-[10px]"></i>
+            </div>
+          </div>
+          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
+          
+          <div class="hidden sm:block text-left">
+            <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+            <div class="text-[10px] text-[#FF6B35] uppercase">Verified Tutor</div>
+          </div>
         </div>
         <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
@@ -164,7 +179,6 @@
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-2">Proposed Appointment</label>
             <div class="grid grid-cols-2 gap-4">
-              <!-- Replaced single datetime-local with separate date and time inputs -->
               <input type="date" id="propose-date" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
               <input type="time" id="propose-time-only" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
             </div>
@@ -232,7 +246,7 @@
 
     let currentProfile = null;
     let currentChatJobId = null;
-    let currentChatReceiverId = null; // New tracking for specific chat participants
+    let currentChatReceiverId = null; 
     let chatPollInterval = null;
     let loadedJobsData = [];
     let loadedLearnersMap = {};
@@ -247,7 +261,7 @@
         if (profile.role !== 'tutor') return window.location.href = 'login.html';
 
         currentProfile = profile;
-        document.getElementById('header-user-name').textContent = profile.full_name || user.email;
+        updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
 
         const status = profile.validation_status || 'pending';
@@ -288,7 +302,6 @@
       return parseFloat((R * c).toFixed(1));
     }
 
-    // New safety function identical to the learner portal
     const getFirstPhoto = (job) => {
       let photoData = job.photo_urls || job.photo_url;
       if (!photoData) return null;
@@ -326,12 +339,74 @@
 
     async function submitTutorDocuments(e) {
       e.preventDefault();
-      const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
-      if (!skills.length) return showToast('Select at least one skill', 'error');
+      const btn = document.getElementById('submit-docs-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Securely...';
       
-      await supabaseClient.from('profiles').update({ validation_status: 'submitted', skills }).eq('id', currentProfile.id);
-      showToast('Submitted for review!', 'success');
-      setTimeout(() => window.location.reload(), 1500);
+      const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
+      if (!skills.length) {
+        showToast('Select at least one skill', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Submit For Verification';
+        return;
+      }
+
+      try {
+        const picFile = document.getElementById('tutor-profile-pic').files[0];
+        const idFile = document.getElementById('tutor-id-doc').files[0];
+        const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
+
+        let picUrl = currentProfile?.profile_picture_url || null;
+        let idPath = currentProfile?.id_document_url || null;
+        let dbsPath = currentProfile?.dbs_document_url || null;
+
+        if (picFile) {
+          const ext = picFile.name.split('.').pop();
+          const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+          const { error: picErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, picFile);
+          if (picErr) throw picErr;
+          const { data } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+          picUrl = data.publicUrl;
+        }
+
+        if (idFile) {
+          const ext = idFile.name.split('.').pop();
+          idPath = `id_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: idErr } = await supabaseClient.storage.from('tutor_documents').upload(idPath, idFile);
+          if (idErr) throw idErr;
+        }
+
+        if (dbsFile) {
+          const ext = dbsFile.name.split('.').pop();
+          dbsPath = `dbs_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile);
+          if (dbsErr) throw dbsErr;
+        }
+
+        const { error: dbErr } = await supabaseClient.from('profiles').update({ 
+          validation_status: 'submitted', 
+          skills: skills,
+          profile_picture_url: picUrl,
+          id_document_url: idPath,
+          dbs_document_url: dbsPath
+        }).eq('id', currentProfile.id);
+        
+        if (dbErr) throw dbErr;
+
+        showToast('Submitted for review!', 'success');
+        
+        if (picUrl) {
+          currentProfile.profile_picture_url = picUrl;
+          await supabaseClient.auth.updateUser({ data: { profile_picture_url: picUrl } });
+          updateHeaderUI();
+        }
+
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err) {
+        showToast(`Upload Error: ${err.message}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Submit For Verification';
+      }
     }
 
     async function loadTutorWorkspace() {
@@ -491,7 +566,6 @@
       const time = document.getElementById('propose-time-only').value;
       const tools = document.getElementById('propose-tools').value;
       
-      // Combine date and time for Supabase
       const combinedDateTime = new Date(`${date}T${time}`).toISOString();
 
       try {
@@ -548,7 +622,7 @@
 
     function openChat(jobId, jobTitle, participantName, receiverId) {
       currentChatJobId = jobId;
-      currentChatReceiverId = receiverId; // Tracking specific user chat
+      currentChatReceiverId = receiverId; 
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
       document.getElementById('chat-modal').classList.remove('hidden');
@@ -569,7 +643,6 @@
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
       const c = document.getElementById('chat-messages');
       
-      // Filter out messages to only show thread between the logged in Tutor and specific Learner
       const filteredData = (data || []).filter(m => 
         (m.sender_id === currentProfile.id && m.receiver_id === currentChatReceiverId) ||
         (m.sender_id === currentChatReceiverId && m.receiver_id === currentProfile.id)
@@ -591,7 +664,6 @@
       if (!text || !currentChatJobId || !currentChatReceiverId) return;
       document.getElementById('chat-input').value = '';
       
-      // Insert with explicit receiver_id
       await supabaseClient.from('messages').insert([{ 
         job_id: currentChatJobId, 
         sender_id: currentProfile.id, 
@@ -599,6 +671,48 @@
         content: text 
       }]);
       loadMessages();
+    }
+
+    function updateHeaderUI() {
+      if (!currentProfile) return;
+      
+      const fullName = currentProfile.full_name || currentProfile.email || 'User';
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      const nameEl = document.getElementById('header-user-name');
+      if (nameEl) nameEl.textContent = fullName;
+      
+      const initialsContainer = document.getElementById('header-user-initials');
+      if (initialsContainer) {
+        if (currentProfile.profile_picture_url) {
+          initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
+        } else {
+          initialsContainer.innerHTML = initials;
+        }
+      }
+    }
+
+    async function handleGlobalAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showToast('Uploading profile picture...', 'info');
+      try {
+        const ext = file.name.split('.').pop();
+        const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+        await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
+        const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+        const newUrl = publicUrlData.publicUrl;
+
+        await supabaseClient.from('profiles').update({ profile_picture_url: newUrl }).eq('id', currentProfile.id);
+        await supabaseClient.auth.updateUser({ data: { profile_picture_url: newUrl } });
+
+        currentProfile.profile_picture_url = newUrl;
+        updateHeaderUI();
+        showToast('Profile picture updated!', 'success');
+      } catch (err) {
+        showToast('Failed to update picture.', 'error');
+      }
     }
 
     async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
