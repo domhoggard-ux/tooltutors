@@ -38,10 +38,8 @@
         </div>
       </div>
       
-      <!-- Clickable Avatar Header Section -->
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-3 pr-2">
-          
           <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
               <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
@@ -122,26 +120,13 @@
 
     <!-- ACTIVE DASHBOARD -->
     <section id="tutor-active-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
-      
-      <!-- LOCATION SETTER BAR -->
-      <div class="lg:col-span-2 p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
-        <div>
-          <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-location-crosshairs text-[#FF6B35] mr-2"></i>My Service Location</h3>
-          <p class="text-[10px] text-[#8892B0]">Set your base postcode to calculate how far away open jobs are.</p>
-        </div>
-        <div class="flex gap-2 w-full sm:w-auto">
-          <input type="text" id="tutor-location-input" placeholder="e.g. SW1A 1AA" class="flex-1 sm:w-32 px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs uppercase focus:outline-none focus:border-[#FF6B35]">
-          <button onclick="saveTutorLocation()" id="save-location-btn" class="px-4 py-1.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded text-xs font-bold transition">Update</button>
-        </div>
-      </div>
-
       <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
         <div id="tutor-open-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
       
       <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
-        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Active Projects</h3>
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Projects</h3>
         <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
     </section>
@@ -179,9 +164,9 @@
           <div>
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-2">Proposed Appointment</label>
             <div class="grid grid-cols-2 gap-4">
-  <input type="date" id="propose-date" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
-  <input type="time" id="propose-time-only" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
-</div>      
+              <input type="date" id="propose-date" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+              <input type="time" id="propose-time-only" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+            </div>
           </div>
           
           <div>
@@ -199,7 +184,7 @@
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
-          <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Confirmed</span>
+          <span id="card-status-badge" class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Active</span>
         </div>
         
         <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F] cursor-pointer" onclick="openImageModal(document.getElementById('card-photo').src)">
@@ -216,8 +201,9 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-3 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
-        <div class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
-           <button id="card-chat-btn" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>
+        
+        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+           <!-- Dynamic Buttons go here -->
         </div>
       </div>
     </div>
@@ -261,6 +247,22 @@
         if (profile.role !== 'tutor') return window.location.href = 'login.html';
 
         currentProfile = profile;
+        
+        // --- AUTO-GEOCODE FROM SIGNUP POSTCODE IF MISSING ---
+        if ((!currentProfile.latitude || !currentProfile.longitude) && currentProfile.postcode) {
+          try {
+            const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(currentProfile.postcode)}`);
+            const data = await res.json();
+            if (data.status === 200 && data.result) {
+              const { latitude, longitude } = data.result;
+              await supabaseClient.from('profiles').update({ latitude, longitude }).eq('id', currentProfile.id);
+              currentProfile.latitude = latitude;
+              currentProfile.longitude = longitude;
+            }
+          } catch(e) { console.warn('Geocoding skipped or failed.'); }
+        }
+        // ----------------------------------------------------
+
         updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
 
@@ -309,33 +311,6 @@
       if (typeof photoData === 'string') return photoData.split(',')[0]; 
       return null;
     };
-
-    async function saveTutorLocation() {
-      const postcode = document.getElementById('tutor-location-input').value.trim();
-      if (!postcode) return showToast('Please enter a postcode.', 'error');
-      
-      const btn = document.getElementById('save-location-btn');
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      
-      try {
-        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-        const data = await res.json();
-        
-        if (data.status === 200 && data.result) {
-          const { latitude, longitude } = data.result;
-          await supabaseClient.from('profiles').update({ latitude, longitude }).eq('id', currentProfile.id);
-          currentProfile.latitude = latitude;
-          currentProfile.longitude = longitude;
-          showToast('Location saved! Distances updated.', 'success');
-          loadTutorWorkspace();
-        } else {
-          showToast('Invalid postcode.', 'error');
-        }
-      } catch (error) {
-        showToast('Error verifying postcode.', 'error');
-      }
-      btn.innerHTML = 'Update';
-    }
 
     async function submitTutorDocuments(e) {
       e.preventDefault();
@@ -414,7 +389,7 @@
         const { data: rawJobs, error: rawJobsErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open');
         if(rawJobsErr) throw rawJobsErr;
 
-        const { data: activeJobs, error: activeJobsErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'pending_payment', 'scheduled', 'completed']);
+        const { data: activeJobs, error: activeJobsErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'pending_payment', 'scheduled', 'completed', 'cancelled']);
         if(activeJobsErr) throw activeJobsErr;
 
         const { data: myOffers, error: myOffersErr } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
@@ -440,7 +415,7 @@
         loadedJobsData = activeJobs || [];
 
         document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
-          const bid = (myOffers || []).find(o => o.job_id === j.id);
+          const bid = (myOffers || []).find(o => o.job_id === j.id && o.status !== 'withdrawn' && o.status !== 'rejected');
           const lName = loadedLearnersMap[j.learner_id] || 'Learner';
           const distanceHtml = j.distance !== null 
             ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow mr-1"></i> ${j.distance} miles away</span>` 
@@ -487,7 +462,7 @@
             actionHtml = `<button onclick="openProposeModal('${j.id}')" class="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-calendar-plus mr-1"></i> Propose Time & Tools</button>`;
           } else if (j.status === 'pending_payment') {
             actionHtml = `<div class="w-full py-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold rounded-lg text-center"><i class="fa-solid fa-hourglass-half mr-1"></i> Awaiting Learner Payment</div>`;
-          } else if (j.status === 'scheduled') {
+          } else if (['scheduled', 'completed', 'cancelled'].includes(j.status)) {
             actionHtml = `<button onclick="openJobCard('${j.id}')" class="w-full py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Open Job Card</button>`;
           }
 
@@ -498,15 +473,19 @@
                </div>` 
             : '';
 
+          const isSuccess = ['scheduled', 'completed'].includes(j.status);
+          const borderColor = isSuccess ? 'border-emerald-500/50' : (j.status === 'cancelled' ? 'border-rose-500/30' : 'border-[#FF6B35]/30');
+          const badgeColor = isSuccess ? 'text-emerald-400 bg-emerald-400/10' : (j.status === 'cancelled' ? 'text-rose-400 bg-rose-500/10' : 'text-[#FF6B35] bg-[#FF6B35]/10');
+
           return `
-            <div class="p-5 bg-[#0A192F] border ${j.status==='scheduled'?'border-emerald-500/50':'border-[#FF6B35]/30'} rounded-xl text-xs space-y-3">
+            <div class="p-5 bg-[#0A192F] border ${borderColor} rounded-xl text-xs space-y-3">
               <div class="flex justify-between items-start mb-2">
                 <span class="font-bold text-white text-sm pr-2">${j.title}</span>
-                <span class="text-[9px] uppercase font-bold ${j.status==='scheduled'?'text-emerald-400 bg-emerald-400/10':'text-[#FF6B35] bg-[#FF6B35]/10'} px-2 py-1 rounded">${j.status.replace('_', ' ')}</span>
+                <span class="text-[9px] uppercase font-bold ${badgeColor} px-2 py-1 rounded">${j.status.replace('_', ' ')}</span>
               </div>
               
               <div class="flex gap-3 mb-3">
-                 <div class="flex-1"></div> <!-- Spacer if needed -->
+                 <div class="flex-1"></div>
                  ${photoThumbnail}
               </div>
 
@@ -609,15 +588,67 @@
 
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
-      document.getElementById('card-time').textContent = new Date(job.appointment_time).toLocaleString();
+      document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString() : 'TBD';
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
       document.getElementById('card-desc').textContent = job.description;
-      document.getElementById('card-chat-btn').onclick = () => {
-        document.getElementById('job-card-modal').classList.add('hidden');
-        openChat(job.id, job.title, loadedLearnersMap[job.learner_id], job.learner_id);
-      };
+      
+      const badge = document.getElementById('card-status-badge');
+      badge.textContent = job.status.replace('_', ' ');
+      
+      const actionContainer = document.getElementById('card-action-buttons');
+      let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Chat</button>`;
+      
+      if (job.status === 'completed' || job.status === 'cancelled') {
+        buttonsHtml += `<button id="card-delete-btn" onclick="deleteJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-trash mr-2"></i> Delete Record</button>`;
+      } else {
+        buttonsHtml += `<button id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> Cancel Job</button>`;
+      }
+      
+      actionContainer.innerHTML = buttonsHtml;
       document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
+    async function cancelJob(jobId) {
+      if(!confirm('Are you sure you want to cancel this job? It will be returned to the open marketplace for other tutors to bid on.')) return;
+      
+      const btn = document.getElementById('card-cancel-btn');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+      const { error } = await supabaseClient.from('job_requests').update({ 
+        status: 'open', 
+        tutor_id: null,
+        appointment_time: null 
+      }).eq('id', jobId);
+
+      await supabaseClient.from('job_offers').update({ status: 'withdrawn' }).eq('job_id', jobId).eq('tutor_id', currentProfile.id);
+
+      if (error) {
+        showToast(`Failed to cancel: ${error.message}`, 'error');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-ban mr-2"></i> Cancel Job';
+      } else {
+        showToast('Job cancelled and returned to the board.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        loadTutorWorkspace();
+      }
+    }
+
+    async function deleteJob(jobId) {
+      if(!confirm('Are you sure you want to permanently delete this job record from the database?')) return;
+      
+      const btn = document.getElementById('card-delete-btn');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      
+      const { error } = await supabaseClient.from('job_requests').delete().eq('id', jobId);
+      
+      if (error) {
+        showToast(`Failed to delete: ${error.message}`, 'error');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-trash mr-2"></i> Delete Record';
+      } else {
+        showToast('Job permanently deleted.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        loadTutorWorkspace();
+      }
     }
 
     function openChat(jobId, jobTitle, participantName, receiverId) {
