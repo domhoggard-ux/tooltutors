@@ -247,22 +247,6 @@
         if (profile.role !== 'tutor') return window.location.href = 'login.html';
 
         currentProfile = profile;
-        
-        // --- AUTO-GEOCODE FROM SIGNUP POSTCODE IF MISSING ---
-        if ((!currentProfile.latitude || !currentProfile.longitude) && currentProfile.postcode) {
-          try {
-            const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(currentProfile.postcode)}`);
-            const data = await res.json();
-            if (data.status === 200 && data.result) {
-              const { latitude, longitude } = data.result;
-              await supabaseClient.from('profiles').update({ latitude, longitude }).eq('id', currentProfile.id);
-              currentProfile.latitude = latitude;
-              currentProfile.longitude = longitude;
-            }
-          } catch(e) { console.warn('Geocoding skipped or failed.'); }
-        }
-        // ----------------------------------------------------
-
         updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
 
@@ -621,7 +605,8 @@
         appointment_time: null 
       }).eq('id', jobId);
 
-      await supabaseClient.from('job_offers').update({ status: 'withdrawn' }).eq('job_id', jobId).eq('tutor_id', currentProfile.id);
+      // Delete the offer completely so it clears out of their "Offer Pending" state
+      await supabaseClient.from('job_offers').delete().eq('job_id', jobId).eq('tutor_id', currentProfile.id);
 
       if (error) {
         showToast(`Failed to cancel: ${error.message}`, 'error');
