@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Post a Job</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: #0A192F; } 
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    /* Hide default radio circle for skill tiles */
+    input[type="radio"]:checked + div { border-color: #FF6B35; background-color: rgba(255, 107, 53, 0.1); }
+    input[type="radio"]:checked + div .check-icon { display: block; }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans flex flex-col min-h-screen">
+
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="learner.html" class="w-10 h-10 rounded-xl bg-[#112240] border border-[#233554] hover:border-[#FF6B35] flex items-center justify-center text-white transition">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase font-bold hidden sm:block">Job Creator</span>
+        </div>
+      </div>
+      <div class="text-right">
+        <div id="header-user-name" class="text-xs font-semibold text-white">Loading...</div>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    
+    <!-- Progress Indicator -->
+    <div class="mb-8">
+      <div class="flex justify-between mb-2">
+        <span class="text-xs font-bold text-[#FF6B35]" id="step-indicator-text">Step 1 of 3: The Basics</span>
+      </div>
+      <div class="h-2 w-full bg-[#112240] rounded-full overflow-hidden border border-[#233554]">
+        <div id="progress-bar" class="h-full bg-[#FF6B35] w-1/3 transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
+      <form id="job-request-form" class="space-y-6">
+        
+        <!-- STEP 1: TITLE & SKILL -->
+        <div id="step-1" class="step-container space-y-6">
+          <div>
+            <h2 class="text-xl font-extrabold text-white mb-1">What are you working on?</h2>
+            <p class="text-xs text-[#8892B0]">Give your project a clear title and select the relevant trade category.</p>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-2">Project Title</label>
+            <input type="text" id="job-title" placeholder="e.g. Help replacing a leaky bathroom tap" class="w-full px-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            <p id="err-title" class="hidden text-rose-400 text-xs mt-1">Please enter a title.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-2">Type of Job (Category)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="category-grid">
+              <!-- Radio Tiles -->
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Plumbing" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-sink text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Plumbing</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Tiling" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-border-all text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Tiling</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Carpentry & Joinery" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-hammer text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Carpentry & Joinery</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Electrical Basics" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-plug text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Electrical Basics</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Decorating & Painting" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-paint-roller text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Decorating & Painting</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+              <label class="relative cursor-pointer">
+                <input type="radio" name="job_category" value="Garden & Landscaping" class="peer sr-only">
+                <div class="p-4 rounded-xl border border-[#233554] bg-[#0A192F] hover:border-[#FF6B35]/50 transition h-full flex items-center">
+                  <i class="fa-solid fa-leaf text-[#8892B0] peer-checked:text-[#FF6B35] mr-3 text-lg w-6 text-center"></i>
+                  <span class="text-sm font-bold text-white">Garden & Landscaping</span>
+                  <i class="fa-solid fa-circle-check text-[#FF6B35] absolute right-4 hidden check-icon"></i>
+                </div>
+              </label>
+            </div>
+            <p id="err-cat" class="hidden text-rose-400 text-xs mt-2">Please select a category.</p>
+          </div>
+          
+          <div class="pt-4 border-t border-[#233554] flex justify-end">
+            <button type="button" onclick="goToStep(2)" class="px-6 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg">Next Step <i class="fa-solid fa-arrow-right ml-1"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 2: LOCATION, TIMING & BUDGET -->
+        <div id="step-2" class="step-container hidden space-y-6">
+          <div>
+            <h2 class="text-xl font-extrabold text-white mb-1">Where and When?</h2>
+            <p class="text-xs text-[#8892B0]">Confirm the location of the project and your preferences.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-2">Location</label>
+            <div class="space-y-3">
+              <label class="flex items-center space-x-3 cursor-pointer p-3 rounded-xl border border-[#233554] bg-[#0A192F]">
+                <input type="radio" name="location_type" value="home" checked onchange="toggleLocationFields()" class="h-4 w-4 text-[#FF6B35] bg-[#112240] border-[#233554] focus:ring-[#FF6B35]">
+                <div>
+                  <span class="text-sm font-bold text-white block">My Home Address</span>
+                  <span class="text-[10px] text-[#8892B0]" id="display-home-address">Loading your address...</span>
+                </div>
+              </label>
+              
+              <label class="flex items-center space-x-3 cursor-pointer p-3 rounded-xl border border-[#233554] bg-[#0A192F]">
+                <input type="radio" name="location_type" value="other" onchange="toggleLocationFields()" class="h-4 w-4 text-[#FF6B35] bg-[#112240] border-[#233554] focus:ring-[#FF6B35]">
+                <span class="text-sm font-bold text-white">Somewhere Else</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="custom-location-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#0A192F] rounded-xl border border-[#233554]">
+            <div>
+              <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Custom Postcode</label>
+              <input type="text" id="custom-postcode" class="w-full px-4 py-2 rounded-xl bg-[#112240] border border-[#233554] text-white text-sm uppercase focus:outline-none focus:border-[#FF6B35]">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Full Custom Address</label>
+              <input type="text" id="custom-address" class="w-full px-4 py-2 rounded-xl bg-[#112240] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+            </div>
+            <p id="err-location" class="hidden text-rose-400 text-xs col-span-full">Please provide a valid custom address and postcode.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Preferred Timing</label>
+              <input type="text" id="job-time" placeholder="e.g. This Saturday Morning" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              <p id="err-time" class="hidden text-rose-400 text-xs mt-1">Please enter preferred timing.</p>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Estimated Budget (£)</label>
+              <input type="number" id="job-budget" min="1" step="1" placeholder="50" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              <p id="err-budget" class="hidden text-rose-400 text-xs mt-1">Please enter a valid budget.</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Preferred Tutor Level</label>
+            <select id="job-preferred-tier" class="w-full px-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+              <option value="any">Any Experience Level</option>
+              <option value="self_taught">Self-Taught Enthusiast</option>
+              <option value="professional">Professional / Trade Certified</option>
+            </select>
+          </div>
+
+          <div class="pt-4 border-t border-[#233554] flex justify-between">
+            <button type="button" onclick="goToStep(1)" class="px-6 py-3 bg-[#233554] hover:bg-[#112240] text-white font-bold rounded-xl transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button>
+            <button type="button" onclick="goToStep(3)" class="px-6 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg">Next Step <i class="fa-solid fa-arrow-right ml-1"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 3: DETAILS & MEDIA -->
+        <div id="step-3" class="step-container hidden space-y-6">
+          <div>
+            <h2 class="text-xl font-extrabold text-white mb-1">Project Details</h2>
+            <p class="text-xs text-[#8892B0]">Explain the issue, list your materials, and upload photos.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Detailed Description</label>
+            <textarea id="job-desc" rows="3" placeholder="Describe the job, what you want to achieve, and any known problems..." class="w-full px-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
+            <p id="err-desc" class="hidden text-rose-400 text-xs mt-1">Please provide a description.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Materials you have for the job</label>
+            <textarea id="job-materials" rows="2" placeholder="e.g. I already have the new tap, silicone sealant, and a basin wrench." class="w-full px-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#8892B0] uppercase mb-1">Upload Photos (Optional)</label>
+            <div class="flex items-center justify-center w-full">
+                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-[#233554] border-dashed rounded-xl cursor-pointer bg-[#0A192F] hover:bg-[#112240] hover:border-[#FF6B35] transition">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-[#8892B0] mb-2"></i>
+                        <p class="text-xs text-[#8892B0]"><span class="font-bold text-white">Click to upload</span> or drag and drop</p>
+                        <p class="text-[10px] text-[#8892B0] mt-1" id="file-count-text">Multiple images allowed (PNG, JPG)</p>
+                    </div>
+                    <input id="job-photos" type="file" accept="image/*" multiple class="hidden" onchange="updateFileCount()" />
+                </label>
+            </div>
+          </div>
+
+          <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl mt-4">
+            <label class="flex items-start space-x-3 cursor-pointer">
+              <input type="checkbox" id="job-waiver" class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#0A192F] focus:ring-[#FF6B35]">
+              <span class="text-xs text-[#8892B0]">
+                <strong class="text-white">Liability Waiver:</strong> By submitting this request, I acknowledge that ToolTutors provides peer mentorship. I accept full responsibility for any physical work on my property and hold ToolTutors harmless from damages or injury.
+              </span>
+            </label>
+            <p id="err-waiver" class="hidden text-rose-400 text-[10px] font-bold mt-2 ml-7">You must accept the liability waiver to proceed.</p>
+          </div>
+
+          <div class="pt-4 border-t border-[#233554] flex justify-between items-center">
+            <button type="button" onclick="goToStep(2)" class="px-6 py-3 bg-[#233554] hover:bg-[#112240] text-white font-bold rounded-xl transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button>
+            <button type="button" onclick="submitJobRequest()" id="submit-btn" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg flex items-center">
+              Post Job to Marketplace
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let currentProfile = null;
+    let currentStep = 1;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return window.location.href = 'login.html';
+      
+      const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
+      currentProfile = profile;
+      document.getElementById('header-user-name').textContent = profile.full_name;
+      
+      // Populate Home Address display
+      const addressString = `${profile.address_line1}, ${profile.city}, ${profile.postcode}`;
+      document.getElementById('display-home-address').textContent = addressString;
+    });
+
+    function toggleLocationFields() {
+      const isOther = document.querySelector('input[name="location_type"]:checked').value === 'other';
+      const fields = document.getElementById('custom-location-fields');
+      if (isOther) {
+        fields.classList.remove('hidden');
+      } else {
+        fields.classList.add('hidden');
+      }
+    }
+
+    function updateFileCount() {
+      const input = document.getElementById('job-photos');
+      const text = document.getElementById('file-count-text');
+      if (input.files && input.files.length > 0) {
+        text.textContent = `${input.files.length} file(s) selected`;
+        text.classList.add('text-emerald-400', 'font-bold');
+      } else {
+        text.textContent = 'Multiple images allowed (PNG, JPG)';
+        text.classList.remove('text-emerald-400', 'font-bold');
+      }
+    }
+
+    function validateStep(step) {
+      let isValid = true;
+      
+      // Clear previous errors
+      document.querySelectorAll('[id^="err-"]').forEach(el => el.classList.add('hidden'));
+
+      if (step === 1) {
+        const title = document.getElementById('job-title').value.trim();
+        const category = document.querySelector('input[name="job_category"]:checked');
+        
+        if (!title) { document.getElementById('err-title').classList.remove('hidden'); isValid = false; }
+        if (!category) { document.getElementById('err-cat').classList.remove('hidden'); isValid = false; }
+      }
+
+      if (step === 2) {
+        const isOther = document.querySelector('input[name="location_type"]:checked').value === 'other';
+        if (isOther) {
+          const cPost = document.getElementById('custom-postcode').value.trim();
+          const cAdd = document.getElementById('custom-address').value.trim();
+          if (!cPost || !cAdd) { document.getElementById('err-location').classList.remove('hidden'); isValid = false; }
+        }
+        if (!document.getElementById('job-time').value.trim()) { document.getElementById('err-time').classList.remove('hidden'); isValid = false; }
+        if (!document.getElementById('job-budget').value) { document.getElementById('err-budget').classList.remove('hidden'); isValid = false; }
+      }
+
+      if (step === 3) {
+        if (!document.getElementById('job-desc').value.trim()) { document.getElementById('err-desc').classList.remove('hidden'); isValid = false; }
+        if (!document.getElementById('job-waiver').checked) { document.getElementById('err-waiver').classList.remove('hidden'); isValid = false; }
+      }
+
+      return isValid;
+    }
+
+    function goToStep(step) {
+      if (step > currentStep && !validateStep(currentStep)) return; // Validate before moving forward
+      
+      // Hide all steps
+      document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
+      // Show target step
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+      
+      currentStep = step;
+      
+      // Update UI Progress
+      const titles = ['Step 1 of 3: The Basics', 'Step 2 of 3: Where & When', 'Step 3 of 3: Details & Media'];
+      document.getElementById('step-indicator-text').textContent = titles[step - 1];
+      
+      const width = step === 1 ? '33.33%' : step === 2 ? '66.66%' : '100%';
+      document.getElementById('progress-bar').style.width = width;
+    }
+
+    async function submitJobRequest() {
+      if (!validateStep(3)) return;
+
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; 
+      btn.disabled = true;
+
+      // Determine Location Data
+      const isHome = document.querySelector('input[name="location_type"]:checked').value === 'home';
+      const postcode = isHome ? currentProfile.postcode : document.getElementById('custom-postcode').value.trim();
+      const address = isHome ? `${currentProfile.address_line1}, ${currentProfile.city}` : document.getElementById('custom-address').value.trim();
+      
+      try {
+        // Geocode postcode
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await res.json();
+        
+        if (data.status !== 200 || !data.result) {
+          showToast('Invalid Postcode provided.', 'error'); 
+          resetBtn(btn); return;
+        }
+
+        // Handle Multiple Photos
+        const files = document.getElementById('job-photos').files;
+        let uploadedUrls = [];
+        
+        if (files.length > 0) {
+          btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Uploading ${files.length} images...`;
+          
+          for (let file of files) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            
+            const { error: uploadError } = await supabaseClient.storage.from('job_photos').upload(fileName, file);
+            if (uploadError) {
+              showToast(`Failed to upload image: ${uploadError.message}`, 'error');
+              resetBtn(btn); return;
+            }
+            const { data: publicUrlData } = supabaseClient.storage.from('job_photos').getPublicUrl(fileName);
+            uploadedUrls.push(publicUrlData.publicUrl);
+          }
+        }
+
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Saving Job...';
+
+        // Insert into Database
+        const { error } = await supabaseClient.from('job_requests').insert([{
+          learner_id: currentProfile.id, 
+          title: document.getElementById('job-title').value, 
+          category: document.querySelector('input[name="job_category"]:checked').value, 
+          preferred_time: document.getElementById('job-time').value,
+          preferred_tier: document.getElementById('job-preferred-tier').value,
+          budget_estimate: document.getElementById('job-budget').value,
+          description: document.getElementById('job-desc').value,
+          materials: document.getElementById('job-materials').value, // New column
+          waiver_signed: document.getElementById('job-waiver').checked,
+          postcode: postcode.toUpperCase(), 
+          full_address: address, 
+          latitude: data.result.latitude, 
+          longitude: data.result.longitude,
+          status: 'open',
+          // Join array to string for the existing photo_url column format
+          photo_url: uploadedUrls.length > 0 ? uploadedUrls.join(',') : null 
+        }]);
+
+        if (error) {
+            showToast(`Database Error: ${error.message}`, 'error');
+            resetBtn(btn);
+        } else { 
+            showToast('Job posted! Redirecting...', 'success');
+            setTimeout(() => { window.location.href = 'learner.html'; }, 1500);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error while processing request.', 'error');
+        resetBtn(btn);
+      }
+    }
+
+    function resetBtn(btn) {
+      btn.innerHTML = 'Post Job to Marketplace'; 
+      btn.disabled = false;
+    }
+
+    function showToast(msg, type='info') {
+      const c = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='error'?'border-rose-500/50 text-rose-400':'border-emerald-500/50 text-emerald-400'} text-sm font-bold shadow-2xl`;
+      toast.innerHTML = `<div class="flex items-start"><i class="fa-solid ${type==='error'?'fa-circle-exclamation':'fa-circle-check'} mt-0.5 mr-2"></i><span>${msg}</span></div>`;
+      c.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+  </script>
+</body>
+</html>
