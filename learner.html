@@ -147,7 +147,7 @@
       if (!session) return window.location.href = 'login.html';
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
-      document.getElementById('header-user-name').textContent = profile.full_name;
+      updateHeaderUI();      document.getElementById('header-user-name').textContent = profile.full_name;
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       loadLearnerRequests();
     });
@@ -414,8 +414,47 @@
       }]);
       loadMessages();
     }
+function updateHeaderUI() {
+      if (!currentProfile) return;
+      const fullName = currentProfile.full_name || 'User';
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      const nameEl = document.getElementById('header-user-name');
+      if (nameEl) nameEl.textContent = fullName;
+      
+      const initialsContainer = document.getElementById('header-user-initials');
+      if (initialsContainer) {
+        if (currentProfile.profile_picture_url) {
+          initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
+        } else {
+          initialsContainer.innerHTML = initials;
+        }
+      }
+    }
 
-    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    async function handleGlobalAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showToast('Uploading profile picture...', 'info');
+      try {
+        const ext = file.name.split('.').pop();
+        const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+        await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
+        const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+        const newUrl = publicUrlData.publicUrl;
+
+        await supabaseClient.from('profiles').update({ profile_picture_url: newUrl }).eq('id', currentProfile.id);
+        await supabaseClient.auth.updateUser({ data: { profile_picture_url: newUrl } });
+
+        currentProfile.profile_picture_url = newUrl;
+        updateHeaderUI();
+        showToast('Profile picture updated!', 'success');
+      } catch (err) {
+        showToast('Failed to update picture.', 'error');
+      }
+    }    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    
     function showToast(msg, type='info') {
       const c = document.getElementById('toast-container');
       const toast = document.createElement('div');
