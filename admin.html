@@ -53,7 +53,19 @@
     </div>
   </header>
 
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- EVIDENCE REVIEW MODAL -->
+  <div id="user-docs-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
+      <button onclick="document.getElementById('user-docs-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-lg font-bold text-white mb-1">User Evidence</h3>
+      <p class="text-xs text-[#8892B0] mb-6">Viewing documents for <span id="docs-modal-name" class="font-bold text-white"></span></p>
+      <div id="docs-modal-content" class="space-y-3">
+        <!-- Buttons injected here -->
+      </div>
+    </div>
+  </div>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
 
@@ -119,6 +131,7 @@
 
     let currentAdminProfile = null;
     let currentActiveTab = 'reviews';
+    let allLoadedUsers = [];
     const AVAILABLE_SKILLS = ['Plumbing', 'Tiling', 'Carpentry & Joinery', 'Electrical Basics', 'Decorating & Painting', 'Garden & Landscaping'];
 
     // --- INITIALIZATION ---
@@ -188,15 +201,16 @@
               <div class="text-[10px] text-[#8892B0] uppercase">${(t.tutor_tier||'').replace('_',' ')}</div>
             </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="viewSecureDocument('${t.id_document_url || ''}')" class="px-3 py-1.5 bg-[#233554] text-white rounded text-xs font-bold">ID</button>
-            <button onclick="viewSecureDocument('${t.dbs_document_url || ''}')" class="px-3 py-1.5 bg-[#233554] text-white rounded text-xs font-bold">DBS</button>
+          <div class="flex flex-wrap gap-2">
+            ${t.id_document_url ? `<button onclick="viewSecureDocument('${t.id_document_url}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold">ID</button>` : ''}
+            ${t.dbs_document_url ? `<button onclick="viewSecureDocument('${t.dbs_document_url}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold">DBS</button>` : ''}
+            ${t.trade_certificate_url ? `<button onclick="viewSecureDocument('${t.trade_certificate_url}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition rounded text-xs font-bold border border-amber-500/30" title="Trade Certification">PRO</button>` : ''}
           </div>
           <div class="flex flex-col space-y-2 w-full md:w-64">
             <input type="text" id="notes-${t.id}" placeholder="Rejection notes..." class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
             <div class="flex gap-2">
-              <button onclick="processTutor('${t.id}', 'approved')" class="flex-1 py-1.5 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded">Approve</button>
-              <button onclick="processTutor('${t.id}', 'rejected')" class="flex-1 py-1.5 bg-rose-500/20 text-rose-400 text-xs font-bold rounded">Reject</button>
+              <button onclick="processTutor('${t.id}', 'approved')" class="flex-1 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/40 transition text-emerald-400 text-xs font-bold rounded">Approve</button>
+              <button onclick="processTutor('${t.id}', 'rejected')" class="flex-1 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 transition text-rose-400 text-xs font-bold rounded">Reject</button>
             </div>
           </div>
         </div>
@@ -204,8 +218,12 @@
     }
 
     async function viewSecureDocument(path) {
-      if (!path) { showToast('Document missing.', 'error'); return; }
-      const { data } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
+      if (!path) { showToast('Document path is missing.', 'error'); return; }
+      const { data, error } = await supabaseClient.storage.from('tutor_documents').createSignedUrl(path, 60);
+      if (error) {
+        showToast('Failed to generate secure document link.', 'error');
+        return;
+      }
       if (data) window.open(data.signedUrl, '_blank');
     }
 
@@ -233,7 +251,7 @@
             <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-[#233554] text-[#8892B0]">${job.status}</span>
           </div>
           <p class="text-[#8892B0]">Learner: ${job.learner?.full_name || 'Unknown'} | Tutor: ${job.tutor?.full_name || 'Unassigned'}</p>
-          <button onclick="adminDeleteJob('${job.id}')" class="w-full mt-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded">Delete Job</button>
+          <button onclick="adminDeleteJob('${job.id}')" class="w-full mt-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded transition">Delete Job</button>
         </div>
       `).join('');
     }
@@ -246,7 +264,7 @@
       }
     }
 
-    // --- TAB 3: USER DIRECTORY (WITH SKILLS & DELETION) ---
+    // --- TAB 3: USER DIRECTORY (WITH SKILLS, DOCS, & DELETION) ---
     async function loadAllUsers() {
       const container = document.getElementById('admin-users-list');
       const term = document.getElementById('user-search').value.trim().toLowerCase();
@@ -256,28 +274,35 @@
       if (term) query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%`);
 
       const { data: users } = await query;
+      allLoadedUsers = users || []; // Store globally for modal access
+
       if (!users || users.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center">No users found.</p>'; return; }
 
       container.innerHTML = users.map(u => {
         const userSkills = u.skills || [];
         const isTutor = u.role === 'tutor';
+        const hasDocs = u.id_document_url || u.dbs_document_url || u.trade_certificate_url;
 
         return `
           <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-4 space-y-3">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
               <div>
-                <div class="font-bold text-white text-sm">${u.full_name || 'Unnamed'}</div>
+                <div class="font-bold text-white text-sm flex items-center gap-2">
+                  ${u.full_name || 'Unnamed'} 
+                  <span class="text-[9px] px-2 py-0.5 rounded border border-[#233554] text-[#8892B0] uppercase font-bold">${u.validation_status || 'N/A'}</span>
+                </div>
                 <div class="text-[10px] text-[#8892B0]">${u.email}</div>
                 <div class="text-[10px] uppercase font-bold text-[#FF6B35] mt-1">Role: ${u.role} | Tier: ${u.tutor_tier || 'N/A'}</div>
               </div>
               <div class="flex items-center gap-2 w-full md:w-auto">
+                ${hasDocs ? `<button onclick="openUserDocsModal('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold" title="View Evidence">Docs</button>` : ''}
                 <select id="role-${u.id}" class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
                   <option value="learner" ${u.role==='learner'?'selected':''}>Learner</option>
                   <option value="tutor" ${u.role==='tutor'?'selected':''}>Tutor</option>
                   <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
                 </select>
-                <button onclick="updateUserRole('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white rounded text-xs font-bold">Update</button>
-                <button onclick="deleteUser('${u.id}')" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 rounded text-xs font-bold" title="Delete Account"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="updateUserRole('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] text-white rounded text-xs font-bold transition">Update</button>
+                <button onclick="deleteUser('${u.id}')" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 rounded text-xs font-bold transition" title="Delete Account"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
 
@@ -301,6 +326,31 @@
           </div>
         `;
       }).join('');
+    }
+
+    function openUserDocsModal(userId) {
+      const user = allLoadedUsers.find(u => u.id === userId);
+      if (!user) return;
+
+      document.getElementById('docs-modal-name').textContent = user.full_name || 'User';
+      
+      let html = '';
+      if (user.id_document_url) {
+        html += `<button onclick="viewSecureDocument('${user.id_document_url}')" class="w-full py-3 bg-[#233554] hover:bg-[#FF6B35] transition text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-id-card"></i> View Photo ID</button>`;
+      }
+      if (user.dbs_document_url) {
+        html += `<button onclick="viewSecureDocument('${user.dbs_document_url}')" class="w-full py-3 bg-[#233554] hover:bg-[#FF6B35] transition text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-shield-halved"></i> View DBS Certificate</button>`;
+      }
+      if (user.trade_certificate_url) {
+        html += `<button onclick="viewSecureDocument('${user.trade_certificate_url}')" class="w-full py-3 bg-amber-500/20 hover:bg-amber-500/40 transition text-amber-400 font-bold text-sm border border-amber-500/30 rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-medal"></i> View Pro Certificate</button>`;
+      }
+
+      if (!html) {
+        html = '<p class="text-xs text-[#8892B0] text-center italic py-4">No evidence documents found for this user.</p>';
+      }
+
+      document.getElementById('docs-modal-content').innerHTML = html;
+      document.getElementById('user-docs-modal').classList.remove('hidden');
     }
 
     async function updateUserRole(userId) {
@@ -328,6 +378,7 @@
     }
 
     async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+    
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
       if (!container) return;
