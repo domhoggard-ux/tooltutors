@@ -195,10 +195,13 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
           <div class="grid grid-cols-2 gap-4">
             <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Learner</p><p id="card-learner" class="text-sm text-white"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Job Type</p><p id="card-job-type" class="text-sm font-bold"></p></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
             <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-2 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           </div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-3 rounded-lg border border-[#233554]"></p></div>
-          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-3 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
         
@@ -412,13 +415,20 @@
                </div>` 
             : '';
 
+          // Add Job Type Badge
+          const jobTypeBadge = j.job_type === 'complete_for_me' 
+            ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+            : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
           return `
             <div class="p-5 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-3 relative overflow-hidden">
               <div class="flex justify-between items-start">
                 <span class="font-bold text-white text-sm pr-2">${j.title}</span>
-                <span class="text-[9px] uppercase bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold">Match</span>
+                <span class="text-[9px] uppercase bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold ml-2 h-fit">Match</span>
               </div>
               
+              <div class="mb-1">${jobTypeBadge}</div>
+
               <div class="flex justify-between items-center bg-[#112240] p-3 rounded-lg border border-[#233554]">
                 ${distanceHtml}
                 <span class="text-[#8892B0] font-bold">Budget: £${j.budget_estimate}</span>
@@ -461,13 +471,19 @@
           const borderColor = isSuccess ? 'border-emerald-500/50' : (j.status === 'cancelled' ? 'border-rose-500/30' : 'border-[#FF6B35]/30');
           const badgeColor = isSuccess ? 'text-emerald-400 bg-emerald-400/10' : (j.status === 'cancelled' ? 'text-rose-400 bg-rose-500/10' : 'text-[#FF6B35] bg-[#FF6B35]/10');
 
+          const jobTypeBadge = j.job_type === 'complete_for_me' 
+            ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+            : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
           return `
             <div class="p-5 bg-[#0A192F] border ${borderColor} rounded-xl text-xs space-y-3">
               <div class="flex justify-between items-start mb-2">
                 <span class="font-bold text-white text-sm pr-2">${j.title}</span>
-                <span class="text-[9px] uppercase font-bold ${badgeColor} px-2 py-1 rounded">${j.status.replace('_', ' ')}</span>
+                <span class="text-[9px] uppercase font-bold ${badgeColor} px-2 py-1 rounded ml-2 h-fit">${j.status.replace('_', ' ')}</span>
               </div>
               
+              <div class="mb-1">${jobTypeBadge}</div>
+
               <div class="flex gap-3 mb-3">
                  <div class="flex-1"></div>
                  ${photoThumbnail}
@@ -572,6 +588,17 @@
 
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
+      
+      // Inject Job Type specific styling to the modal
+      const jobTypeEl = document.getElementById('card-job-type');
+      if (job.job_type === 'complete_for_me') {
+         jobTypeEl.textContent = 'Complete For Me';
+         jobTypeEl.className = 'text-sm font-bold text-emerald-400';
+      } else {
+         jobTypeEl.textContent = 'Teach Me';
+         jobTypeEl.className = 'text-sm font-bold text-[#FF6B35]';
+      }
+
       document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString() : 'TBD';
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
@@ -605,7 +632,7 @@
         appointment_time: null 
       }).eq('id', jobId);
 
-      // Delete the offer completely so it clears out of their "Offer Pending" state
+      // Securely delete the offer now that the RLS policy is updated
       await supabaseClient.from('job_offers').delete().eq('job_id', jobId).eq('tutor_id', currentProfile.id);
 
       if (error) {
