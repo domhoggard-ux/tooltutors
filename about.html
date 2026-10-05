@@ -3,26 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About ToolTutors | Our Mission</title>
+  <title>About ToolTutors | Learn, Build & Grow</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
     }
   </script>
 </head>
+
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <!-- HEADER NAVIGATION -->
+  <!-- HEADER -->
   <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-4 sm:px-8">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
+
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-[#112240] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-xl shadow-lg">
           <i class="fa-solid fa-wrench"></i>
         </div>
-        <span class="text-xl font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+
+        <span class="text-xl font-bold tracking-tight text-white">
+          Tool<span class="text-[#FF6B35]">Tutors</span>
+        </span>
       </div>
 
       <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
@@ -32,78 +47,455 @@
       </nav>
 
       <div class="flex items-center space-x-3">
-        <a href="login.html" class="px-4 py-2 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35] transition flex items-center space-x-2">
+        <a href="login.html"
+          class="px-4 py-2 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35] transition flex items-center space-x-2">
           <i class="fa-solid fa-user text-[#FF6B35]"></i>
           <span>Sign In</span>
         </a>
-        <a href="apply.html" class="hidden sm:inline-block px-4 py-2 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">
+
+        <a href="apply.html"
+          class="hidden sm:inline-block px-4 py-2 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">
           Get Started
         </a>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-8 py-12 lg:py-16 space-y-12">
-    <div class="text-center space-y-4">
-      <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">
-        Our Mission
-      </span>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-        Bridging the DIY Skill Gap
-      </h1>
-      <p class="text-sm sm:text-base text-[#8892B0] max-w-2xl mx-auto leading-relaxed">
-        ToolTutors connects homeowners with experienced mentors to make practical knowledge accessible to everyone.
-      </p>
-    </div>
+  <!-- MAIN -->
+  <main class="flex-1">
 
-    <div class="bg-[#112240] border border-[#233554] p-8 sm:p-10 rounded-3xl shadow-2xl space-y-6">
-      <h3 class="text-xl font-bold text-white flex items-center">
-        <i class="fa-solid fa-lightbulb text-[#FF6B35] mr-3"></i> Our Vision
-      </h3>
-      <p class="text-sm text-[#8892B0] leading-relaxed">
-        We believe everyone should feel empowered to build, repair, and improve their homes. While video tutorials are helpful, nothing replaces having an experienced mentor standing beside you, ensuring safety, demonstrating proper technique, and giving you confidence.
-      </p>
-    </div>
+    <!-- HERO -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-[#FF6B35]/10 to-transparent"></div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-[#112240] border border-[#233554] p-6 rounded-2xl shadow-xl space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35]">
-          <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        <h4 class="text-base font-bold text-white">Safety & Terms First</h4>
-        <p class="text-xs text-[#8892B0] leading-relaxed">
-          Safety protocols and liability agreements are integrated directly into every job booking process, ensuring complete clarity and peace of mind for both parties.
+      <div class="max-w-6xl mx-auto px-4 sm:px-8 py-24 relative z-10 text-center">
+
+        <span
+          class="px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">
+          Our Mission
+        </span>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mt-6 leading-tight">
+          Bringing DIY Knowledge
+          <span class="text-[#FF6B35]">Back To Communities</span>
+        </h1>
+
+        <p class="max-w-3xl mx-auto text-[#8892B0] text-base sm:text-lg leading-relaxed mt-8">
+          ToolTutors was created to bridge the gap between watching online tutorials and having
+          a skilled person standing beside you. We connect homeowners, learners,
+          hobbyists, and professionals through a trusted local marketplace built around
+          practical knowledge, mentorship, and real-world experience.
         </p>
       </div>
+    </section>
 
-      <div class="bg-[#112240] border border-[#233554] p-6 rounded-2xl shadow-xl space-y-3">
-        <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35]">
-          <i class="fa-solid fa-users"></i>
+    <!-- WHY WE EXIST -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-16">
+      <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 sm:p-10 shadow-2xl">
+
+        <h2 class="text-3xl font-extrabold text-white mb-6">
+          Why ToolTutors Exists
+        </h2>
+
+        <div class="space-y-5 text-sm sm:text-base text-[#8892B0] leading-relaxed">
+
+          <p>
+            Millions of people want to improve their homes, learn practical skills,
+            and complete projects themselves. Yet many discover that online videos
+            cannot answer questions in real time, identify mistakes, or provide
+            reassurance when something goes wrong.
+          </p>
+
+          <p>
+            On the other hand, hiring a professional tradesperson for every task can
+            be expensive, especially when the goal is simply to learn a new skill
+            rather than outsource the entire project.
+          </p>
+
+          <p>
+            ToolTutors was built around a simple idea: connect people who want to learn
+            with people who already know. By doing so, we create opportunities for
+            knowledge sharing, skill development, and stronger local communities.
+          </p>
+
         </div>
-        <h4 class="text-base font-bold text-white">Community Driven</h4>
-        <p class="text-xs text-[#8892B0] leading-relaxed">
-          Building stronger local neighborhoods through shared knowledge, practical collaboration, and mutual trust.
-        </p>
       </div>
-    </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-white">How ToolTutors Works</h2>
+        <p class="text-[#8892B0] mt-3">A simple process from idea to completion.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center text-[#FF6B35] text-xl mb-4">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <h3 class="font-bold text-white mb-2">1. Post Your Project</h3>
+          <p class="text-sm text-[#8892B0]">
+            Describe your DIY project, upload photos, share your budget,
+            and explain whether you want guidance or a completed solution.
+          </p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center text-[#FF6B35] text-xl mb-4">
+            <i class="fa-solid fa-comments-dollar"></i>
+          </div>
+          <h3 class="font-bold text-white mb-2">2. Receive Offers</h3>
+          <p class="text-sm text-[#8892B0]">
+            Qualified tutors in your area review your request and submit
+            offers explaining pricing, experience, and availability.
+          </p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8 text-center">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 flex items-center justify-center text-[#FF6B35] text-xl mb-4">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+          </div>
+          <h3 class="font-bold text-white mb-2">3. Learn or Complete</h3>
+          <p class="text-sm text-[#8892B0]">
+            Meet your chosen tutor, collaborate on the project,
+            gain confidence, and leave a review once the work is complete.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SERVICE TYPES -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-20">
+
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-white">
+          Two Ways To Use ToolTutors
+        </h2>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8">
+
+        <div class="bg-[#112240] border border-[#FF6B35]/30 rounded-3xl p-8">
+          <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/15 flex items-center justify-center text-[#FF6B35] text-2xl mb-5">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+
+          <h3 class="text-2xl font-bold text-white mb-4">Teach Me</h3>
+
+          <p class="text-[#8892B0] leading-relaxed mb-5">
+            Our unique mentorship model allows learners to gain hands-on
+            experience alongside knowledgeable tutors.
+          </p>
+
+          <ul class="space-y-3 text-sm text-[#E6F1FF]">
+            <li><i class="fa-solid fa-check text-[#FF6B35] mr-2"></i>Learn practical DIY skills</li>
+            <li><i class="fa-solid fa-check text-[#FF6B35] mr-2"></i>Work alongside an experienced mentor</li>
+            <li><i class="fa-solid fa-check text-[#FF6B35] mr-2"></i>Build confidence and independence</li>
+            <li><i class="fa-solid fa-check text-[#FF6B35] mr-2"></i>Save money on future repairs</li>
+          </ul>
+
+        </div>
+
+        <div class="bg-[#112240] border border-emerald-500/30 rounded-3xl p-8">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 flex items-center justify-center text-emerald-400 text-2xl mb-5">
+            <i class="fa-solid fa-toolbox"></i>
+          </div>
+
+          <h3 class="text-2xl font-bold text-white mb-4">Complete For Me</h3>
+
+          <p class="text-[#8892B0] leading-relaxed mb-5">
+            For projects where you simply need the work completed,
+            professional-tier tutors can provide a traditional contractor experience.
+          </p>
+
+          <ul class="space-y-3 text-sm text-[#E6F1FF]">
+            <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Professional-level service</li>
+            <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Ideal for complex projects</li>
+            <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Suitable for busy homeowners</li>
+            <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Only available to approved professional tutors</li>
+          </ul>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- WHY CHOOSE -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-white">
+          Why People Choose ToolTutors
+        </h2>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-graduation-cap text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Learn Real Skills</h3>
+          <p class="text-sm text-[#8892B0]">Practical experience beats passive watching.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-pound-sign text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Transparent Pricing</h3>
+          <p class="text-sm text-[#8892B0]">Compare offers and choose what suits your budget.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-house text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Home Improvement</h3>
+          <p class="text-sm text-[#8892B0]">Solve everyday projects with confidence.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-people-group text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Local Communities</h3>
+          <p class="text-sm text-[#8892B0]">Support and learn from skilled people nearby.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-calendar-check text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Flexible Scheduling</h3>
+          <p class="text-sm text-[#8892B0]">Arrange sessions around your availability.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-6">
+          <i class="fa-solid fa-star text-[#FF6B35] text-2xl mb-4"></i>
+          <h3 class="font-bold text-white mb-2">Reviews & Reputation</h3>
+          <p class="text-sm text-[#8892B0]">Choose tutors backed by community feedback.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-20">
+
+      <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 sm:p-10">
+
+        <div class="flex items-center mb-6">
+          <i class="fa-solid fa-shield-halved text-[#FF6B35] text-3xl mr-4"></i>
+          <h2 class="text-3xl font-extrabold text-white">
+            Safety, Trust & Verification
+          </h2>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+          <div class="space-y-4 text-[#8892B0]">
+            <p>
+              Building trust is critical when connecting learners and tutors.
+              That's why ToolTutors includes a structured verification process
+              designed to support safety and accountability.
+            </p>
+
+            <p>
+              Tutors submit identity documentation, profile information,
+              skill categories, and supporting verification documents before
+              being approved for marketplace access.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center text-sm text-white">
+              <i class="fa-solid fa-id-card text-[#FF6B35] mr-3"></i>
+              Identity Verification
+            </div>
+
+            <div class="flex items-center text-sm text-white">
+              <i class="fa-solid fa-shield text-[#FF6B35] mr-3"></i>
+              DBS Documentation Review
+            </div>
+
+            <div class="flex items-center text-sm text-white">
+              <i class="fa-solid fa-comments text-[#FF6B35] mr-3"></i>
+              In-Platform Messaging
+            </div>
+
+            <div class="flex items-center text-sm text-white">
+              <i class="fa-solid fa-file-signature text-[#FF6B35] mr-3"></i>
+              Terms & Liability Agreements
+            </div>
+
+            <div class="flex items-center text-sm text-white">
+              <i class="fa-solid fa-star text-[#FF6B35] mr-3"></i>
+              Review & Rating System
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- AUDIENCE -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-white">Who We Serve</h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8">
+          <i class="fa-solid fa-house-user text-[#FF6B35] text-3xl mb-5"></i>
+          <h3 class="text-lg font-bold text-white mb-3">Homeowners</h3>
+          <p class="text-sm text-[#8892B0]">
+            Whether it's repairing, maintaining, or upgrading a property,
+            homeowners can access guidance and support when they need it most.
+          </p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8">
+          <i class="fa-solid fa-screwdriver-wrench text-[#FF6B35] text-3xl mb-5"></i>
+          <h3 class="text-lg font-bold text-white mb-3">DIY Enthusiasts</h3>
+          <p class="text-sm text-[#8892B0]">
+            Build confidence, avoid costly mistakes, and learn directly
+            from experienced people who have already mastered the skill.
+          </p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-2xl p-8">
+          <i class="fa-solid fa-user-gear text-[#FF6B35] text-3xl mb-5"></i>
+          <h3 class="text-lg font-bold text-white mb-3">Professionals & Experts</h3>
+          <p class="text-sm text-[#8892B0]">
+            Share your expertise, earn additional income,
+            and build a respected reputation within your local area.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- FAQ -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-8 py-20">
+
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold text-white">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="space-y-4">
+
+        <div class="bg-[#112240] border border-[#233554] rounded-xl p-6">
+          <h3 class="font-bold text-white mb-2">Do I need DIY experience?</h3>
+          <p class="text-sm text-[#8892B0]">No. ToolTutors is designed for complete beginners through to experienced enthusiasts.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-xl p-6">
+          <h3 class="font-bold text-white mb-2">Can anyone become a Tutor?</h3>
+          <p class="text-sm text-[#8892B0]">Tutors must complete the platform's review and verification process before marketplace access is granted.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-xl p-6">
+          <h3 class="font-bold text-white mb-2">What's the difference between Teach Me and Complete For Me?</h3>
+          <p class="text-sm text-[#8892B0]">Teach Me focuses on mentorship and learning, while Complete For Me is for professional completion of work.</p>
+        </div>
+
+        <div class="bg-[#112240] border border-[#233554] rounded-xl p-6">
+          <h3 class="font-bold text-white mb-2">Can I communicate with a Tutor before hiring them?</h3>
+          <p class="text-sm text-[#8892B0]">Yes. The platform includes messaging functionality and proposal workflows to help both parties coordinate.</p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- COMMUNITY VISION -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 pb-20">
+
+      <div class="bg-gradient-to-r from-[#112240] to-[#172A45] border border-[#233554] rounded-3xl p-10">
+
+        <h2 class="text-3xl font-extrabold text-white mb-6">
+          Building The Future Of Practical Learning
+        </h2>
+
+        <div class="space-y-5 text-[#8892B0] leading-relaxed">
+
+          <p>
+            We believe practical skills should not disappear from our communities.
+            Every year, valuable knowledge held by experienced tradespeople,
+            hobbyists, and makers becomes harder to access.
+          </p>
+
+          <p>
+            ToolTutors exists to preserve that knowledge by helping people teach,
+            learn, and collaborate in meaningful ways.
+          </p>
+
+          <p>
+            Our long-term vision is to create the UK's most trusted marketplace
+            for practical learning, empowering people to become more confident,
+            self-reliant, and connected to their communities.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- CTA -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-8 pb-24">
+
+      <div class="bg-[#112240] border border-[#FF6B35]/30 rounded-3xl p-10 text-center shadow-2xl">
+
+        <h2 class="text-4xl font-extrabold text-white mb-4">
+          Ready To Start Your Next Project?
+        </h2>
+
+        <p class="text-[#8892B0] max-w-2xl mx-auto mb-8">
+          Whether you want to learn a new skill, get help with a project,
+          or become a trusted mentor, ToolTutors is ready to help you get started.
+        </p>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+
+          <a href="login.html"
+            class="px-8 py-4 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded-xl font-bold transition shadow-lg">
+            Find A Tutor
+          </a>
+
+          <a href="apply.html"
+            class="px-8 py-4 bg-[#233554] hover:border-[#FF6B35] border border-[#233554] text-white rounded-xl font-bold transition">
+            Become A Tutor
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
   </main>
 
   <!-- FOOTER -->
   <footer class="bg-[#112240] border-t border-[#233554] py-8 px-4 sm:px-8 text-center text-xs text-[#8892B0]">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>&copy; <span id="currentYear"></span> ToolTutors. All rights reserved.</div>
+
+      <div>
+        &copy; <span id="currentYear"></span> ToolTutors. All rights reserved.
+      </div>
+
       <div class="flex space-x-6">
         <a href="index.html" class="hover:text-white transition">Home</a>
         <a href="about.html" class="hover:text-white transition">About Us</a>
         <a href="apply.html" class="hover:text-white transition">Join</a>
         <a href="login.html" class="hover:text-white transition">Sign In</a>
       </div>
+
     </div>
   </footer>
 
   <script>
     document.getElementById('currentYear').textContent = new Date().getFullYear();
   </script>
-</body>
-</html>
+
+</body
