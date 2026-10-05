@@ -122,10 +122,13 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
           <div class="grid grid-cols-2 gap-4">
             <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tutor</p><div id="card-tutor"></div></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Job Type</p><p id="card-job-type" class="text-sm font-bold"></p></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
             <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-2 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           </div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-3 rounded-lg border border-[#233554]"></p></div>
-          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-3 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
         
@@ -233,7 +236,6 @@
       setupReviewStars();
     });
 
-    // Handle Star Click Logic
     function setupReviewStars() {
       document.querySelectorAll('.star-btn').forEach(star => {
         star.addEventListener('click', (e) => {
@@ -354,6 +356,11 @@
           const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
           const safeJobTitle = job.title.replace(/'/g, "\\'");
 
+          // Injecting Job Type Badge
+          const jobTypeBadge = job.job_type === 'complete_for_me' 
+            ? `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+            : `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
           if (job.status === 'open') {
             if (pendingBids.length > 0) {
               action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
@@ -423,6 +430,7 @@
                     <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
                   </div>
                   <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' || job.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+                  ${jobTypeBadge}
                   <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
                 </div>
                 ${photoThumbnail}
@@ -498,6 +506,16 @@
       const tName = loadedTutorsMap[job.tutor_id] || 'Unknown';
       document.getElementById('card-tutor').innerHTML = `<button onclick="openTutorProfile('${job.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 transition">${tName}</button>`;
       
+      // Inject Job Type specific styling to the modal
+      const jobTypeEl = document.getElementById('card-job-type');
+      if (job.job_type === 'complete_for_me') {
+         jobTypeEl.textContent = 'Complete For Me';
+         jobTypeEl.className = 'text-sm font-bold text-emerald-400';
+      } else {
+         jobTypeEl.textContent = 'Teach Me';
+         jobTypeEl.className = 'text-sm font-bold text-[#FF6B35]';
+      }
+
       document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString() : 'TBD';
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
@@ -567,22 +585,12 @@
         const agreedPrice = offerData ? offerData.offer_price : 'Unknown';
         const tutorName = tutorData ? tutorData.full_name : 'Unknown Tutor';
 
-        await fetch('https://formsubmit.co/ajax/Admin@Tooltutors.co.uk', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            _subject: `PAYMENT REQUIRED: Job Completed by ${tutorName}`,
-            _template: 'box',
-            Job_Status: 'Completed',
-            Tutor_Name: tutorName,
-            Agreed_Price: `£${agreedPrice}`,
-            Job_ID: jobId,
-            Message: 'The learner has marked this job as complete and left a review. Please initiate the payout to the tutor.'
-          })
+        // Securely invoke your Supabase Edge Function to trigger the Resend email
+        const { error: edgeErr } = await supabaseClient.functions.invoke('send-completion-email', {
+          body: { tutorName, agreedPrice, jobId }
         });
+        
+        if (edgeErr) console.warn('Database updated, but admin email failed to send:', edgeErr);
 
         showToast('Job completed and review submitted!', 'success');
         closeReviewModal();
