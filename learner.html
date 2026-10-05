@@ -25,7 +25,6 @@
         <div class="flex items-center space-x-2"><span class="text-lg font-bold text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span><span class="text-[10px] px-2 py-0.5 rounded-full bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase font-bold hidden sm:block">Learner Portal</span></div>
       </div>
       
-      <!-- Clickable Avatar Header Section -->
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-3 pr-2">
           
@@ -369,7 +368,6 @@
         const activeJobs = loadedJobsData.filter(j => !j.learner_archived);
         const archivedJobs = loadedJobsData.filter(j => j.learner_archived);
 
-        // Process Active Jobs
         if (activeJobs.length === 0) {
           listContainer.innerHTML = '<div class="py-12 text-center border-2 border-dashed border-[#233554] rounded-xl"><p class="text-sm text-[#8892B0] font-bold">You have no active projects.</p><p class="text-xs text-[#8892B0] mt-1">Use the button on the left to create your first request!</p></div>';
         } else {
@@ -432,13 +430,13 @@
                               <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
                             </div>
                             <div class="flex gap-2">
-                              <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                              <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
                               <button onclick="openPaymentModal('${job.id}')" class="flex-[2] py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay</button>
                             </div>
                           </div>`;
               } else if (job.status === 'scheduled') {
                 action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
                             <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
                           </div>`;
               } else if (job.status === 'completed') {
@@ -474,7 +472,6 @@
           }).join('');
         }
 
-        // Process Archived Jobs List for the Modal
         archiveContainer.innerHTML = archivedJobs.length ? archivedJobs.map(job => `
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs flex justify-between items-center">
             <div>
@@ -501,7 +498,6 @@
 
         if (reqErr || offErr) throw new Error(reqErr?.message || offErr?.message);
 
-        // SEND EMAIL NOTIFICATION TO TUTOR
         const { data: tutorData } = await supabaseClient.from('profiles').select('email, full_name').eq('id', tutorId).single();
         const { data: jobData } = await supabaseClient.from('job_requests').select('title').eq('id', jobId).single();
         
@@ -558,6 +554,9 @@
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
       
+      // Close archive modal when job card opens
+      document.getElementById('archive-modal').classList.add('hidden');
+      
       const photoContainer = document.getElementById('card-photo-container');
       const firstPhoto = getFirstPhoto(job);
       
@@ -574,7 +573,6 @@
       const tName = loadedTutorsMap[job.tutor_id] || 'Unknown';
       document.getElementById('card-tutor').innerHTML = `<button onclick="openTutorProfile('${job.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 transition">${tName}</button>`;
       
-      // Inject Job Type specific styling to the modal
       const jobTypeEl = document.getElementById('card-job-type');
       if (job.job_type === 'complete_for_me') {
          jobTypeEl.textContent = 'Complete For Me';
@@ -613,7 +611,6 @@
       document.getElementById('review-tutor-id').value = tutorId;
       document.getElementById('review-comment').value = '';
       
-      // Reset stars to 5 by default
       document.getElementById('review-rating').value = 5;
       document.querySelectorAll('.star-btn').forEach(s => {
          s.classList.remove('text-[#233554]');
@@ -651,7 +648,6 @@
         }]);
         if (revErr) throw revErr;
 
-        // SEND PAYOUT EMAIL TO ADMIN
         const { data: offerData } = await supabaseClient.from('job_offers').select('offer_price').eq('job_id', jobId).eq('status', 'accepted').single();
         const { data: tutorData } = await supabaseClient.from('profiles').select('full_name').eq('id', tutorId).single();
         const { data: jobData } = await supabaseClient.from('job_requests').select('title').eq('id', jobId).single();
