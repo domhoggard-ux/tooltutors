@@ -20,6 +20,7 @@
     ::-webkit-scrollbar-track { background: #0A192F; }
     ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   </style>
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
@@ -77,9 +78,10 @@
         <h1 class="text-2xl font-extrabold text-white">Tutor Dashboard</h1>
         <p class="text-xs text-[#8892B0] mt-1">Browse open local requests matching your skills and manage your active projects.</p>
       </div>
-      <button onclick="loadTutorWorkspace()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
-        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
-      </button>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('archive-modal').classList.remove('hidden')" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-box-archive"></i><span class="hidden sm:inline ml-1">Archive</span></button>
+        <button onclick="loadTutorWorkspace()" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-rotate-right"></i><span class="hidden sm:inline ml-1">Refresh</span></button>
+      </div>
     </div>
 
     <!-- ONBOARDING SECTION -->
@@ -95,7 +97,7 @@
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Photo ID</label><input type="file" id="tutor-id-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           
-          <!-- PROFESSIONAL CERTIFICATION (Conditionally Rendered) -->
+          <!-- PROFESSIONAL CERTIFICATION -->
           <div id="pro-cert-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 bg-[#FF6B35] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase shadow-lg">Pro Tier</div>
             <label class="block text-xs font-semibold text-white mb-2">Trade / Professional Certification</label>
@@ -138,6 +140,23 @@
         <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
       </div>
     </section>
+
+    <!-- ARCHIVE MODAL -->
+    <div id="archive-modal" class="absolute inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
+        <button onclick="document.getElementById('archive-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center mb-4 pb-4 border-b border-[#233554]">
+          <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35] mr-3"><i class="fa-solid fa-box-archive"></i></div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Archived Jobs</h3>
+            <p class="text-[10px] text-[#8892B0] uppercase font-bold">Your past projects</p>
+          </div>
+        </div>
+        <div id="archive-list-container" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
 
     <!-- OFFER MODAL (BIDDING) -->
     <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
@@ -220,11 +239,11 @@
     </div>
 
     <!-- CHAT MODAL -->
-    <div id="chat-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="chat-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
         <div class="flex justify-between items-center p-4 border-b border-[#233554]">
           <div><h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3><p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting...</p></div>
-          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] text-lg px-2 transition"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] transition text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
         <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
@@ -270,7 +289,6 @@
         } else {
           document.getElementById('tutor-onboarding-section').classList.remove('hidden');
           
-          // Show Pro Certification upload field if the tutor tier is professional
           if (profile.tutor_tier === 'professional') {
             const proContainer = document.getElementById('pro-cert-container');
             const proInput = document.getElementById('tutor-pro-doc');
@@ -343,7 +361,6 @@
         let dbsPath = currentProfile?.dbs_document_url || null;
         let proPath = currentProfile?.trade_certificate_url || null;
 
-        // Process Standard Documents
         if (picFile) {
           const ext = picFile.name.split('.').pop();
           const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
@@ -367,7 +384,6 @@
           if (dbsErr) throw dbsErr;
         }
 
-        // Process Professional Certification Document
         if (proFile && currentProfile.tutor_tier === 'professional') {
           const ext = proFile.name.split('.').pop();
           proPath = `pro_cert_${currentProfile.id}_${Date.now()}.${ext}`;
@@ -386,7 +402,6 @@
         
         if (dbErr) throw dbErr;
         
-        // TRIGGERS ADMIN NOTIFICATION EMAIL
         try {
           await supabaseClient.functions.invoke('send-completion-email', {
             body: {
@@ -395,9 +410,7 @@
               recipientName: currentProfile.full_name || currentProfile.email || 'A New Tutor'
             }
           });
-        } catch (emailErr) {
-          console.error("Email notification failed:", emailErr);
-        }
+        } catch (emailErr) { console.error("Email notification failed:", emailErr); }
 
         showToast('Submitted for review!', 'success');
         
@@ -429,13 +442,13 @@
         let openJobs = (rawJobs || []).filter(j => {
           const hasSkill = currentProfile.skills?.includes(j.category);
           const isTierMatch = j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier;
+          const notArchivedByLearner = !j.learner_archived;
           
-          // STRICT RULE: If job is "Complete For Me", tutor MUST be a professional
           if (j.job_type === 'complete_for_me' && currentProfile.tutor_tier !== 'professional') {
             return false; 
           }
           
-          return hasSkill && isTierMatch;
+          return hasSkill && isTierMatch && notArchivedByLearner;
         });
         
         openJobs = openJobs.map(job => {
@@ -455,6 +468,10 @@
         loadedLearnersMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
         loadedJobsData = activeJobs || [];
 
+        const activeAcceptedJobs = loadedJobsData.filter(j => !j.tutor_archived);
+        const archivedAcceptedJobs = loadedJobsData.filter(j => j.tutor_archived);
+
+        // Render Open Jobs
         document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
           const bid = (myOffers || []).find(o => o.job_id === j.id && o.status !== 'withdrawn' && o.status !== 'rejected');
           const lName = loadedLearnersMap[j.learner_id] || 'Learner';
@@ -469,7 +486,6 @@
                </div>` 
             : '';
 
-          // Add Job Type Badge
           const jobTypeBadge = j.job_type === 'complete_for_me' 
             ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
             : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
@@ -502,7 +518,8 @@
           `;
         }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No matching open jobs right now.</p>';
 
-        document.getElementById('tutor-accepted-jobs-list').innerHTML = activeJobs?.length ? activeJobs.map(j => {
+        // Render Active Dashboard Jobs
+        document.getElementById('tutor-accepted-jobs-list').innerHTML = activeAcceptedJobs.length ? activeAcceptedJobs.map(j => {
           const lName = loadedLearnersMap[j.learner_id] || 'Learner';
           let actionHtml = '';
           
@@ -549,9 +566,40 @@
               </div>
             </div>
           `;
-        }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No active projects yet.</p>';
+        }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No active projects right now.</p>';
+
+        // Render Archived Jobs Modal
+        const archiveContainer = document.getElementById('archive-list-container');
+        archiveContainer.innerHTML = archivedAcceptedJobs.length ? archivedAcceptedJobs.map(job => `
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs flex justify-between items-center">
+            <div>
+              <h4 class="font-bold text-white text-sm">${job.title}</h4>
+              <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-[#233554] text-[#8892B0] mt-1 inline-block">${job.status.replace('_', ' ')}</span>
+            </div>
+            <button onclick="openJobCard('${job.id}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg transition font-bold shadow-lg">View Details</button>
+          </div>
+        `).join('') : '<p class="text-xs text-[#8892B0] text-center italic py-4">No archived jobs found.</p>';
+
       } catch (err) {
         console.error("Dashboard error:", err);
+      }
+    }
+
+    async function archiveJob(jobId) {
+      if(!confirm('Move this job to your archive?')) return;
+      
+      const btn = document.getElementById('card-archive-btn');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      
+      const { error } = await supabaseClient.from('job_requests').update({ tutor_archived: true }).eq('id', jobId);
+      
+      if (error) {
+        showToast(`Failed to archive: ${error.message}`, 'error');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-box-archive mr-2"></i> Archive Job';
+      } else {
+        showToast('Job archived successfully.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        loadTutorWorkspace();
       }
     }
 
@@ -593,7 +641,7 @@
       if (job && job.job_type === 'complete_for_me') {
         toolsContainer.classList.add('hidden');
         toolsInput.removeAttribute('required');
-        toolsInput.value = 'N/A - Complete For Me service'; // Prevents empty data errors
+        toolsInput.value = 'N/A - Complete For Me service';
       } else {
         toolsContainer.classList.remove('hidden');
         toolsInput.setAttribute('required', 'true');
@@ -658,7 +706,6 @@
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
       
-      // Inject Job Type specific styling to the modal
       const jobTypeEl = document.getElementById('card-job-type');
       if (job.job_type === 'complete_for_me') {
          jobTypeEl.textContent = 'Complete For Me';
@@ -680,7 +727,7 @@
       let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Chat</button>`;
       
       if (job.status === 'completed' || job.status === 'cancelled') {
-        buttonsHtml += `<button id="card-delete-btn" onclick="deleteJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-trash mr-2"></i> Delete Record</button>`;
+        buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
       } else {
         buttonsHtml += `<button id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> Cancel Job</button>`;
       }
@@ -701,7 +748,6 @@
         appointment_time: null 
       }).eq('id', jobId);
 
-      // Securely delete the offer now that the RLS policy is updated
       await supabaseClient.from('job_offers').delete().eq('job_id', jobId).eq('tutor_id', currentProfile.id);
 
       if (error) {
@@ -709,24 +755,6 @@
         if (btn) btn.innerHTML = '<i class="fa-solid fa-ban mr-2"></i> Cancel Job';
       } else {
         showToast('Job cancelled and returned to the board.', 'success');
-        document.getElementById('job-card-modal').classList.add('hidden');
-        loadTutorWorkspace();
-      }
-    }
-
-    async function deleteJob(jobId) {
-      if(!confirm('Are you sure you want to permanently delete this job record from the database?')) return;
-      
-      const btn = document.getElementById('card-delete-btn');
-      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      
-      const { error } = await supabaseClient.from('job_requests').delete().eq('id', jobId);
-      
-      if (error) {
-        showToast(`Failed to delete: ${error.message}`, 'error');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-trash mr-2"></i> Delete Record';
-      } else {
-        showToast('Job permanently deleted.', 'success');
         document.getElementById('job-card-modal').classList.add('hidden');
         loadTutorWorkspace();
       }
