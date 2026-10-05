@@ -382,7 +382,17 @@
         const { data: myOffers, error: myOffersErr } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
         if(myOffersErr) throw myOffersErr;
 
-        let openJobs = (rawJobs || []).filter(j => (j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier) && currentProfile.skills?.includes(j.category));
+        let openJobs = (rawJobs || []).filter(j => {
+          const hasSkill = currentProfile.skills?.includes(j.category);
+          const isTierMatch = j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier;
+          
+          // STRICT RULE: If job is "Complete For Me", tutor MUST be a professional
+          if (j.job_type === 'complete_for_me' && currentProfile.tutor_tier !== 'professional') {
+            return false; 
+          }
+          
+          return hasSkill && isTierMatch;
+        });
         
         openJobs = openJobs.map(job => {
           job.distance = calculateDistanceMiles(currentProfile.latitude, currentProfile.longitude, job.latitude, job.longitude);
