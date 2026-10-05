@@ -247,17 +247,15 @@
                 </label>
             </div>
           </div>
-
-          <div class="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl mt-4">
-            <label class="flex items-start space-x-3 cursor-pointer">
-              <input type="checkbox" id="job-waiver" class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#0A192F] focus:ring-[#FF6B35]">
-              <span class="text-xs text-[#8892B0]">
-                <strong class="text-white">Liability Waiver:</strong> By submitting this request, I acknowledge that ToolTutors provides peer mentorship. I accept full responsibility for any physical work on my property and hold ToolTutors harmless from damages or injury.
-              </span>
-            </label>
-            <p id="err-waiver" class="hidden text-rose-400 text-[10px] font-bold mt-2 ml-7">You must accept the liability waiver to proceed.</p>
-          </div>
-
+          <div class="p-4 bg-[#112240] border border-[#233554] rounded-xl mt-4">
+  <label class="flex items-start space-x-3 cursor-pointer">
+    <input type="checkbox" id="job-waiver" class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#0A192F] focus:ring-[#FF6B35]">
+    <span class="text-xs text-[#8892B0]">
+      I have read and agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms and Conditions</a>, including the specific liability waivers for my selected job type.
+    </span>
+  </label>
+  <p id="err-waiver" class="hidden text-rose-400 text-[10px] font-bold mt-2 ml-7">You must accept the terms to proceed.</p>
+</div>
           <div class="pt-4 border-t border-[#233554] flex justify-between items-center">
             <button type="button" onclick="goToStep(2)" class="px-6 py-3 bg-[#233554] hover:bg-[#112240] text-white font-bold rounded-xl transition"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button>
             <button type="button" onclick="submitJobRequest()" id="submit-btn" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg flex items-center">
@@ -281,7 +279,19 @@
     window.addEventListener('DOMContentLoaded', async () => {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) return window.location.href = 'login.html';
-      
+
+      // Lock Tier to Professional if "Complete For Me" is chosen
+    document.querySelectorAll('input[name="job_type"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const tierSelect = document.getElementById('job-preferred-tier');
+        if (e.target.value === 'complete_for_me') {
+          tierSelect.value = 'professional';
+          tierSelect.disabled = true; // Lock the dropdown
+        } else {
+          tierSelect.disabled = false; // Unlock for Teach Me
+        }
+      });
+    });      
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
       document.getElementById('header-user-name').textContent = profile.full_name;
