@@ -91,6 +91,19 @@
         <p class="text-[10px] text-[#8892B0] mt-2">Professionals will need to upload proof of trade certification alongside their photo ID and DBS check.</p>
       </div>
 
+      <!-- Terms and Conditions Agreement -->
+      <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl mt-4">
+        <label class="flex items-start space-x-3 cursor-pointer">
+          <input type="checkbox" id="terms-agreement" required class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#112240] focus:ring-[#FF6B35]">
+          <div class="text-xs text-[#8892B0]">
+            I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>.
+            <p id="tutor-commission-note" class="hidden mt-2 p-3 bg-[#FF6B35]/10 border border-[#FF6B35]/30 rounded-lg text-[#FF6B35] font-semibold leading-relaxed">
+              <i class="fa-solid fa-circle-info mr-1"></i> As a Tutor, I understand and agree that ToolTutors deducts a standard 10% commission fee from all completed job payouts to cover platform maintenance, lead generation, and secure payment processing.
+            </p>
+          </div>
+        </label>
+      </div>
+
       <button type="submit" id="submit-btn" class="w-full py-3.5 mt-4 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center shadow-lg shadow-[#FF6B35]/20">
         Create Account
       </button>
@@ -112,10 +125,14 @@
     function toggleTutorTier() {
       const role = document.getElementById('role').value;
       const tierContainer = document.getElementById('tutor-tier-container');
+      const commissionNote = document.getElementById('tutor-commission-note');
+      
       if (role === 'tutor') {
         tierContainer.classList.remove('hidden');
+        commissionNote.classList.remove('hidden');
       } else {
         tierContainer.classList.add('hidden');
+        commissionNote.classList.add('hidden');
       }
     }
 
@@ -136,9 +153,16 @@
       const city = document.getElementById('city').value;
       const postcode = document.getElementById('postcode').value;
       const role = document.getElementById('role').value;
+      const termsAccepted = document.getElementById('terms-agreement').checked;
       
       if (!role) {
         showError('Please select an account type.');
+        resetBtn(btn);
+        return;
+      }
+
+      if (!termsAccepted) {
+        showError('You must agree to the Terms of Service to create an account.');
         resetBtn(btn);
         return;
       }
@@ -156,7 +180,8 @@
             city: city,
             postcode: postcode,
             role: role,
-            tutor_tier: tutorTier
+            tutor_tier: tutorTier,
+            terms_accepted: termsAccepted
           }
         }
       });
