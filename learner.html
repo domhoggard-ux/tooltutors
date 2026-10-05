@@ -9,7 +9,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
-  <style>::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0A192F; } ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }</style>
+  <style>
+    ::-webkit-scrollbar { width: 6px; } 
+    ::-webkit-scrollbar-track { background: #0A192F; } 
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  </style>
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans flex flex-col min-h-screen">
 
@@ -51,7 +56,10 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
     <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] flex justify-between items-center shadow-xl">
       <div><h1 id="learner-welcome-name" class="text-2xl font-extrabold text-white">Welcome Back</h1><p class="text-xs text-[#8892B0]">Manage your active projects below.</p></div>
-      <button onclick="loadLearnerRequests()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('archive-modal').classList.remove('hidden')" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-box-archive"></i><span class="hidden sm:inline ml-1">Archive</span></button>
+        <button onclick="loadLearnerRequests()" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-rotate-right"></i><span class="hidden sm:inline ml-1">Refresh</span></button>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -72,6 +80,23 @@
       <div class="bg-[#112240] rounded-2xl border border-[#233554] p-5 shadow-xl">
         <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Job Board</h3>
         <div id="learner-requests-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE MODAL -->
+    <div id="archive-modal" class="absolute inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
+        <button onclick="document.getElementById('archive-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center mb-4 pb-4 border-b border-[#233554]">
+          <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35] mr-3"><i class="fa-solid fa-box-archive"></i></div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Archived Jobs</h3>
+            <p class="text-[10px] text-[#8892B0] uppercase font-bold">Your past projects</p>
+          </div>
+        </div>
+        <div id="archive-list-container" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          <!-- Injected via JS -->
+        </div>
       </div>
     </div>
 
@@ -106,7 +131,7 @@
     </div>
 
     <!-- JOB CARD MODAL -->
-    <div id="job-card-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="job-card-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
@@ -171,7 +196,7 @@
     </div>
 
     <!-- TUTOR PROFILE MODAL -->
-    <div id="tutor-profile-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="tutor-profile-modal" class="absolute inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
         <button onclick="document.getElementById('tutor-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
 
@@ -298,11 +323,17 @@
       document.getElementById('tutor-profile-modal').classList.remove('hidden');
     }
 
-    async function deleteJob(jobId) {
-      if(!confirm('Are you sure you want to permanently delete this job? This action cannot be undone.')) return;
-      const { error } = await supabaseClient.from('job_requests').delete().eq('id', jobId);
-      if (error) showToast(`Failed to delete: ${error.message}`, 'error');
-      else { showToast('Job permanently deleted.', 'success'); loadLearnerRequests(); }
+    async function archiveJob(jobId, currentStatus) {
+      if(!confirm('Move this job to your archive?')) return;
+      
+      let updatePayload = { learner_archived: true };
+      if (currentStatus === 'open') {
+         updatePayload.status = 'cancelled';
+      }
+
+      const { error } = await supabaseClient.from('job_requests').update(updatePayload).eq('id', jobId);
+      if (error) showToast(`Failed to archive: ${error.message}`, 'error');
+      else { showToast('Job archived successfully.', 'success'); loadLearnerRequests(); }
     }
 
     const getSafeName = (obj) => {
@@ -328,117 +359,132 @@
     async function loadLearnerRequests() {
       try {
         const listContainer = document.getElementById('learner-requests-list');
+        const archiveContainer = document.getElementById('archive-list-container');
         
         const { data: requests, error: reqErr } = await supabaseClient.from('job_requests').select('*').eq('learner_id', currentProfile.id).order('created_at', { ascending: false });
         if (reqErr) throw reqErr;
         
         loadedJobsData = requests || [];
         
-        if (loadedJobsData.length === 0) {
+        const activeJobs = loadedJobsData.filter(j => !j.learner_archived);
+        const archivedJobs = loadedJobsData.filter(j => j.learner_archived);
+
+        // Process Active Jobs
+        if (activeJobs.length === 0) {
           listContainer.innerHTML = '<div class="py-12 text-center border-2 border-dashed border-[#233554] rounded-xl"><p class="text-sm text-[#8892B0] font-bold">You have no active projects.</p><p class="text-xs text-[#8892B0] mt-1">Use the button on the left to create your first request!</p></div>';
-          return;
-        }
+        } else {
+          const jobIds = activeJobs.map(r => r.id);
+          const { data: offers, error: offersErr } = await supabaseClient.from('job_offers').select('*, profiles(full_name, tutor_tier)').in('job_id', jobIds);
+          if (offersErr) console.error("Database note on offers:", offersErr);
 
-        const jobIds = loadedJobsData.map(r => r.id);
-        const { data: offers, error: offersErr } = await supabaseClient.from('job_offers').select('*, profiles(full_name, tutor_tier)').in('job_id', jobIds);
-        if (offersErr) console.error("Database note on offers:", offersErr);
+          (offers || []).forEach(o => { if (o.status === 'accepted') loadedAcceptedOffers[o.job_id] = o; });
 
-        (offers || []).forEach(o => { if (o.status === 'accepted') loadedAcceptedOffers[o.job_id] = o; });
-
-        const tutorIds = loadedJobsData.map(r => r.tutor_id).filter(Boolean);
-        if (tutorIds.length > 0) {
-          const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', tutorIds);
-          loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
-        }
-
-        listContainer.innerHTML = loadedJobsData.map(job => {
-          let action = '';
-          const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
-          const safeJobTitle = job.title.replace(/'/g, "\\'");
-
-          // Injecting Job Type Badge
-          const jobTypeBadge = job.job_type === 'complete_for_me' 
-            ? `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
-            : `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
-
-          if (job.status === 'open') {
-            if (pendingBids.length > 0) {
-              action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
-                <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingBids.length} Bids Received</h4>
-                ${pendingBids.map(o => {
-                  const safeTutorName = getSafeName(o.profiles).replace(/'/g, "\\'");
-                  return `
-                  <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
-                    <div class="flex justify-between items-center mb-1">
-                      <button onclick="openTutorProfile('${o.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 text-left transition" title="View Profile">${getSafeName(o.profiles)}</button>
-                      <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded flex-shrink-0 ml-2">£${o.offer_price}</span>
-                    </div>
-                    <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${getSafeTier(o.profiles)}</span>
-                    <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
-                    <div class="flex gap-2">
-                      <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTutorName}', '${o.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg text-xs transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
-                      <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="flex-1 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept</button>
-                    </div>
-                  </div>
-                `}).join('')}</div>`;
-            } else action = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
-          } else {
-            const tName = loadedTutorsMap[job.tutor_id] || 'Local Tutor';
-            const safeTName = tName.replace(/'/g, "\\'");
-            
-            if (job.status === 'accepted') {
-              action = `<div class="mt-3 pt-3 border-t border-[#233554] flex flex-col gap-2">
-                          <div class="flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor proposal.</p></div>
-                          <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat with Tutor</button>
-                        </div>`;
-            } else if (job.status === 'pending_payment') {
-              action = `<div class="mt-4 pt-4 border-t border-[#233554]">
-                          <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
-                          <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
-                            <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
-                            <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
-                          </div>
-                          <div class="flex gap-2">
-                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
-                            <button onclick="openPaymentModal('${job.id}')" class="flex-[2] py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay</button>
-                          </div>
-                        </div>`;
-            } else if (job.status === 'scheduled') {
-              action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                          <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
-                          <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
-                        </div>`;
-            } else if (job.status === 'completed') {
-              action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                          <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
-                        </div>`;
-            }
+          const tutorIds = activeJobs.map(r => r.tutor_id).filter(Boolean);
+          if (tutorIds.length > 0) {
+            const { data: acceptedTutors } = await supabaseClient.from('profiles').select('id, full_name').in('id', tutorIds);
+            loadedTutorsMap = (acceptedTutors || []).reduce((acc, t) => ({ ...acc, [t.id]: t.full_name }), {});
           }
 
-          const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
-          const deleteBtn = (job.status !== 'scheduled' && job.status !== 'accepted' && job.status !== 'pending_payment') ? `<button onclick="deleteJob('${job.id}')" class="absolute top-4 right-4 text-[#233554] hover:text-rose-400 transition text-sm" title="Delete Job"><i class="fa-solid fa-trash"></i></button>` : '';
-          
-          const firstPhoto = getFirstPhoto(job);
-          const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
+          listContainer.innerHTML = activeJobs.map(job => {
+            let action = '';
+            const pendingBids = (offers || []).filter(o => o.job_id === job.id && o.status === 'pending');
+            const safeJobTitle = job.title.replace(/'/g, "\\'");
 
-          return `
-            <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between relative">
-              ${deleteBtn}
-              <div class="flex gap-4">
-                <div class="flex-1">
-                  <div class="flex justify-between items-start mb-2 pr-6">
-                    <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
+            const jobTypeBadge = job.job_type === 'complete_for_me' 
+              ? `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+              : `<span class="px-2 py-0.5 mb-2 ml-1 inline-block rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase text-[9px] font-bold"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
+            if (job.status === 'open') {
+              if (pendingBids.length > 0) {
+                action = `<div class="mt-4 pt-3 border-t border-[#233554] space-y-3">
+                  <h4 class="text-[10px] text-white font-bold uppercase tracking-wider"><i class="fa-solid fa-bell text-[#FF6B35] mr-1"></i> ${pendingBids.length} Bids Received</h4>
+                  ${pendingBids.map(o => {
+                    const safeTutorName = getSafeName(o.profiles).replace(/'/g, "\\'");
+                    return `
+                    <div class="bg-[#112240] p-3 rounded-xl border border-[#233554]">
+                      <div class="flex justify-between items-center mb-1">
+                        <button onclick="openTutorProfile('${o.tutor_id}')" class="text-sm font-bold text-white hover:text-[#FF6B35] underline decoration-[#FF6B35]/50 decoration-dashed underline-offset-4 text-left transition" title="View Profile">${getSafeName(o.profiles)}</button>
+                        <span class="text-emerald-400 font-extrabold text-sm bg-emerald-400/10 px-2 py-0.5 rounded flex-shrink-0 ml-2">£${o.offer_price}</span>
+                      </div>
+                      <span class="text-[9px] uppercase font-bold tracking-wide text-blue-400">${getSafeTier(o.profiles)}</span>
+                      <p class="text-[11px] text-[#E6F1FF] italic border-l-2 border-[#233554] pl-2 mt-2 mb-3">"${o.message}"</p>
+                      <div class="flex gap-2">
+                        <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTutorName}', '${o.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg text-xs transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                        <button onclick="acceptOffer('${o.id}', '${job.id}', '${o.tutor_id}')" class="flex-1 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 font-bold rounded-lg text-xs transition">Accept</button>
+                      </div>
+                    </div>
+                  `}).join('')}</div>`;
+              } else action = `<div class="mt-3 pt-3 border-t border-[#233554]"><p class="text-[10px] text-[#8892B0] italic text-center">Waiting for local tutors to bid...</p></div>`;
+            } else {
+              const tName = loadedTutorsMap[job.tutor_id] || 'Local Tutor';
+              const safeTName = tName.replace(/'/g, "\\'");
+              
+              if (job.status === 'accepted') {
+                action = `<div class="mt-3 pt-3 border-t border-[#233554] flex flex-col gap-2">
+                            <div class="flex items-center justify-center p-3 bg-amber-500/10 rounded-xl border border-amber-500/30"><p class="text-xs font-bold text-amber-500"><i class="fa-solid fa-clock-rotate-left mr-2"></i>Waiting for Tutor proposal.</p></div>
+                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat with Tutor</button>
+                          </div>`;
+              } else if (job.status === 'pending_payment') {
+                action = `<div class="mt-4 pt-4 border-t border-[#233554]">
+                            <p class="text-[10px] uppercase font-bold text-[#8892B0] mb-2">Proposal Received</p>
+                            <div class="bg-[#112240] p-3 rounded-xl border border-[#233554] mb-3">
+                              <p class="text-xs text-white mb-1"><strong class="text-[#8892B0]">Time:</strong> ${new Date(job.appointment_time).toLocaleString()}</p>
+                              <p class="text-xs text-white"><strong class="text-[#8892B0]">Tools:</strong> ${job.required_tools}</p>
+                            </div>
+                            <div class="flex gap-2">
+                              <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                              <button onclick="openPaymentModal('${job.id}')" class="flex-[2] py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-credit-card mr-2"></i>Review & Pay</button>
+                            </div>
+                          </div>`;
+              } else if (job.status === 'scheduled') {
+                action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                            <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                            <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
+                          </div>`;
+              } else if (job.status === 'completed') {
+                action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
+                            <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
+                          </div>`;
+              }
+            }
+
+            const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
+            const archiveBtn = (job.status !== 'scheduled' && job.status !== 'accepted' && job.status !== 'pending_payment') ? `<button onclick="archiveJob('${job.id}', '${job.status}')" class="absolute top-4 right-4 text-[#233554] hover:text-[#FF6B35] transition text-sm" title="Archive Job"><i class="fa-solid fa-box-archive"></i></button>` : '';
+            
+            const firstPhoto = getFirstPhoto(job);
+            const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
+
+            return `
+              <div class="p-5 bg-[#0A192F] border ${outerBorder} rounded-xl text-xs flex flex-col justify-between relative">
+                ${archiveBtn}
+                <div class="flex gap-4">
+                  <div class="flex-1">
+                    <div class="flex justify-between items-start mb-2 pr-6">
+                      <span class="font-bold text-white text-sm pr-2">${job.title} ${job.postcode ? `<span class="text-[#FF6B35] ml-2 text-[10px]"><i class="fa-solid fa-location-dot"></i> ${job.postcode}</span>` : ''}</span>
+                    </div>
+                    <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' || job.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
+                    ${jobTypeBadge}
+                    <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
                   </div>
-                  <span class="px-2 py-0.5 mb-2 inline-block rounded ${job.status === 'scheduled' || job.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-[#233554] text-[#8892B0]'} uppercase text-[9px] font-bold">${job.status.replace('_', ' ')}</span>
-                  ${jobTypeBadge}
-                  <p class="text-[#8892B0]"><i class="fa-solid fa-tag w-4"></i> ${job.category} | Budget: £${job.budget_estimate}</p>
+                  ${photoThumbnail}
                 </div>
-                ${photoThumbnail}
+                ${action}
               </div>
-              ${action}
+            `;
+          }).join('');
+        }
+
+        // Process Archived Jobs List for the Modal
+        archiveContainer.innerHTML = archivedJobs.length ? archivedJobs.map(job => `
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs flex justify-between items-center">
+            <div>
+              <h4 class="font-bold text-white text-sm">${job.title}</h4>
+              <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-[#233554] text-[#8892B0] mt-1 inline-block">${job.status.replace('_', ' ')}</span>
             </div>
-          `;
-        }).join('');
+            <button onclick="openJobCard('${job.id}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg transition font-bold shadow-lg">View Details</button>
+          </div>
+        `).join('') : '<p class="text-xs text-[#8892B0] text-center italic py-4">No archived jobs found.</p>';
+
       } catch (err) {
         console.error("Dashboard Load Error:", err);
         document.getElementById('learner-requests-list').innerHTML = `<p class="text-xs text-rose-400 text-center py-6">Error loading jobs: ${err.message}. Check console.</p>`;
@@ -547,7 +593,11 @@
       badge.textContent = job.status.replace('_', ' ');
 
       const actionContainer = document.getElementById('card-action-buttons');
-      let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedTutorsMap[job.tutor_id] || 'Tutor').replace(/'/g,"\\'")}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>`;
+      let buttonsHtml = '';
+
+      if (job.status !== 'open' && job.status !== 'cancelled' && job.status !== 'completed') {
+        buttonsHtml += `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedTutorsMap[job.tutor_id] || 'Tutor').replace(/'/g,"\\'")}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>`;
+      }
       
       if (job.status === 'scheduled') {
          buttonsHtml += `<button onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-check mr-2"></i> Complete Job</button>`;
