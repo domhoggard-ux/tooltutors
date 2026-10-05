@@ -447,12 +447,34 @@
 
     async function acceptOffer(offerId, jobId, tutorId) {
       if(!confirm("Are you sure you want to select this tutor? They will review your job and propose a time.")) return;
-      const { error: reqErr } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: tutorId }).eq('id', jobId);
-      const { error: offErr } = await supabaseClient.from('job_offers').update({ status: 'accepted' }).eq('id', offerId);
-      await supabaseClient.from('job_offers').update({ status: 'rejected' }).eq('job_id', jobId).neq('id', offerId);
+      
+      try {
+        const { error: reqErr } = await supabaseClient.from('job_requests').update({ status: 'accepted', tutor_id: tutorId }).eq('id', jobId);
+        const { error: offErr } = await supabaseClient.from('job_offers').update({ status: 'accepted' }).eq('id', offerId);
+        await supabaseClient.from('job_offers').update({ status: 'rejected' }).eq('job_id', jobId).neq('id', offerId);
 
-      if (reqErr || offErr) showToast(`Error accepting offer: ${reqErr?.message || offErr?.message}`, 'error');
-      else { showToast('Tutor selected! Waiting for their proposal.', 'success'); loadLearnerRequests(); }
+        if (reqErr || offErr) throw new Error(reqErr?.message || offErr?.message);
+
+        // SEND EMAIL NOTIFICATION TO TUTOR
+        const { data: tutorData } = await supabaseClient.from('profiles').select('email, full_name').eq('id', tutorId).single();
+        const { data: jobData } = await supabaseClient.from('job_requests').select('title').eq('id', jobId).single();
+        
+        if (tutorData && tutorData.email) {
+          await supabaseClient.functions.invoke('send-completion-email', {
+            body: {
+              action: 'offer_accepted',
+              recipientEmail: tutorData.email,
+              recipientName: tutorData.full_name || 'Tutor',
+              jobTitle: jobData.title || 'Job'
+            }
+          });
+        }
+
+        showToast('Tutor selected! Waiting for their proposal.', 'success');
+        loadLearnerRequests();
+      } catch(err) {
+        showToast(`Error accepting offer: ${err.message}`, 'error');
+      }
     }
 
     function openPaymentModal(jobId) {
@@ -579,18 +601,20 @@
         }]);
         if (revErr) throw revErr;
 
+        // SEND PAYOUT EMAIL TO ADMIN
         const { data: offerData } = await supabaseClient.from('job_offers').select('offer_price').eq('job_id', jobId).eq('status', 'accepted').single();
         const { data: tutorData } = await supabaseClient.from('profiles').select('full_name').eq('id', tutorId).single();
+        const { data: jobData } = await supabaseClient.from('job_requests').select('title').eq('id', jobId).single();
         
-        const agreedPrice = offerData ? offerData.offer_price : 'Unknown';
-        const tutorName = tutorData ? tutorData.full_name : 'Unknown Tutor';
-
-        // Securely invoke your Supabase Edge Function to trigger the Resend email
-        const { error: edgeErr } = await supabaseClient.functions.invoke('send-completion-email', {
-          body: { tutorName, agreedPrice, jobId }
+        await supabaseClient.functions.invoke('send-completion-email', {
+          body: {
+            action: 'admin_completion',
+            recipientEmail: 'Admin@Tooltutors.co.uk',
+            recipientName: tutorData?.full_name || 'Unknown Tutor',
+            jobTitle: jobData?.title || 'Job',
+            price: offerData?.offer_price || 'Unknown'
+          }
         });
-        
-        if (edgeErr) console.warn('Database updated, but admin email failed to send:', edgeErr);
 
         showToast('Job completed and review submitted!', 'success');
         closeReviewModal();
