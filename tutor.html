@@ -471,7 +471,6 @@
         const activeAcceptedJobs = loadedJobsData.filter(j => !j.tutor_archived);
         const archivedAcceptedJobs = loadedJobsData.filter(j => j.tutor_archived);
 
-        // Render Open Jobs
         document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
           const bid = (myOffers || []).find(o => o.job_id === j.id && o.status !== 'withdrawn' && o.status !== 'rejected');
           const lName = loadedLearnersMap[j.learner_id] || 'Learner';
@@ -518,7 +517,6 @@
           `;
         }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No matching open jobs right now.</p>';
 
-        // Render Active Dashboard Jobs
         document.getElementById('tutor-accepted-jobs-list').innerHTML = activeAcceptedJobs.length ? activeAcceptedJobs.map(j => {
           const lName = loadedLearnersMap[j.learner_id] || 'Learner';
           let actionHtml = '';
@@ -568,7 +566,6 @@
           `;
         }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No active projects right now.</p>';
 
-        // Render Archived Jobs Modal
         const archiveContainer = document.getElementById('archive-list-container');
         archiveContainer.innerHTML = archivedAcceptedJobs.length ? archivedAcceptedJobs.map(job => `
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs flex justify-between items-center">
@@ -692,6 +689,9 @@
     function openJobCard(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
+
+      // Close archive modal when job card opens
+      document.getElementById('archive-modal').classList.add('hidden');
 
       const photoContainer = document.getElementById('card-photo-container');
       const firstPhoto = getFirstPhoto(job);
