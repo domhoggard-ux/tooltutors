@@ -95,7 +95,15 @@
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Photo ID</label><input type="file" id="tutor-id-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           
-          <div class="md:col-span-3 p-4 bg-[#0A192F] border border-[#233554] rounded-xl">
+          <!-- PROFESSIONAL CERTIFICATION (Conditionally Rendered) -->
+          <div id="pro-cert-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-[#FF6B35] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase shadow-lg">Pro Tier</div>
+            <label class="block text-xs font-semibold text-white mb-2">Trade / Professional Certification</label>
+            <input type="file" id="tutor-pro-doc" accept="image/*,.pdf" class="text-xs text-[#8892B0]">
+            <p class="text-[9px] text-[#8892B0] mt-2 leading-tight">Required for professional-level tutors to access "Complete For Me" requests.</p>
+          </div>
+          
+          <div class="md:col-span-full p-4 bg-[#0A192F] border border-[#233554] rounded-xl">
             <label class="block text-xs font-semibold text-white mb-2">My Mentorship Skills</label>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="tutor-skills-container">
               <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Plumbing" class="rounded text-[#FF6B35]"><span>Plumbing</span></label>
@@ -107,7 +115,7 @@
             </div>
           </div>
         </div>
-        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition">Submit For Verification</button>
+        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit For Verification</button>
       </form>
     </section>
 
@@ -134,7 +142,7 @@
     <!-- OFFER MODAL (BIDDING) -->
     <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
-        <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <h3 class="text-lg font-bold text-white mb-1">Make an Offer</h3>
         <p id="offer-job-title" class="text-xs text-[#8892B0] mb-6"></p>
         <form id="offer-form" onsubmit="submitOffer(event)" class="space-y-4">
@@ -147,7 +155,7 @@
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Pitch</label>
             <textarea id="offer-message" required rows="3" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white focus:border-[#FF6B35] focus:outline-none"></textarea>
           </div>
-          <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition mt-2">Submit Offer</button>
+          <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Submit Offer</button>
         </form>
       </div>
     </div>
@@ -155,7 +163,7 @@
     <!-- PROPOSE TIME & TOOLS MODAL -->
     <div id="propose-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
-        <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
         <p class="text-xs text-[#8892B0] mb-6">Propose the appointment time and list the tools the Learner needs to prepare.</p>
         <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-4">
@@ -173,7 +181,7 @@
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
             <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
           </div>
-          <button type="submit" id="submit-proposal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2">Send Proposal to Learner</button>
+          <button type="submit" id="submit-proposal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Send Proposal to Learner</button>
         </form>
       </div>
     </div>
@@ -181,7 +189,7 @@
     <!-- JOB CARD MODAL -->
     <div id="job-card-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
-        <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
           <span id="card-status-badge" class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Active</span>
@@ -216,7 +224,7 @@
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
         <div class="flex justify-between items-center p-4 border-b border-[#233554]">
           <div><h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3><p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting...</p></div>
-          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] text-lg px-2 transition"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
         <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
@@ -261,6 +269,17 @@
           document.getElementById('tutor-pending-review').classList.remove('hidden');
         } else {
           document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+          
+          // Show Pro Certification upload field if the tutor tier is professional
+          if (profile.tutor_tier === 'professional') {
+            const proContainer = document.getElementById('pro-cert-container');
+            const proInput = document.getElementById('tutor-pro-doc');
+            if (proContainer && proInput) {
+              proContainer.classList.remove('hidden');
+              proInput.setAttribute('required', 'true');
+            }
+          }
+
           if (status === 'rejected' && profile.validation_notes) {
             const noteDiv = document.getElementById('tutor-rejected-note');
             noteDiv.innerHTML = `<strong>Revision Required:</strong> ${profile.validation_notes}`;
@@ -317,11 +336,14 @@
         const picFile = document.getElementById('tutor-profile-pic').files[0];
         const idFile = document.getElementById('tutor-id-doc').files[0];
         const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
+        const proFile = document.getElementById('tutor-pro-doc')?.files[0];
 
         let picUrl = currentProfile?.profile_picture_url || null;
         let idPath = currentProfile?.id_document_url || null;
         let dbsPath = currentProfile?.dbs_document_url || null;
+        let proPath = currentProfile?.trade_certificate_url || null;
 
+        // Process Standard Documents
         if (picFile) {
           const ext = picFile.name.split('.').pop();
           const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
@@ -345,15 +367,37 @@
           if (dbsErr) throw dbsErr;
         }
 
+        // Process Professional Certification Document
+        if (proFile && currentProfile.tutor_tier === 'professional') {
+          const ext = proFile.name.split('.').pop();
+          proPath = `pro_cert_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: proErr } = await supabaseClient.storage.from('tutor_documents').upload(proPath, proFile);
+          if (proErr) throw proErr;
+        }
+
         const { error: dbErr } = await supabaseClient.from('profiles').update({ 
           validation_status: 'submitted', 
           skills: skills,
           profile_picture_url: picUrl,
           id_document_url: idPath,
-          dbs_document_url: dbsPath
+          dbs_document_url: dbsPath,
+          trade_certificate_url: proPath
         }).eq('id', currentProfile.id);
         
         if (dbErr) throw dbErr;
+        
+        // TRIGGERS ADMIN NOTIFICATION EMAIL
+        try {
+          await supabaseClient.functions.invoke('send-completion-email', {
+            body: {
+              action: 'admin_verification_required',
+              recipientEmail: 'Admin@Tooltutors.co.uk',
+              recipientName: currentProfile.full_name || currentProfile.email || 'A New Tutor'
+            }
+          });
+        } catch (emailErr) {
+          console.error("Email notification failed:", emailErr);
+        }
 
         showToast('Submitted for review!', 'success');
         
