@@ -18,7 +18,7 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col justify-center items-center p-4">
 
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
   <div class="w-full max-w-md bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-8 space-y-8">
     
@@ -68,6 +68,18 @@
             <option value="professional">Professional / Trade Certified</option>
           </select>
         </div>
+
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl mt-2">
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <input type="checkbox" id="login-terms-agreement" class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#112240] focus:ring-[#FF6B35]">
+            <div class="text-xs text-[#8892B0]">
+              I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>.
+              <p id="login-tutor-commission-note" class="hidden mt-2 p-3 bg-[#FF6B35]/10 border border-[#FF6B35]/30 rounded-lg text-[#FF6B35] font-semibold leading-relaxed">
+                <i class="fa-solid fa-circle-info mr-1"></i> As a Tutor, I understand and agree that ToolTutors deducts a standard 10% commission fee from all completed job payouts to cover platform maintenance, lead generation, and secure payment processing.
+              </p>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div>
@@ -93,13 +105,16 @@
 
     let isSignUp = false;
 
-    // Toggle Role-based subfields during signup
+    // Toggle Role-based subfields and commission note during signup
     document.getElementById('user-role').addEventListener('change', (e) => {
       const tierGroup = document.getElementById('tutor-tier-group');
+      const commissionNote = document.getElementById('login-tutor-commission-note');
       if (e.target.value === 'tutor') {
         tierGroup.classList.remove('hidden');
+        commissionNote.classList.remove('hidden');
       } else {
         tierGroup.classList.add('hidden');
+        commissionNote.classList.add('hidden');
       }
     });
 
@@ -137,12 +152,25 @@
           const fullName = document.getElementById('full-name').value.trim() || email.split('@')[0];
           const role = document.getElementById('user-role').value;
           const tutorTier = document.getElementById('tutor-tier').value;
+          const termsAccepted = document.getElementById('login-terms-agreement').checked;
+
+          if (!termsAccepted) {
+            showToast('You must agree to the Terms of Service to create an account.', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+            return;
+          }
 
           const { data, error } = await supabaseClient.auth.signUp({
             email,
             password,
             options: {
-              data: { full_name: fullName, role, tutor_tier: tutorTier }
+              data: { 
+                full_name: fullName, 
+                role, 
+                tutor_tier: tutorTier,
+                terms_accepted: termsAccepted 
+              }
             }
           });
 
