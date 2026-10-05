@@ -386,7 +386,6 @@
           const hasSkill = currentProfile.skills?.includes(j.category);
           const isTierMatch = j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier;
           
-          // STRICT RULE: If job is "Complete For Me", tutor MUST be a professional
           if (j.job_type === 'complete_for_me' && currentProfile.tutor_tier !== 'professional') {
             return false; 
           }
@@ -425,7 +424,6 @@
                </div>` 
             : '';
 
-          // Add Job Type Badge
           const jobTypeBadge = j.job_type === 'complete_for_me' 
             ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
             : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
@@ -517,26 +515,54 @@
       document.getElementById('offer-modal').classList.remove('hidden');
     }
 
+    // UPDATED WITH EMAIL NOTIFICATION
     async function submitOffer(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-offer-btn');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
-      await supabaseClient.from('job_offers').insert([{
-        job_id: document.getElementById('offer-job-id').value,
-        tutor_id: currentProfile.id,
-        offer_price: document.getElementById('offer-price').value,
-        message: document.getElementById('offer-message').value
-      }]);
-      
-      document.getElementById('offer-modal').classList.add('hidden');
-      document.getElementById('offer-form').reset();
-      btn.disabled = false;
-      btn.innerHTML = 'Submit Offer';
-      
-      showToast('Offer submitted successfully!', 'success');
-      loadTutorWorkspace();
+      const jobId = document.getElementById('offer-job-id').value;
+      const offerPrice = document.getElementById('offer-price').value;
+      const offerMessage = document.getElementById('offer-message').value;
+
+      try {
+        await supabaseClient.from('job_offers').insert([{
+          job_id: jobId,
+          tutor_id: currentProfile.id,
+          offer_price: offerPrice,
+          message: offerMessage
+        }]);
+
+        // FETCH LEARNER DATA & SEND EMAIL
+        const { data: jobData } = await supabaseClient.from('job_requests').select('title, learner_id').eq('id', jobId).single();
+        if (jobData) {
+          const { data: learnerData } = await supabaseClient.from('profiles').select('email, full_name').eq('id', jobData.learner_id).single();
+          if (learnerData && learnerData.email) {
+            await supabaseClient.functions.invoke('send-completion-email', {
+              body: {
+                action: 'offer_received',
+                recipientEmail: learnerData.email,
+                recipientName: learnerData.full_name || 'Learner',
+                jobTitle: jobData.title,
+                price: offerPrice,
+                extraDetails: offerMessage
+              }
+            });
+          }
+        }
+        
+        document.getElementById('offer-modal').classList.add('hidden');
+        document.getElementById('offer-form').reset();
+        showToast('Offer submitted successfully!', 'success');
+        loadTutorWorkspace();
+
+      } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Offer';
+      }
     }
 
     function openProposeModal(jobId) {
@@ -549,7 +575,7 @@
       if (job && job.job_type === 'complete_for_me') {
         toolsContainer.classList.add('hidden');
         toolsInput.removeAttribute('required');
-        toolsInput.value = 'N/A - Complete For Me service'; // Prevents empty data errors
+        toolsInput.value = 'N/A - Complete For Me service'; 
       } else {
         toolsContainer.classList.remove('hidden');
         toolsInput.setAttribute('required', 'true');
@@ -559,6 +585,7 @@
       document.getElementById('propose-modal').classList.remove('hidden');
     }
 
+    // UPDATED WITH EMAIL NOTIFICATION
     async function submitProposal(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-proposal-btn');
@@ -584,6 +611,23 @@
         
         if (error) throw error;
         
+        // FETCH LEARNER DATA & SEND EMAIL
+        const { data: jobData } = await supabaseClient.from('job_requests').select('title, learner_id').eq('id', jobId).single();
+        if (jobData) {
+          const { data: learnerData } = await supabaseClient.from('profiles').select('email, full_name').eq('id', jobData.learner_id).single();
+          if (learnerData && learnerData.email) {
+            await supabaseClient.functions.invoke('send-completion-email', {
+              body: {
+                action: 'proposal_sent',
+                recipientEmail: learnerData.email,
+                recipientName: learnerData.full_name || 'Learner',
+                jobTitle: jobData.title,
+                extraDetails: new Date(`${date}T${time}`).toLocaleString()
+              }
+            });
+          }
+        }
+
         document.getElementById('propose-modal').classList.add('hidden');
         document.getElementById('propose-form').reset();
         showToast('Proposal sent to learner!', 'success');
@@ -614,7 +658,6 @@
       document.getElementById('card-title').textContent = job.title;
       document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
       
-      // Inject Job Type specific styling to the modal
       const jobTypeEl = document.getElementById('card-job-type');
       if (job.job_type === 'complete_for_me') {
          jobTypeEl.textContent = 'Complete For Me';
@@ -657,7 +700,6 @@
         appointment_time: null 
       }).eq('id', jobId);
 
-      // Securely delete the offer now that the RLS policy is updated
       await supabaseClient.from('job_offers').delete().eq('job_id', jobId).eq('tutor_id', currentProfile.id);
 
       if (error) {
