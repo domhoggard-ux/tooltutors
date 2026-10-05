@@ -169,7 +169,7 @@
             </div>
           </div>
           
-          <div>
+          <div id="propose-tools-container">
             <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
             <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
           </div>
@@ -540,7 +540,22 @@
     }
 
     function openProposeModal(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
       document.getElementById('propose-job-id').value = jobId;
+      
+      const toolsContainer = document.getElementById('propose-tools-container');
+      const toolsInput = document.getElementById('propose-tools');
+      
+      if (job && job.job_type === 'complete_for_me') {
+        toolsContainer.classList.add('hidden');
+        toolsInput.removeAttribute('required');
+        toolsInput.value = 'N/A - Complete For Me service'; // Prevents empty data errors
+      } else {
+        toolsContainer.classList.remove('hidden');
+        toolsInput.setAttribute('required', 'true');
+        toolsInput.value = '';
+      }
+      
       document.getElementById('propose-modal').classList.remove('hidden');
     }
 
