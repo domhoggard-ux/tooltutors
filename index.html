@@ -1,104 +1,132 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full bg-[#0A192F]">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolTutors - Connect with Local DIY Mentors</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
-    }
-  </script>
-</head>
-<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+<!-- HERO -->
+<section class="relative overflow-hidden">
 
-  <!-- HEADER NAVIGATION -->
-  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-4 sm:px-8">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-  <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
-</div>
+  <div class="absolute inset-0 bg-gradient-to-br from-[#FF6B35]/10 via-transparent to-emerald-500/5"></div>
 
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
-        <a href="index.html" class="text-[#FF6B35] transition">Home</a>
-        <a href="about.html" class="text-[#8892B0] hover:text-white transition">About</a>
-        <a href="apply.html" class="text-[#8892B0] hover:text-white transition">Join as Tutor</a>
-      </nav>
+  <div class="max-w-7xl mx-auto px-4 sm:px-8 py-20 lg:py-28 relative">
 
-      <div class="flex items-center space-x-3">
-        <a href="login.html" class="px-4 py-2 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35] transition flex items-center space-x-2">
-          <i class="fa-solid fa-user text-[#FF6B35]"></i>
-          <span>Sign In</span>
-        </a>
-        <a href="apply.html" class="hidden sm:inline-block px-4 py-2 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">
-          Get Started
-        </a>
-      </div>
-    </div>
-  </header>
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
 
-  <!-- HERO SECTION -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-12 lg:py-20 flex flex-col justify-center space-y-16">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      
-      <div class="space-y-6">
-        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">
-          Local Peer-to-Peer DIY Mentorship
-        </span>
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-none">
-          Master Your Home Projects With <span class="text-[#FF6B35]">Local Experts</span>
+      <div>
+
+        <div class="inline-flex items-center px-4 py-2 rounded-full border border-[#FF6B35]/30 bg-[#FF6B35]/10 text-[#FF6B35] text-xs font-bold uppercase tracking-wider mb-6">
+          🔨 Learn DIY From Real People
+        </div>
+
+        <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight text-white">
+          Learn DIY.
+          <br>
+          Meet Great People.
+          <br>
+          <span class="text-[#FF6B35]">
+            Build Something Amazing.
+          </span>
         </h1>
-        <p class="text-sm sm:text-base text-[#8892B0] leading-relaxed">
-          Stop struggling with YouTube tutorials alone. Connect with verified local DIY enthusiasts and trade professionals who come to your home to guide your projects hands-on.
+
+        <p class="mt-8 text-lg text-[#8892B0] max-w-2xl leading-relaxed">
+          You've watched three YouTube videos.
+          You've been to B&Q twice.
+          The instructions still don't make sense.
         </p>
-        <div class="flex flex-col sm:flex-row gap-4 pt-4">
-          <a href="apply.html" class="px-8 py-3.5 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition text-center shadow-lg">
-            Find a Local Tutor
+
+        <p class="mt-4 text-[#E6F1FF] max-w-2xl leading-relaxed">
+          ToolTutors connects you with friendly local DIY enthusiasts,
+          experienced tradespeople and skilled hobbyists who can guide
+          your project in person or complete it for you.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 mt-10">
+
+          <a href="login.html"
+             class="px-8 py-4 bg-[#FF6B35] hover:bg-[#E05A2B] rounded-xl font-bold shadow-lg transition text-center">
+            Find a Tutor
           </a>
-          <a href="apply.html" class="px-8 py-3.5 bg-[#112240] hover:bg-[#233554] border border-[#233554] text-white font-bold text-sm rounded-xl transition text-center">
-            Become a Mentor
+
+          <a href="apply.html"
+             class="px-8 py-4 border border-[#233554] bg-[#112240] hover:bg-[#233554] rounded-xl font-bold transition text-center">
+            Become a Tutor
           </a>
+
         </div>
+
       </div>
 
-      <div class="bg-[#112240] border border-[#233554] p-8 rounded-3xl shadow-2xl space-y-6 relative overflow-hidden">
-        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-[#FF6B35]/10 rounded-full blur-2xl pointer-events-none"></div>
-        <h3 class="text-lg font-bold text-white flex items-center">
-          <i class="fa-solid fa-shield-halved text-[#FF6B35] mr-2"></i> Safety & Terms Built-In
+      <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 shadow-2xl">
+
+        <h3 class="text-xl font-bold text-white mb-6">
+          🛠 Popular Projects Right Now
         </h3>
-        <p class="text-xs text-[#8892B0] leading-relaxed">
-          We believe in complete transparency. Liability waivers and safety terms are now seamlessly integrated directly into job bookings, ensuring both learners and tutors are aligned before any project starts.
-        </p>
-        <div class="grid grid-cols-2 gap-4 pt-2">
+
+        <div class="grid grid-cols-2 gap-4">
+
           <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            <div class="text-2xl font-extrabold text-white mb-1">100%</div>
-            <div class="text-[10px] text-[#8892B0] uppercase font-bold">Verified ID & DBS</div>
+            🚰 Fix a Tap
           </div>
+
           <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            <div class="text-2xl font-extrabold text-[#FF6B35] mb-1">Secure</div>
-            <div class="text-[10px] text-[#8892B0] uppercase font-bold">In-App Scheduling</div>
+            🎨 Paint a Room
           </div>
+
+          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
+            🪚 Build Shelves
+          </div>
+
+          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
+            🌱 Garden Projects
+          </div>
+
+          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
+            💡 Install Lighting
+          </div>
+
+          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
+            🚿 Bathroom Repairs
+          </div>
+
         </div>
+
       </div>
 
     </div>
-  </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-[#112240] border-t border-[#233554] py-8 px-4 sm:px-8 text-center text-xs text-[#8892B0]">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>&copy; 2026 ToolTutors. All rights reserved.</div>
-      <div class="flex space-x-6">
-        <a href="index.html" class="hover:text-white transition">Home</a>
-        <a href="about.html" class="hover:text-white transition">About</a>
-        <a href="apply.html" class="hover:text-white transition">Join</a>
-        <a href="login.html" class="hover:text-white transition">Sign In</a>
-      </div>
+  </div>
+
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="max-w-7xl mx-auto px-4 sm:px-8 py-24">
+
+  <div class="text-center mb-16">
+
+    <h2 class="text-4xl font-extrabold text-white">
+      How ToolTutors Works
+    </h2>
+
+    <p class="text-[#8892B0] mt-4">
+      Find help in minutes.
+    </p>
+
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+
+    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
+      <div class="text-4xl mb-4">📝</div>
+      <h3 class="font-bold text-white mb-3">Post Your Project</h3>
+      <p class="text-[#8892B0] text-sm">
+        Tell us what you're trying to achieve.
+      </p>
     </div>
-  </footer>
 
-</body>
-</html>
+    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
+      <div class="text-4xl mb-4">🤝</div>
+      <h3 class="font-bold text-white mb-3">Receive Offers</h3>
+      <p class="text-[#8892B0] text-sm">
+        Local tutors and professionals respond.
+      </p>
+    </div>
+
+    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
+      <div class="text-4xl mb-4">🔨</div>
+      <h3 class="font-bold text-white mb-3">Get It Done</h3>
+      <p class="
