@@ -1,132 +1,1325 @@
-<!-- HERO -->
-<section class="relative overflow-hidden">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <div class="absolute inset-0 bg-gradient-to-br from-[#FF6B35]/10 via-transparent to-emerald-500/5"></div>
+  <meta
+    name="description"
+    content="Learn practical DIY skills from friendly local tutors or hire a verified professional to complete your project with ToolTutors."
+  >
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-8 py-20 lg:py-28 relative">
+  <meta name="theme-color" content="#0A192F">
 
-    <div class="grid lg:grid-cols-2 gap-16 items-center">
+  <title>ToolTutors | Learn DIY From Local Experts</title>
 
-      <div>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        <div class="inline-flex items-center px-4 py-2 rounded-full border border-[#FF6B35]/30 bg-[#FF6B35]/10 text-[#FF6B35] text-xs font-bold uppercase tracking-wider mb-6">
-          🔨 Learn DIY From Real People
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  >
+
+  https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              navy: '#0A192F',
+              card: '#112240',
+              border: '#233554',
+              orange: '#FF6B35',
+              orangeDark: '#E05A2B',
+              text: '#E6F1FF',
+              muted: '#8892B0'
+            }
+          },
+          boxShadow: {
+            'orange-glow': '0 20px 55px rgba(255, 107, 53, 0.22)',
+            'card-glow': '0 24px 70px rgba(0, 0, 0, 0.28)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0A192F;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #233554;
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FF6B35;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-12px) rotate(3deg);
+      }
+    }
+
+    @keyframes floatReverse {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(10px) rotate(-4deg);
+      }
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% {
+        opacity: 0.45;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.75;
+        transform: scale(1.08);
+      }
+    }
+
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .float-reverse-animation {
+      animation: floatReverse 7s ease-in-out infinite;
+    }
+
+    .pulse-soft-animation {
+      animation: pulseSoft 5s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .float-animation,
+      .float-reverse-animation,
+      .pulse-soft-animation {
+        animation: none;
+      }
+
+      * {
+        scroll-behaviour: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-full overflow-x-hidden bg-[#0A192F] text-[#E6F1FF] font-sans antialiased">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-20 flex items-center justify-between">
+
+        <a
+          href="index.html"
+          class="flex items-center flex-shrink-0"
+          aria-label="ToolTutors homepage"
+        >
+          <img
+            src="logo.svg"
+            alt="ToolTutors"
+            class="h-10 sm:h-12 w-auto"
+          >
+        </a>
+
+        <nav class="hidden md:flex items-center gap-2" aria-label="Main navigation">
+          <a
+            href="index.html"
+            class="px-4 py-2 rounded-xl text-sm font-semibold text-[#FF6B35] bg-[#FF6B35]/10"
+          >
+            Home
+          </a>
+
+          <a
+            href="about.html"
+            class="px-4 py-2 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"
+          >
+            About
+          </a>
+
+          #how-it-works
+            How It Works
+          </a>
+
+          <a
+            href="apply.html"
+            class="px-4 py-2 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"
+          >
+            Join as Tutor
+          </a>
+        </nav>
+
+        <div class="hidden md:flex items-center gap-3">
+          <a
+            href="login.html"
+            class="px-4 py-2.5 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35]/70 hover:bg-[#172A45] transition"
+          >
+            <i class="fa-solid fa-arrow-right-to-bracket text-[#FF6B35] mr-2"></i>
+            Sign In
+          </a>
+
+          <a
+            href="apply.html"
+            class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-orange-glow"
+          >
+            Get Started
+          </a>
         </div>
 
-        <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight text-white">
-          Learn DIY.
-          <br>
-          Meet Great People.
-          <br>
-          <span class="text-[#FF6B35]">
-            Build Something Amazing.
+        <button
+          type="button"
+          id="mobile-menu-button"
+          class="md:hidden w-11 h-11 rounded-xl bg-[#112240] border border-[#233554] text-white hover:border-[#FF6B35] transition"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <i id="mobile-menu-icon" class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+      <div
+        id="mobile-menu"
+        class="hidden md:hidden pb-5 border-t border-[#233554]"
+      >
+        <nav class="pt-4 flex flex-col gap-2" aria-label="Mobile navigation">
+          <a
+            href="index.html"
+            class="px-4 py-3 rounded-xl text-sm font-bold text-[#FF6B35] bg-[#FF6B35]/10"
+          >
+            <i class="fa-solid fa-house w-6"></i>
+            Home
+          </a>
+
+          <a
+            href="about.html"
+            class="px-4 py-3 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"
+          >
+            <i class="fa-solid fa-circle-info w-6"></i>
+            About
+          </a>
+
+          #how-it-works
+            <i class="fa-solid fa-list-check w-6"></i>
+            How It Works
+          </a>
+
+          <a
+            href="apply.html"
+            class="px-4 py-3 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"
+          >
+            <i class="fa-solid fa-screwdriver-wrench w-6"></i>
+            Join as Tutor
+          </a>
+
+          <div class="grid grid-cols-2 gap-3 pt-3">
+            <a
+              href="login.html"
+              class="px-4 py-3 rounded-xl text-xs font-bold text-center border border-[#233554] bg-[#112240] text-white"
+            >
+              Sign In
+            </a>
+
+            <a
+              href="apply.html"
+              class="px-4 py-3 rounded-xl text-xs font-bold text-center bg-[#FF6B35] text-white"
+            >
+              Get Started
+            </a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="relative overflow-hidden">
+
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-[#FF6B35]/10 blur-3xl pulse-soft-animation"></div>
+        <div class="absolute top-1/3 -right-52 w-[500px] h-[500px] rounded-full bg-emerald-500/5 blur-3xl"></div>
+
+        <i class="fa-solid fa-wrench absolute top-28 left-[5%] text-[#FF6B35]/10 text-5xl -rotate-12 float-animation"></i>
+        <i class="fa-solid fa-hammer absolute bottom-20 left-[44%] text-white/5 text-6xl rotate-12 float-reverse-animation"></i>
+        <i class="fa-solid fa-paint-roller absolute top-32 right-[8%] text-[#FF6B35]/10 text-5xl rotate-12 float-reverse-animation"></i>
+      </div>
+
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-14 lg:gap-16 items-center">
+
+          <!-- HERO COPY -->
+          <div>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] text-[11px] sm:text-xs font-extrabold uppercase tracking-wider">
+              <span class="w-2 h-2 rounded-full bg-[#FF6B35] animate-pulse"></span>
+              Local DIY help from real people
+            </div>
+
+            <h1 class="mt-7 text-4xl sm:text-5xl lg:text-[4.35rem] font-black text-white tracking-tight leading-[1.04]">
+              From
+              <span class="relative inline-block text-[#FF6B35]">
+                “How do I do that?”
+                <span class="absolute left-0 -bottom-1 w-full h-2 bg-[#FF6B35]/20 -rotate-1 rounded-full"></span>
+              </span>
+              to “Look what I made.”
+            </h1>
+
+            <p class="mt-7 text-lg sm:text-xl text-[#E6F1FF] font-semibold leading-relaxed max-w-2xl">
+              Friendly, practical help for the jobs that YouTube made look suspiciously easy.
+            </p>
+
+            <p class="mt-4 text-sm sm:text-base text-[#8892B0] leading-relaxed max-w-2xl">
+              Find a local DIY enthusiast, skilled hobbyist or trade professional who can guide you in person. Want someone else to tackle it? Choose a professional-tier Tutor to complete the job for you.
+            </p>
+
+            <div class="mt-9 flex flex-col sm:flex-row gap-4">
+              <a
+                href="apply.html"
+                class="group inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-[#FF6B35] hover:bg-[#E05A2B] text-white text-sm font-extrabold shadow-orange-glow transition-all duration-300 hover:-translate-y-1"
+              >
+                <i class="fa-solid fa-magnifying-glass mr-2"></i>
+                Find DIY Help
+                <i class="fa-solid fa-arrow-right ml-3 transition-transform group-hover:translate-x-1"></i>
+              </a>
+
+              <a
+                href="apply.html"
+                class="group inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-[#112240] hover:bg-[#172A45] border border-[#233554] hover:border-[#FF6B35]/60 text-white text-sm font-extrabold transition-all duration-300 hover:-translate-y-1"
+              >
+                <i class="fa-solid fa-hand-holding-dollar text-emerald-400 mr-2"></i>
+                Share Your Skills
+              </a>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#112240]/80 border border-[#233554] text-xs font-semibold text-[#E6F1FF]">
+                <i class="fa-solid fa-id-card text-[#FF6B35]"></i>
+                Tutor verification
+              </div>
+
+              <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#112240]/80 border border-[#233554] text-xs font-semibold text-[#E6F1FF]">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                Community reviews
+              </div>
+
+              <div class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#112240]/80 border border-[#233554] text-xs font-semibold text-[#E6F1FF]">
+                <i class="fa-solid fa-location-dot text-emerald-400"></i>
+                Local matches
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECT BOARD -->
+          <div class="relative">
+            <div class="absolute -inset-5 bg-gradient-to-br from-[#FF6B35]/20 to-emerald-500/5 rounded-[2.5rem] blur-2xl"></div>
+
+            <div class="relative bg-[#112240]/95 border border-[#233554] rounded-[2rem] p-5 sm:p-7 shadow-card-glow overflow-hidden">
+              <div class="absolute top-0 right-0 w-52 h-52 bg-[#FF6B35]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div class="relative flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#FF6B35]">
+                    Project inspiration
+                  </p>
+
+                  <h2 class="mt-2 text-xl sm:text-2xl font-extrabold text-white">
+                    What could you tackle next?
+                  </h2>
+                </div>
+
+                <div class="w-12 h-12 flex-shrink-0 rounded-2xl bg-[#FF6B35] text-white flex items-center justify-center shadow-orange-glow float-animation">
+                  <i class="fa-solid fa-toolbox text-lg"></i>
+                </div>
+              </div>
+
+              <div class="relative mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+
+                <a
+                  href="apply.html"
+                  class="group col-span-2 p-5 rounded-2xl bg-gradient-to-r from-[#FF6B35] to-[#F97316] text-white overflow-hidden relative transition-all duration-300 hover:-translate-y-1 hover:shadow-orange-glow"
+                >
+                  <i class="fa-solid fa-faucet-drip absolute -right-3 -bottom-5 text-8xl text-white/15 rotate-12"></i>
+
+                  <div class="relative">
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-[10px] uppercase tracking-widest font-extrabold text-white/80">
+                        Weekend challenge
+                      </span>
+
+                      <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    </div>
+
+                    <h3 class="mt-3 text-lg font-extrabold">
+                      Finally fix that dripping tap
+                    </h3>
+
+                    <p class="mt-1 text-xs text-white/80">
+                      Learn the repair with a local Tutor beside you.
+                    </p>
+                  </div>
+                </a>
+
+                <a
+                  href="apply.html"
+                  class="group p-4 sm:p-5 rounded-2xl bg-[#0A192F] border border-[#233554] hover:border-[#FF6B35]/70 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div class="w-11 h-11 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center text-lg group-hover:rotate-6 transition-transform">
+                    <i class="fa-solid fa-paint-roller"></i>
+                  </div>
+
+                  <h3 class="mt-4 text-sm font-extrabold text-white">
+                    Refresh a room
+                  </h3>
+
+                  <p class="mt-1 text-[11px] text-[#8892B0]">
+                    Prep, paint and finish neatly.
+                  </p>
+                </a>
+
+                <a
+                  href="apply.html"
+                  class="group p-4 sm:p-5 rounded-2xl bg-[#0A192F] border border-[#233554] hover:border-[#FF6B35]/70 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div class="w-11 h-11 rounded-xl bg-[#FF6B35]/10 text-[#FF6B35] flex items-center justify-center text-lg group-hover:-rotate-6 transition-transform">
+                    <i class="fa-solid fa-hammer"></i>
+                  </div>
+
+                  <h3 class="mt-4 text-sm font-extrabold text-white">
+                    Build floating shelves
+                  </h3>
+
+                  <p class="mt-1 text-[11px] text-[#8892B0]">
+                    Measure twice. Brag forever.
+                  </p>
+                </a>
+
+                <a
+                  href="apply.html"
+                  class="group p-4 sm:p-5 rounded-2xl bg-[#0A192F] border border-[#233554] hover:border-emerald-500/70 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg group-hover:rotate-6 transition-transform">
+                    <i class="fa-solid fa-seedling"></i>
+                  </div>
+
+                  <h3 class="mt-4 text-sm font-extrabold text-white">
+                    Transform the garden
+                  </h3>
+
+                  <p class="mt-1 text-[11px] text-[#8892B0]">
+                    Beds, borders and better weekends.
+                  </p>
+                </a>
+
+                <a
+                  href="apply.html"
+                  class="group p-4 sm:p-5 rounded-2xl bg-[#0A192F] border border-[#233554] hover:border-emerald-500/70 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div class="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg group-hover:-rotate-6 transition-transform">
+                    <i class="fa-solid fa-border-all"></i>
+                  </div>
+
+                  <h3 class="mt-4 text-sm font-extrabold text-white">
+                    Tackle tricky tiling
+                  </h3>
+
+                  <p class="mt-1 text-[11px] text-[#8892B0]">
+                    Straight lines included.
+                  </p>
+                </a>
+              </div>
+
+              <div class="relative mt-5 flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                <div class="w-10 h-10 flex-shrink-0 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </div>
+
+                <p class="text-xs sm:text-sm text-emerald-300 leading-relaxed">
+                  <strong class="text-white">Your project not listed?</strong>
+                  Post it anyway. If someone local has the right skill, they can make an offer.
+                </p>
+              </div>
+            </div>
+
+            <div class="hidden sm:flex absolute -left-8 top-24 items-center gap-2 px-4 py-3 rounded-2xl bg-white text-[#0A192F] shadow-2xl float-reverse-animation">
+              <span class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <i class="fa-solid fa-check"></i>
+              </span>
+
+              <div>
+                <p class="text-[9px] uppercase font-extrabold text-slate-400">
+                  Project feeling
+                </p>
+                <p class="text-xs font-extrabold">
+                  Properly proud
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- RELATABLE BANNER -->
+    <section class="border-y border-[#233554] bg-[#112240]/45">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-5 items-center">
+
+          <div class="flex -space-x-3">
+            <div class="w-11 h-11 rounded-full border-2 border-[#0A192F] bg-[#FF6B35] text-white flex items-center justify-center">
+              <i class="fa-solid fa-screwdriver"></i>
+            </div>
+
+            <div class="w-11 h-11 rounded-full border-2 border-[#0A192F] bg-amber-500 text-white flex items-center justify-center">
+              <i class="fa-solid fa-ruler"></i>
+            </div>
+
+            <div class="w-11 h-11 rounded-full border-2 border-[#0A192F] bg-emerald-500 text-white flex items-center justify-center">
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-white text-sm sm:text-base font-extrabold">
+              Watched three tutorials, visited the DIY shop twice and still not sure?
+            </p>
+
+            <p class="text-[#8892B0] text-xs sm:text-sm mt-1">
+              No judgement. That is exactly why ToolTutors exists.
+            </p>
+          </div>
+
+          <a
+            href="apply.html"
+            class="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold transition"
+          >
+            Ask a real person
+            <i class="fa-solid fa-arrow-right ml-2"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="relative py-20 sm:py-24 scroll-mt-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="max-w-2xl">
+          <span class="text-[#FF6B35] text-xs font-extrabold uppercase tracking-[0.2em]">
+            Nice and straightforward
           </span>
-        </h1>
 
-        <p class="mt-8 text-lg text-[#8892B0] max-w-2xl leading-relaxed">
-          You've watched three YouTube videos.
-          You've been to B&Q twice.
-          The instructions still don't make sense.
-        </p>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+            A project plan that does not need an instruction manual.
+          </h2>
 
-        <p class="mt-4 text-[#E6F1FF] max-w-2xl leading-relaxed">
-          ToolTutors connects you with friendly local DIY enthusiasts,
-          experienced tradespeople and skilled hobbyists who can guide
-          your project in person or complete it for you.
-        </p>
+          <p class="mt-5 text-[#8892B0] leading-relaxed">
+            Tell the community what you need, compare offers and choose whether you want to learn alongside someone or have the work completed for you.
+          </p>
+        </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 mt-10">
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <a href="login.html"
-             class="px-8 py-4 bg-[#FF6B35] hover:bg-[#E05A2B] rounded-xl font-bold shadow-lg transition text-center">
-            Find a Tutor
+          <article class="group relative bg-[#112240] border border-[#233554] rounded-3xl p-7 overflow-hidden hover:border-[#FF6B35]/60 hover:-translate-y-2 transition-all duration-300">
+            <span class="absolute top-1 right-5 text-8xl font-black text-white/[0.025]">
+              1
+            </span>
+
+            <div class="w-14 h-14 rounded-2xl bg-[#FF6B35] text-white flex items-center justify-center text-xl shadow-orange-glow group-hover:rotate-6 transition-transform">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+
+            <p class="mt-6 text-[10px] font-extrabold text-[#FF6B35] uppercase tracking-widest">
+              Show us the challenge
+            </p>
+
+            <h3 class="mt-2 text-xl font-extrabold text-white">
+              Post your project
+            </h3>
+
+            <p class="mt-3 text-sm text-[#8892B0] leading-relaxed">
+              Add a description, photos, budget and location. Tell Tutors whether you want guidance or would prefer the job completed.
+            </p>
+          </article>
+
+          <article class="group relative bg-[#112240] border border-[#233554] rounded-3xl p-7 overflow-hidden hover:border-amber-400/60 hover:-translate-y-2 transition-all duration-300">
+            <span class="absolute top-1 right-5 text-8xl font-black text-white/[0.025]">
+              2
+            </span>
+
+            <div class="w-14 h-14 rounded-2xl bg-amber-400 text-[#0A192F] flex items-center justify-center text-xl group-hover:-rotate-6 transition-transform">
+              <i class="fa-solid fa-comments-dollar"></i>
+            </div>
+
+            <p class="mt-6 text-[10px] font-extrabold text-amber-400 uppercase tracking-widest">
+              See who can help
+            </p>
+
+            <h3 class="mt-2 text-xl font-extrabold text-white">
+              Compare offers
+            </h3>
+
+            <p class="mt-3 text-sm text-[#8892B0] leading-relaxed">
+              Review prices, messages and Tutor details. Choose the person whose experience and approach feel right for your project.
+            </p>
+          </article>
+
+          <article class="group relative bg-[#112240] border border-[#233554] rounded-3xl p-7 overflow-hidden hover:border-emerald-500/60 hover:-translate-y-2 transition-all duration-300">
+            <span class="absolute top-1 right-5 text-8xl font-black text-white/[0.025]">
+              3
+            </span>
+
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl group-hover:rotate-6 transition-transform">
+              <i class="fa-solid fa-thumbs-up"></i>
+            </div>
+
+            <p class="mt-6 text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest">
+              Make progress
+            </p>
+
+            <h3 class="mt-2 text-xl font-extrabold text-white">
+              Learn it or complete it
+            </h3>
+
+            <p class="mt-3 text-sm text-[#8892B0] leading-relaxed">
+              Agree the time and tools, communicate through the platform and turn that unfinished job into something worth showing off.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHOOSE YOUR PATH -->
+    <section class="py-20 sm:py-24 bg-[#081525] border-y border-[#233554]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center max-w-3xl mx-auto">
+          <span class="text-[#FF6B35] text-xs font-extrabold uppercase tracking-[0.2em]">
+            One marketplace, two ways to get moving
+          </span>
+
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+            Pick the kind of help you actually want.
+          </h2>
+
+          <p class="mt-5 text-[#8892B0] leading-relaxed">
+            Learn the skill for yourself or hand the whole project to an approved professional-tier Tutor.
+          </p>
+        </div>
+
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-7">
+
+          <!-- TEACH ME -->
+          <article class="group relative bg-[#112240] border border-[#FF6B35]/35 rounded-[2rem] p-7 sm:p-9 overflow-hidden hover:border-[#FF6B35] transition-all duration-300">
+            <div class="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#FF6B35]/10 blur-3xl"></div>
+            <i class="fa-solid fa-chalkboard-user absolute -right-6 -bottom-8 text-[#FF6B35]/5 text-[12rem] rotate-6"></i>
+
+            <div class="relative">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-[#FF6B35] text-white flex items-center justify-center text-2xl shadow-orange-glow group-hover:rotate-6 transition-transform">
+                  <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+
+                <span class="self-start px-3 py-1.5 rounded-full bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] text-[10px] font-extrabold uppercase tracking-wider">
+                  Learn alongside a Tutor
+                </span>
+              </div>
+
+              <h3 class="mt-7 text-3xl font-black text-white">
+                Teach Me
+              </h3>
+
+              <p class="mt-4 text-[#8892B0] leading-relaxed max-w-xl">
+                You stay hands-on while a knowledgeable Tutor explains the process, demonstrates techniques and helps you avoid the classic “that did not look like that in the video” moment.
+              </p>
+
+              <div class="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-[#FF6B35]"></i>
+                  Build practical confidence
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-[#FF6B35]"></i>
+                  Ask questions in real time
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-[#FF6B35]"></i>
+                  Learn at your own home
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-[#FF6B35]"></i>
+                  Keep the skill for next time
+                </div>
+              </div>
+
+              <a
+                href="apply.html"
+                class="mt-8 inline-flex items-center text-sm font-extrabold text-[#FF6B35] hover:text-white transition"
+              >
+                Find someone to teach me
+                <i class="fa-solid fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+              </a>
+            </div>
+          </article>
+
+          <!-- COMPLETE FOR ME -->
+          <article class="group relative bg-[#112240] border border-emerald-500/35 rounded-[2rem] p-7 sm:p-9 overflow-hidden hover:border-emerald-500 transition-all duration-300">
+            <div class="absolute top-0 right-0 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl"></div>
+            <i class="fa-solid fa-toolbox absolute -right-6 -bottom-8 text-emerald-500/5 text-[12rem] -rotate-6"></i>
+
+            <div class="relative">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl group-hover:-rotate-6 transition-transform">
+                  <i class="fa-solid fa-toolbox"></i>
+                </div>
+
+                <span class="self-start px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider">
+                  Professional-tier Tutors
+                </span>
+              </div>
+
+              <h3 class="mt-7 text-3xl font-black text-white">
+                Complete For Me
+              </h3>
+
+              <p class="mt-4 text-[#8892B0] leading-relaxed max-w-xl">
+                Short on time, dealing with a complicated job or simply happier leaving it to an expert? Receive offers from professional-tier Tutors who can take care of the work.
+              </p>
+
+              <div class="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-emerald-400"></i>
+                  Professional-tier access
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-emerald-400"></i>
+                  Compare project offers
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-emerald-400"></i>
+                  Agree scheduling in-app
+                </div>
+
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[#0A192F]/70 border border-[#233554] text-sm text-[#E6F1FF]">
+                  <i class="fa-solid fa-check text-emerald-400"></i>
+                  Review the finished project
+                </div>
+              </div>
+
+              <a
+                href="apply.html"
+                class="mt-8 inline-flex items-center text-sm font-extrabold text-emerald-400 hover:text-white transition"
+              >
+                Find a professional Tutor
+                <i class="fa-solid fa-arrow-right ml-2 transition-transform group-hover:translate-x-1"></i>
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILL CATEGORIES -->
+    <section class="py-20 sm:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div class="max-w-2xl">
+            <span class="text-[#FF6B35] text-xs font-extrabold uppercase tracking-[0.2em]">
+              Big jobs, little jobs and “while you’re here” jobs
+            </span>
+
+            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-white tracking-tight">
+              Practical skills for real homes.
+            </h2>
+          </div>
+
+          <p class="text-sm text-[#8892B0] max-w-lg leading-relaxed">
+            ToolTutors connects projects with Tutors whose selected skills match the job category.
+          </p>
+        </div>
+
+        <div class="mt-11 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-sky-400/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center text-xl group-hover:rotate-6 transition-transform">
+              <i class="fa-solid fa-faucet-drip"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Plumbing
+            </h3>
           </a>
 
-          <a href="apply.html"
-             class="px-8 py-4 border border-[#233554] bg-[#112240] hover:bg-[#233554] rounded-xl font-bold transition text-center">
-            Become a Tutor
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-orange-400/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-orange-500/10 text-orange-400 flex items-center justify-center text-xl group-hover:-rotate-6 transition-transform">
+              <i class="fa-solid fa-border-all"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Tiling
+            </h3>
           </a>
 
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-amber-400/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl group-hover:rotate-6 transition-transform">
+              <i class="fa-solid fa-hammer"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Carpentry
+            </h3>
+          </a>
+
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-yellow-300/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-yellow-400/10 text-yellow-300 flex items-center justify-center text-xl group-hover:-rotate-6 transition-transform">
+              <i class="fa-solid fa-plug"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Electrical Basics
+            </h3>
+          </a>
+
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-rose-400/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-xl group-hover:rotate-6 transition-transform">
+              <i class="fa-solid fa-paint-roller"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Decorating
+            </h3>
+          </a>
+
+          <a
+            href="apply.html"
+            class="group bg-[#112240] border border-[#233554] rounded-2xl p-5 text-center hover:border-emerald-400/60 hover:-translate-y-2 transition-all duration-300"
+          >
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl group-hover:-rotate-6 transition-transform">
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+
+            <h3 class="mt-4 text-xs sm:text-sm font-extrabold text-white">
+              Landscaping
+            </h3>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TUTOR CTA -->
+    <section class="py-20 sm:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#FF6B35] to-[#E05A2B] p-8 sm:p-12 lg:p-16 shadow-orange-glow">
+          <div class="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="absolute -bottom-28 left-1/3 w-80 h-80 rounded-full bg-[#0A192F]/15 blur-2xl"></div>
+
+          <i class="fa-solid fa-wrench absolute top-10 right-[10%] text-white/10 text-8xl rotate-12 float-animation"></i>
+          <i class="fa-solid fa-hammer absolute -bottom-6 right-[30%] text-white/10 text-8xl -rotate-12 float-reverse-animation"></i>
+
+          <div class="relative grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 items-center">
+            <div>
+              <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/20 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                <i class="fa-solid fa-coins"></i>
+                Your experience has value
+              </span>
+
+              <h2 class="mt-6 text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight max-w-3xl">
+                Know your way around a toolbox?
+                Help somebody else have their “I did that” moment.
+              </h2>
+
+              <p class="mt-5 text-sm sm:text-base text-white/85 leading-relaxed max-w-2xl">
+                Skilled hobbyists, experienced DIYers and trade professionals can apply to become Tutors, share their knowledge and earn through local projects.
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-3 min-w-[220px]">
+              <a
+                href="apply.html"
+                class="inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-white text-[#E05A2B] text-sm font-extrabold hover:bg-[#FFF7ED] hover:-translate-y-1 transition-all duration-300 shadow-xl"
+              >
+                Apply as a Tutor
+                <i class="fa-solid fa-arrow-right ml-3"></i>
+              </a>
+
+              <a
+                href="about.html"
+                class="inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-[#0A192F]/20 border border-white/25 text-white text-sm font-extrabold hover:bg-[#0A192F]/30 transition"
+              >
+                Learn About ToolTutors
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section class="py-20 sm:py-24 border-y border-[#233554] bg-[#112240]/35">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-12 items-start">
+          <div>
+            <div class="w-16 h-16 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-shield-heart"></i>
+            </div>
+
+            <span class="block mt-6 text-[#FF6B35] text-xs font-extrabold uppercase tracking-[0.2em]">
+              The sensible bit
+            </span>
+
+            <h2 class="mt-3 text-3xl sm:text-4xl font-black text-white tracking-tight">
+              Fun projects. Proper safeguards.
+            </h2>
+
+            <p class="mt-5 text-sm sm:text-base text-[#8892B0] leading-relaxed">
+              ToolTutors balances friendly local collaboration with structured verification, project records, job-specific agreements and platform communication.
+            </p>
+
+            <a
+              href="terms.html"
+              class="mt-7 inline-flex items-center text-sm font-extrabold text-[#FF6B35] hover:text-white transition"
+            >
+              Read the terms and conditions
+              <i class="fa-solid fa-arrow-right ml-2"></i>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div class="flex gap-4 p-5 rounded-2xl bg-[#112240] border border-[#233554]">
+              <div class="w-11 h-11 flex-shrink-0 rounded-xl bg-[#FF6B35]/10 text-[#FF6B35] flex items-center justify-center">
+                <i class="fa-solid fa-id-card"></i>
+              </div>
+
+              <div>
+                <h3 class="text-sm font-extrabold text-white">
+                  Tutor verification
+                </h3>
+
+                <p class="mt-1 text-xs text-[#8892B0] leading-relaxed">
+                  Tutor onboarding includes profile, identity and supporting document submission.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-4 p-5 rounded-2xl bg-[#112240] border border-[#233554]">
+              <div class="w-11 h-11 flex-shrink-0 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+
+              <div>
+                <h3 class="text-sm font-extrabold text-white">
+                  Platform messaging
+                </h3>
+
+                <p class="mt-1 text-xs text-[#8892B0] leading-relaxed">
+                  Learners and Tutors can discuss active projects through the job chat.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-4 p-5 rounded-2xl bg-[#112240] border border-[#233554]">
+              <div class="w-11 h-11 flex-shrink-0 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <i class="fa-solid fa-star"></i>
+              </div>
+
+              <div>
+                <h3 class="text-sm font-extrabold text-white">
+                  Ratings and reviews
+                </h3>
+
+                <p class="mt-1 text-xs text-[#8892B0] leading-relaxed">
+                  Completed projects can contribute to a Tutor’s platform reputation.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-4 p-5 rounded-2xl bg-[#112240] border border-[#233554]">
+              <div class="w-11 h-11 flex-shrink-0 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                <i class="fa-solid fa-file-signature"></i>
+              </div>
+
+              <div>
+                <h3 class="text-sm font-extrabold text-white">
+                  Clear job types
+                </h3>
+
+                <p class="mt-1 text-xs text-[#8892B0] leading-relaxed">
+                  Teach Me and Complete For Me projects have distinct roles and conditions.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-20 sm:py-24">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center">
+          <span class="text-[#FF6B35] text-xs font-extrabold uppercase tracking-[0.2em]">
+            Questions before the toolbox comes out?
+          </span>
+
+          <h2 class="mt-3 text-3xl sm:text-4xl font-black text-white tracking-tight">
+            A few useful answers.
+          </h2>
+        </div>
+
+        <div class="mt-10 space-y-4">
+
+          <div class="faq-item bg-[#112240] border border-[#233554] rounded-2xl overflow-hidden">
+            <button
+              type="button"
+              class="faq-button w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
+              aria-expanded="false"
+            >
+              <span class="text-sm sm:text-base font-extrabold text-white">
+                Do I need any previous DIY experience?
+              </span>
+
+              <span class="faq-icon w-9 h-9 flex-shrink-0 rounded-xl bg-[#0A192F] border border-[#233554] text-[#FF6B35] flex items-center justify-center transition-transform">
+                <i class="fa-solid fa-plus"></i>
+              </span>
+            </button>
+
+            <div class="faq-answer hidden px-5 sm:px-6 pb-6">
+              <p class="text-sm text-[#8892B0] leading-relaxed">
+                No. Teach Me projects are designed to connect learners with Tutors who can explain tasks, demonstrate techniques and offer practical guidance.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item bg-[#112240] border border-[#233554] rounded-2xl overflow-hidden">
+            <button
+              type="button"
+              class="faq-button w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
+              aria-expanded="false"
+            >
+              <span class="text-sm sm:text-base font-extrabold text-white">
+                What is the difference between Teach Me and Complete For Me?
+              </span>
+
+              <span class="faq-icon w-9 h-9 flex-shrink-0 rounded-xl bg-[#0A192F] border border-[#233554] text-[#FF6B35] flex items-center justify-center transition-transform">
+                <i class="fa-solid fa-plus"></i>
+              </span>
+            </button>
+
+            <div class="faq-answer hidden px-5 sm:px-6 pb-6">
+              <p class="text-sm text-[#8892B0] leading-relaxed">
+                Teach Me is a mentorship-style project where the Learner performs the work with guidance. Complete For Me is a traditional hiring option restricted to approved professional-tier Tutors.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item bg-[#112240] border border-[#233554] rounded-2xl overflow-hidden">
+            <button
+              type="button"
+              class="faq-button w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
+              aria-expanded="false"
+            >
+              <span class="text-sm sm:text-base font-extrabold text-white">
+                How do I choose a Tutor?
+              </span>
+
+              <span class="faq-icon w-9 h-9 flex-shrink-0 rounded-xl bg-[#0A192F] border border-[#233554] text-[#FF6B35] flex items-center justify-center transition-transform">
+                <i class="fa-solid fa-plus"></i>
+              </span>
+            </button>
+
+            <div class="faq-answer hidden px-5 sm:px-6 pb-6">
+              <p class="text-sm text-[#8892B0] leading-relaxed">
+                After posting a project, you can review offers submitted by matching Tutors and select the offer that best suits your requirements.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item bg-[#112240] border border-[#233554] rounded-2xl overflow-hidden">
+            <button
+              type="button"
+              class="faq-button w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left"
+              aria-expanded="false"
+            >
+              <span class="text-sm sm:text-base font-extrabold text-white">
+                Can experienced hobbyists become Tutors?
+              </span>
+
+              <span class="faq-icon w-9 h-9 flex-shrink-0 rounded-xl bg-[#0A192F] border border-[#233554] text-[#FF6B35] flex items-center justify-center transition-transform">
+                <i class="fa-solid fa-plus"></i>
+              </span>
+            </button>
+
+            <div class="faq-answer hidden px-5 sm:px-6 pb-6">
+              <p class="text-sm text-[#8892B0] leading-relaxed">
+                Yes. ToolTutors supports self-taught enthusiasts as well as professional-tier Tutors. Available work depends on the Tutor’s skills, approval status and tier.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="pb-20 sm:pb-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="relative text-center overflow-hidden rounded-[2rem] bg-[#112240] border border-[#FF6B35]/35 p-8 sm:p-14">
+          <div class="absolute inset-0 bg-gradient-to-br from-[#FF6B35]/10 via-transparent to-emerald-500/5"></div>
+          <div class="absolute -top-28 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-[#FF6B35]/10 blur-3xl"></div>
+
+          <div class="relative max-w-3xl mx-auto">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-[#FF6B35] text-white flex items-center justify-center text-2xl shadow-orange-glow float-animation">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+
+            <h2 class="mt-7 text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
+              That unfinished project is not going to finish itself.
+            </h2>
+
+            <p class="mt-5 text-sm sm:text-base text-[#8892B0] leading-relaxed">
+              Post the job, meet someone local and turn “one day” into a date on the calendar.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="apply.html"
+                class="inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-[#FF6B35] hover:bg-[#E05A2B] text-white text-sm font-extrabold shadow-orange-glow hover:-translate-y-1 transition-all duration-300"
+              >
+                Start My Project
+                <i class="fa-solid fa-arrow-right ml-3"></i>
+              </a>
+
+              <a
+                href="login.html"
+                class="inline-flex items-center justify-center px-7 py-4 rounded-2xl bg-[#0A192F] hover:bg-[#172A45] border border-[#233554] hover:border-[#FF6B35]/60 text-white text-sm font-extrabold transition"
+              >
+                I Already Have an Account
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-[#081525] border-t border-[#233554]">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-10">
+
+        <div>
+          <a href="index.html" class="inline-flex" aria-label="ToolTutors homepage">
+            <img
+              src="logo.svg"
+              alt="ToolTutors"
+              class="h-12 w-auto"
+            >
+          </a>
+
+          <p class="mt-5 text-sm text-[#8892B0] leading-relaxed max-w-sm">
+            Helping people learn practical DIY skills, share local knowledge and make progress on the projects that matter to them.
+          </p>
+
+          <div class="mt-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-[#112240] border border-[#233554] text-xs text-[#8892B0]">
+            <i class="fa-solid fa-location-dot text-[#FF6B35]"></i>
+            Local skills. Real people. Useful help.
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-extrabold text-white uppercase tracking-widest">
+            Explore
+          </h3>
+
+          <div class="mt-5 flex flex-col gap-3">
+            <a href="index.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Home
+            </a>
+
+            <a href="about.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              About ToolTutors
+            </a>
+
+            #how-it-works
+              How It Works
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-extrabold text-white uppercase tracking-widest">
+            Get Involved
+          </h3>
+
+          <div class="mt-5 flex flex-col gap-3">
+            <a href="apply.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Find DIY Help
+            </a>
+
+            <a href="apply.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Become a Tutor
+            </a>
+
+            <a href="login.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Sign In
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-extrabold text-white uppercase tracking-widest">
+            Information
+          </h3>
+
+          <div class="mt-5 flex flex-col gap-3">
+            <a href="terms.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Terms and Conditions
+            </a>
+
+            <a href="waiver.html" class="text-sm text-[#8892B0] hover:text-[#FF6B35] transition">
+              Safety and Waiver
+            </a>
+          </div>
         </div>
 
       </div>
+    </div>
 
-      <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 shadow-2xl">
+    <div class="border-t border-[#233554]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#8892B0]">
+        <p>
+          &copy; <span id="current-year"></span> ToolTutors. All rights reserved.
+        </p>
 
-        <h3 class="text-xl font-bold text-white mb-6">
-          🛠 Popular Projects Right Now
-        </h3>
-
-        <div class="grid grid-cols-2 gap-4">
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            🚰 Fix a Tap
-          </div>
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            🎨 Paint a Room
-          </div>
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            🪚 Build Shelves
-          </div>
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            🌱 Garden Projects
-          </div>
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            💡 Install Lighting
-          </div>
-
-          <div class="p-4 bg-[#0A192F] rounded-2xl border border-[#233554]">
-            🚿 Bathroom Repairs
-          </div>
-
-        </div>
-
+        <p class="flex items-center gap-2">
+          Built for people who would rather have a go.
+          <i class="fa-solid fa-screwdriver-wrench text-[#FF6B35]"></i>
+        </p>
       </div>
-
     </div>
 
-  </div>
+  </footer>
 
-</section>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const currentYear = document.getElementById('current-year');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link');
+        const faqButtons = document.querySelectorAll('.faq-button');
 
-<!-- HOW IT WORKS -->
-<section class="max-w-7xl mx-auto px-4 sm:px-8 py-24">
+        if (currentYear) {
+          currentYear.textContent = new Date().getFullYear();
+        }
 
-  <div class="text-center mb-16">
+        if (mobileMenuButton && mobileMenu && mobileMenuIcon) {
+          mobileMenuButton.addEventListener('click', () => {
+            const isOpening = mobileMenu.classList.contains('hidden');
 
-    <h2 class="text-4xl font-extrabold text-white">
-      How ToolTutors Works
-    </h2>
+            mobileMenu.classList.toggle('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', String(isOpening));
 
-    <p class="text-[#8892B0] mt-4">
-      Find help in minutes.
-    </p>
+            mobileMenuIcon.classList.toggle('fa-bars', !isOpening);
+            mobileMenuIcon.classList.toggle('fa-xmark', isOpening);
+          });
 
-  </div>
+          (mobileMenuLinks || []).forEach((link) => {
+            link.addEventListener('click', () => {
+              mobileMenu.classList.add('hidden');
+              mobileMenuButton.setAttribute('aria-expanded', 'false');
+              mobileMenuIcon.classList.add('fa-bars');
+              mobileMenuIcon.classList.remove('fa-xmark');
+            });
+          });
+        }
 
-  <div class="grid md:grid-cols-3 gap-8">
+        (faqButtons || []).forEach((button) => {
+          button.addEventListener('click', () => {
+            const faqItem = button.closest('.faq-item');
 
-    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
-      <div class="text-4xl mb-4">📝</div>
-      <h3 class="font-bold text-white mb-3">Post Your Project</h3>
-      <p class="text-[#8892B0] text-sm">
-        Tell us what you're trying to achieve.
-      </p>
-    </div>
+            if (!faqItem) {
+              return;
+            }
 
-    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
-      <div class="text-4xl mb-4">🤝</div>
-      <h3 class="font-bold text-white mb-3">Receive Offers</h3>
-      <p class="text-[#8892B0] text-sm">
-        Local tutors and professionals respond.
-      </p>
-    </div>
+            const answer = faqItem.querySelector('.faq-answer');
+            const icon = faqItem.querySelector('.faq-icon i');
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
 
-    <div class="bg-[#112240] border border-[#233554] rounded-3xl p-8 text-center">
-      <div class="text-4xl mb-4">🔨</div>
-      <h3 class="font-bold text-white mb-3">Get It Done</h3>
-      <p class="
+            button.setAttribute('aria-expanded', String(!isExpanded));
+
+            if (answer) {
+              answer.classList.toggle('hidden', isExpanded);
+            }
+
+            if (icon) {
+              icon.classList.toggle('fa-plus', isExpanded);
+              icon.classList.toggle('fa-minus', !isExpanded);
+            }
+
+            faqItem.classList.toggle('border-[#FF6B35]/50', !isExpanded);
+            faqItem.classList.toggle('border-[#233554]', isExpanded);
+          });
+        });
+      } catch (error) {
+        console.error('Homepage initialisation error:', error);
+      }
+    });
+  </script>
+
+</body>
+</html>
