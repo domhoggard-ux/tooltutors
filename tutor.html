@@ -29,7 +29,8 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
         <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
-<span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>      </div>
+        <span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>      
+      </div>
       
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-3 pr-2">
@@ -118,6 +119,18 @@
       <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500"></i>
       <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
       <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your credentials have been submitted. Once verified by an admin, your marketplace dashboard will unlock.</p>
+    </section>
+
+    <!-- STRIPE ONBOARDING SECTION -->
+    <section id="tutor-stripe-section" class="bg-[#112240] border-2 border-[#FF6B35] rounded-2xl p-8 text-center hidden space-y-4 max-w-2xl mx-auto shadow-2xl shadow-[#FF6B35]/10">
+      <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
+        <i class="fa-brands fa-stripe text-3xl text-[#FF6B35]"></i>
+      </div>
+      <h3 class="text-2xl font-extrabold text-white">Set Up Payouts</h3>
+      <p class="text-sm text-[#8892B0] max-w-md mx-auto">You have been approved! To start accepting jobs and receiving automated payouts, you must connect your bank account securely via Stripe Connect.</p>
+      <button id="connect-stripe-btn" onclick="startStripeOnboarding()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg mt-4 inline-flex items-center gap-2">
+        <i class="fa-solid fa-building-columns"></i> Connect Bank Account
+      </button>
     </section>
 
     <!-- ACTIVE DASHBOARD -->
@@ -272,10 +285,30 @@
         updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
 
+        // Handle return from Stripe Onboarding
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('stripe_return') === 'true') {
+          // Optimistic update for Sprint 1 (Sprint 3 will use secure webhooks for this)
+          await supabaseClient.from('profiles').update({ stripe_onboarding_complete: true }).eq('id', user.id);
+          profile.stripe_onboarding_complete = true;
+          showToast('Bank details connected securely!', 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (urlParams.get('stripe_refresh') === 'true') {
+          showToast('Stripe setup interrupted. Please try again.', 'error');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         const status = profile.validation_status || 'pending';
+        
         if (status === 'approved') {
-          document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-          loadTutorWorkspace();
+          if (!profile.stripe_onboarding_complete) {
+            // Unlocked, but needs Stripe
+            document.getElementById('tutor-stripe-section').classList.remove('hidden');
+          } else {
+            // Fully active
+            document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+            loadTutorWorkspace();
+          }
         } else if (status === 'submitted') {
           document.getElementById('tutor-pending-review').classList.remove('hidden');
         } else {
@@ -299,6 +332,44 @@
       } catch (err) { showToast('Init error', 'error'); }
     });
 
+    // STRIPE ONBOARDING TRIGGER
+    async function startStripeOnboarding() {
+      const btn = document.getElementById('connect-stripe-btn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
+
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        // Call the newly deployed Edge Function
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-stripe-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to communicate with Stripe.');
+        
+        if (data.url) {
+          window.location.href = data.url; // Redirects the tutor to Stripe
+        } else {
+          throw new Error('No onboarding URL was returned.');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast(`Stripe Error: ${err.message}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // Modal and Distance logic...
     function openImageModal(url) {
       if(!url) return;
       document.getElementById('expanded-image').src = url;
@@ -682,7 +753,6 @@
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
 
-      // Close archive modal when job card opens
       document.getElementById('archive-modal').classList.add('hidden');
 
       const photoContainer = document.getElementById('card-photo-container');
