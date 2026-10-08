@@ -113,10 +113,25 @@ Deno.serve(async (request) => {
     const stripeUrl = new URL(
       `https://api.stripe.com/v2/core/accounts/${encodeURIComponent(profile.stripe_account_id)}`,
     );
-    stripeUrl.searchParams.append("include[]", "configuration.recipient");
-    stripeUrl.searchParams.append("include[]", "requirements");
-    stripeUrl.searchParams.append("include[]", "future_requirements");
-    stripeUrl.searchParams.append("include[]", "defaults");
+    stripeUrl.searchParams.append(
+  "include[0]",
+  "configuration.recipient",
+);
+
+stripeUrl.searchParams.append(
+  "include[1]",
+  "requirements",
+);
+
+stripeUrl.searchParams.append(
+  "include[2]",
+  "future_requirements",
+);
+
+stripeUrl.searchParams.append(
+  "include[3]",
+  "defaults",
+);
 
     const stripeResponse = await fetch(stripeUrl.toString(), {
       method: "GET",
