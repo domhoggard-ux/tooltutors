@@ -192,14 +192,11 @@
             <div>
               <div class="font-bold text-white text-sm">${t.full_name || 'Tutor'}</div>
               <div class="text-[10px] text-[#8892B0] uppercase">${(t.tutor_tier||'').replace('_',' ')}</div>
-              <div class="text-[10px] text-[#8892B0] mt-1">${escapeHTML(t.phone || 'No phone synced')}</div>
-              <div class="text-[10px] text-[#8892B0]">${escapeHTML([t.address_line1, t.city, t.postcode].filter(Boolean).join(', ') || 'No Stripe address synced')}</div>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
+            ${t.id_document_url ? `<button onclick="viewSecureDocument('${t.id_document_url}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold">ID</button>` : ''}
             ${t.dbs_document_url ? `<button onclick="viewSecureDocument('${t.dbs_document_url}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold">DBS</button>` : ''}
-            ${t.vat_number ? `<span class="px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/30 rounded text-xs font-bold">VAT: ${escapeHTML(t.vat_number)}</span>` : '<span class="px-3 py-1.5 bg-[#233554]/50 text-[#8892B0] rounded text-xs font-bold">No VAT number</span>'}
-            ${t.stripe_onboarding_complete ? '<span class="px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded text-xs font-bold">Stripe verified</span>' : '<span class="px-3 py-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded text-xs font-bold">Stripe pending</span>'}
             ${t.trade_certificate_url ? `<button onclick="viewSecureDocument('${t.trade_certificate_url}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition rounded text-xs font-bold border border-amber-500/30" title="Trade Certification">PRO</button>` : ''}
           </div>
           <div class="flex flex-col space-y-2 w-full md:w-64">
@@ -260,7 +257,25 @@
       }
     }
 
-    // --- TAB 3: USER DIRECTORY (WITH SKILLS, DOCS, & DELETION) ---
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      })[character]);
+    }
+
+    function hasUsableCoordinates(latitude, longitude) {
+      if (latitude === null || latitude === undefined || latitude === '' ||
+          longitude === null || longitude === undefined || longitude === '') return false;
+      const lat = Number(latitude);
+      const lon = Number(longitude);
+      return Number.isFinite(lat) && Number.isFinite(lon) && !(lat === 0 && lon === 0);
+    }
+
+    // --- TAB 3: USER DIRECTORY (WITH CONTACT, LOCATION, SKILLS, DOCS, & DELETION) ---
     async function loadAllUsers() {
       const container = document.getElementById('admin-users-list');
       const term = document.getElementById('user-search').value.trim().toLowerCase();
@@ -277,7 +292,7 @@
       container.innerHTML = users.map(u => {
         const userSkills = u.skills || [];
         const isTutor = u.role === 'tutor';
-        const hasDocs = u.dbs_document_url || u.trade_certificate_url;
+        const hasDocs = u.id_document_url || u.dbs_document_url || u.trade_certificate_url;
 
         return `
           <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-4 space-y-3">
@@ -302,12 +317,28 @@
               </div>
             </div>
 
+            <div class="pt-3 border-t border-[#233554]">
+              <p class="text-[10px] font-bold uppercase text-[#8892B0] mb-2">Contact and location</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[10px]">
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]">
+                  <span class="text-[#8892B0] uppercase font-bold"><i class="fa-solid fa-phone mr-1 text-[#FF6B35]"></i>Phone</span>
+                  <div class="text-white mt-1 break-words">${escapeHTML(u.phone || 'Not available')}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554] sm:col-span-1 lg:col-span-2">
+                  <span class="text-[#8892B0] uppercase font-bold"><i class="fa-solid fa-location-dot mr-1 text-[#FF6B35]"></i>Address</span>
+                  <div class="text-white mt-1 break-words">${escapeHTML([u.address_line1, u.address_line2, u.city, u.postcode, u.country].filter(Boolean).join(', ') || 'Not available')}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]">
+                  <span class="text-[#8892B0] uppercase font-bold"><i class="fa-solid fa-map-location-dot mr-1 text-[#FF6B35]"></i>Marketplace</span>
+                  <div class="mt-1 ${hasUsableCoordinates(u.latitude, u.longitude) ? 'text-emerald-400' : 'text-amber-400'}">${hasUsableCoordinates(u.latitude, u.longitude) ? 'Coordinates ready' : 'Coordinates missing'}</div>
+                </div>
+              </div>
+            </div>
+
             ${isTutor ? `
-              <div class="pt-3 border-t border-[#233554] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-[10px]">
-                <div class="p-2 rounded bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold">Phone</span><div class="text-white mt-1">${escapeHTML(u.phone || 'Not synced')}</div></div>
-                <div class="p-2 rounded bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold">Location</span><div class="text-white mt-1">${escapeHTML([u.city, u.postcode].filter(Boolean).join(', ') || 'Not synced')}</div></div>
-                <div class="p-2 rounded bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold">VAT number</span><div class="text-white mt-1">${escapeHTML(u.vat_number || 'Not supplied')}</div></div>
-                <div class="p-2 rounded bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold">Stripe</span><div class="mt-1 ${u.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${u.stripe_onboarding_complete ? 'Verified' : 'Pending'}</div></div>
+              <div class="pt-3 border-t border-[#233554] grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold"><i class="fa-solid fa-receipt mr-1 text-[#FF6B35]"></i>VAT number</span><div class="text-white mt-1">${escapeHTML(u.vat_number || 'Not supplied')}</div></div>
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold"><i class="fa-brands fa-stripe mr-1 text-[#FF6B35]"></i>Stripe payouts</span><div class="mt-1 ${u.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${u.stripe_onboarding_complete ? 'Verified' : 'Pending'}</div></div>
               </div>
             ` : ''}
 
@@ -333,24 +364,6 @@
       }).join('');
     }
 
-    function escapeHTML(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, character => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-      })[character]);
-    }
-
-    function hasUsableCoordinates(latitude, longitude) {
-      if (latitude === null || latitude === undefined || latitude === '' ||
-          longitude === null || longitude === undefined || longitude === '') return false;
-      const lat = Number(latitude);
-      const lon = Number(longitude);
-      return Number.isFinite(lat) && Number.isFinite(lon) && !(lat === 0 && lon === 0);
-    }
-
     function openUserDocsModal(userId) {
       const user = allLoadedUsers.find(u => u.id === userId);
       if (!user) return;
@@ -359,13 +372,15 @@
       
       let html = `
         <div class="p-4 rounded-xl bg-[#0A192F] border border-[#233554] text-xs space-y-2 mb-4">
-          <div><span class="text-[#8892B0] font-bold uppercase">Phone:</span> <span class="text-white">${escapeHTML(user.phone || 'Not synced')}</span></div>
-          <div><span class="text-[#8892B0] font-bold uppercase">Address:</span> <span class="text-white">${escapeHTML([user.address_line1, user.address_line2, user.city, user.postcode, user.country].filter(Boolean).join(', ') || 'Not synced')}</span></div>
+          <div><span class="text-[#8892B0] font-bold uppercase">Phone:</span> <span class="text-white">${escapeHTML(user.phone || 'Not available')}</span></div>
+          <div><span class="text-[#8892B0] font-bold uppercase">Address:</span> <span class="text-white">${escapeHTML([user.address_line1, user.address_line2, user.city, user.postcode, user.country].filter(Boolean).join(', ') || 'Not available')}</span></div>
           <div><span class="text-[#8892B0] font-bold uppercase">VAT:</span> <span class="text-white">${escapeHTML(user.vat_number || 'Not supplied')}</span></div>
           <div><span class="text-[#8892B0] font-bold uppercase">Stripe payouts:</span> <span class="${user.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${user.stripe_onboarding_complete ? 'Verified' : 'Pending'}</span></div>
-          <div><span class="text-[#8892B0] font-bold uppercase">Marketplace coordinates:</span> <span class="text-white">${hasUsableCoordinates(user.latitude, user.longitude) ? `${user.latitude}, ${user.longitude}` : 'Not available'}</span></div>
         </div>
       `;
+      if (user.id_document_url) {
+        html += `<button onclick="viewSecureDocument('${user.id_document_url}')" class="w-full py-3 bg-[#233554] hover:bg-[#FF6B35] transition text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-id-card"></i> View Photo ID</button>`;
+      }
       if (user.dbs_document_url) {
         html += `<button onclick="viewSecureDocument('${user.dbs_document_url}')" class="w-full py-3 bg-[#233554] hover:bg-[#FF6B35] transition text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-shield-halved"></i> View DBS Certificate</button>`;
       }
@@ -373,7 +388,7 @@
         html += `<button onclick="viewSecureDocument('${user.trade_certificate_url}')" class="w-full py-3 bg-amber-500/20 hover:bg-amber-500/40 transition text-amber-400 font-bold text-sm border border-amber-500/30 rounded-xl flex items-center justify-center gap-2"><i class="fa-solid fa-medal"></i> View Pro Certificate</button>`;
       }
 
-      if (!user.dbs_document_url && !user.trade_certificate_url) {
+      if (!user.id_document_url && !user.dbs_document_url && !user.trade_certificate_url) {
         html += '<p class="text-xs text-[#8892B0] text-center italic py-4">No evidence documents found for this user.</p>';
       }
 
