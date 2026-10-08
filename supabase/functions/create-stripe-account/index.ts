@@ -2,6 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import Stripe from "npm:stripe@^22.0.0";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+const STRIPE_V2_VERSION = "2026-09-30.preview";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -16,6 +18,71 @@ function jsonResponse(body: Record<string, unknown>, status = 200): Response {
       "Content-Type": "application/json",
     },
   });
+}
+
+async function createRecipientAccountV2(params: {
+  stripeSecretKey: string;
+  email: string;
+  displayName: string;
+  userId: string;
+}): Promise<string> {
+  const response = await fetch("https://api.stripe.com/v2/core/accounts", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${params.stripeSecretKey}`,
+      "Content-Type": "application/json",
+      "Stripe-Version": STRIPE_V2_VERSION,
+    },
+    body: JSON.stringify({
+      contact_email: params.email,
+      display_name: params.displayName,
+      dashboard: "express",
+      identity: {
+        country: "gb",
+        entity_type: "individual",
+      },
+      configuration: {
+        recipient: {
+          capabilities: {
+            stripe_balance: {
+              stripe_transfers: {
+                requested: true,
+              },
+            },
+          },
+        },
+      },
+      defaults: {
+        currency: "gbp",
+        locales: ["en-GB"],
+      },
+      metadata: {
+        supabase_user_id: params.userId,
+        platform: "ToolTutors",
+      },
+      include: [
+        "configuration.recipient",
+        "identity",
+        "requirements",
+      ],
+    }),
+  });
+
+  const payload = await response.json();
+
+  if (!response.ok) {
+    const errorMessage =
+      payload?.error?.message ||
+      payload?.error ||
+      "Stripe could not create the connected account.";
+    throw new Error(errorMessage);
+  }
+
+  if (!payload?.id || typeof payload.id !== "string") {
+    throw new Error("Stripe did not return a connected account ID.");
+  }
+
+  return payload.id;
 }
 
 Deno.serve(async (request: Request): Promise<Response> => {
@@ -36,11 +103,11 @@ Deno.serve(async (request: Request): Promise<Response> => {
     const authorization = request.headers.get("Authorization");
 
     if (!stripeSecretKey) {
-      throw new Error("Missing STRIPE_SECRET_KEY secret");
+      throw new Error("Missing STRIPE_SECRET_KEY secret.");
     }
 
     if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-      throw new Error("Missing required Supabase environment variables");
+      throw new Error("Missing required Supabase environment variables.");
     }
 
     if (!authorization?.startsWith("Bearer ")) {
@@ -86,37 +153,27 @@ Deno.serve(async (request: Request): Promise<Response> => {
     }
 
     if (!profile || profile.role !== "tutor") {
-      return jsonResponse({ error: "Only Tutor accounts can connect to Stripe" }, 403);
+      return jsonResponse({ error: "Only Tutor accounts can connect to Stripe." }, 403);
     }
 
     if (profile.validation_status !== "approved") {
-      return jsonResponse({ error: "Tutor verification must be approved first" }, 403);
+      return jsonResponse({ error: "Tutor verification must be approved first." }, 403);
     }
 
-    const stripe = new Stripe(stripeSecretKey);
+    const accountEmail = profile.email || user.email;
+    if (!accountEmail) {
+      return jsonResponse({ error: "The Tutor profile needs an email address." }, 400);
+    }
+
     let stripeAccountId = profile.stripe_account_id as string | null;
 
     if (!stripeAccountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: "GB",
-        email: profile.email || user.email || undefined,
-        business_type: "individual",
-        business_profile: {
-          product_description: "DIY mentoring and home project services through ToolTutors",
-          url: appUrl,
-        },
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-        metadata: {
-          supabase_user_id: user.id,
-          platform: "ToolTutors",
-        },
+      stripeAccountId = await createRecipientAccountV2({
+        stripeSecretKey,
+        email: accountEmail,
+        displayName: profile.full_name || "ToolTutors Tutor",
+        userId: user.id,
       });
-
-      stripeAccountId = account.id;
 
       const { error: updateError } = await adminClient
         .from("profiles")
@@ -128,11 +185,16 @@ Deno.serve(async (request: Request): Promise<Response> => {
       }
     }
 
+    const stripe = new Stripe(stripeSecretKey);
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccountId,
       refresh_url: `${appUrl}/tutor.html?stripe_refresh=true`,
       return_url: `${appUrl}/tutor.html?stripe_return=true`,
       type: "account_onboarding",
+      collection_options: {
+        fields: "eventually_due",
+        future_requirements: "include",
+      },
     });
 
     return jsonResponse({ url: accountLink.url });
