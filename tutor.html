@@ -543,13 +543,50 @@
     }
 
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
-      if (![lat1, lon1, lat2, lon2].every(value => Number.isFinite(Number(value)))) return null;
-      const R = 3958.8; 
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return parseFloat((R * c).toFixed(1));
+      const values = [lat1, lon1, lat2, lon2];
+
+      const hasMissingValue = values.some(value =>
+        value === null ||
+        value === undefined ||
+        value === ''
+      );
+
+      if (hasMissingValue) return null;
+
+      const tutorLatitude = Number(lat1);
+      const tutorLongitude = Number(lon1);
+      const jobLatitude = Number(lat2);
+      const jobLongitude = Number(lon2);
+
+      if (![tutorLatitude, tutorLongitude, jobLatitude, jobLongitude].every(Number.isFinite)) {
+        return null;
+      }
+
+      if (
+        (tutorLatitude === 0 && tutorLongitude === 0) ||
+        (jobLatitude === 0 && jobLongitude === 0)
+      ) {
+        return null;
+      }
+
+      const earthRadiusMiles = 3958.8;
+      const latitudeDifference = (jobLatitude - tutorLatitude) * Math.PI / 180;
+      const longitudeDifference = (jobLongitude - tutorLongitude) * Math.PI / 180;
+      const tutorLatitudeRadians = tutorLatitude * Math.PI / 180;
+      const jobLatitudeRadians = jobLatitude * Math.PI / 180;
+
+      const haversineValue =
+        Math.sin(latitudeDifference / 2) ** 2 +
+        Math.cos(tutorLatitudeRadians) *
+        Math.cos(jobLatitudeRadians) *
+        Math.sin(longitudeDifference / 2) ** 2;
+
+      const angularDistance = 2 * Math.atan2(
+        Math.sqrt(haversineValue),
+        Math.sqrt(1 - haversineValue)
+      );
+
+      return Number((earthRadiusMiles * angularDistance).toFixed(1));
     }
 
     const getFirstPhoto = (job) => {
