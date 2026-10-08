@@ -120,159 +120,6 @@
       <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
       <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your credentials have been submitted. Once verified by an admin, your marketplace dashboard will unlock.</p>
     </section>
-async function ch*ckStripeOnboardingStatus(options =*{}) {
-  const {
-    showSuccessMes*age = false,
-    showLoadingMessag* = false
-  } = options;
-
-  try {
- *  if (showLoadingMessage) {
-      *howToast(
-        'Checking your S*ripe account status...',
-        '*nfo'
-      );
-    }
-
-    const {
- *    data: sessionData,
-      error* sessionError
-    } = await supaba*eClient.auth.getSession();
-
-    if*(sessionError) {
-      throw sessi*nError;
-    }
-
-    const session =*sessionData?.session;
-
-    if (!se*sion?.access_token) {
-      throw *ew Error(
-        'Your session ha* expired. Please sign in again.'
- *    );
-    }
-
-    const response =*await fetch(
-      `${SUPABASE_URL*/functions/v1/check-stripe-account*,
-      {
-        method: 'POST',
-*        headers: {
-          'Cont*nt-Type': 'application/json',
-    *     'Authorization': `Bearer ${se*sion.access_token}`,
-          'ap*key': SUPABASE_ANON_KEY
-        },*
-        body: JSON.stringify({})
-*     }
-    );
-
-    let responseDat* = {};
-
-    try {
-      responseDa*a = await response.json();
-    } c*tch (jsonError) {
-      console.er*or(
-        'Could not read Stripe*status response:',
-        jsonErr*r
-      );
-    }
-
-    if (!respons*.ok) {
-      throw new Error(
-    *   responseData?.error ||
-        *Stripe status check failed with st*tus ${response.status}.`
-      );
-*   }
-
-    if (responseData?.comple*e === true) {
-      currentProfile*stripe_onboarding_complete = true;*
-      const stripeSection = docum*nt.getElementById(
-        'tutor-*tripe-section'
-      );
-
-      con*t activeDashboard = document.getEl*mentById(
-        'tutor-active-da*hboard'
-      );
-
-      if (stripe*ection) {
-        stripeSection.cl*ssList.add('hidden');
-      }
-
-   *  if (activeDashboard) {
-        a*tiveDashboard.classList.remove('hi*den');
-      }
-
-      await loadTu*orWorkspace();
-
-      if (showSucc*ssMessage) {
-        if (responseD*ta?.payoutsEnabled) {
-          sh*wToast(
-            'Stripe setup *omplete. Your Tutor dashboard is n*w active!',
-            'success'
-*         );
-        } else {
-     *    showToast(
-            'Your S*ripe details have been submitted. *tripe is completing its checks, an* your Tutor dashboard is now activ*.',
-            'success'
-        * );
-        }
-      }
-
-      retur* true;
-    }
-
-    currentProfile.s*ripe_onboarding_complete = false;
-*    const stripeSection = document*getElementById(
-      'tutor-strip*-section'
-    );
-
-    const activeDashboard = document.getElementById(
-      'tutor-active-dashboard'
-    );
-
-    if (stripeSection) {
-      stripeSection.classList.remove('hidden');
-    }
-
-    if (activeDashboard) {
-      activeDashboard.classList.add('hidden');
-    }
-
-    if (showSuccessMessage) {
-      const currentlyDue =
-        responseData?.currentlyDue || [];
-
-      if (currentlyDue.length > 0) {
-        showToast(
-          'Stripe still needs some information. Select Connect Bank Account to continue setup.',
-          'error'
-        );
-      } else {
-        showToast(
-          responseData?.message ||
-          'Stripe is still updating your account. Please try again shortly.',
-          'info'
-        );
-      }
-    }
-
-    return false;
-  } catch (error) {
-    console.error(
-      'Stripe status check error:',
-      error
-    );
-
-    if (showSuccessMessage || showLoadingMessage) {
-      showToast(
-        `Could not confirm Stripe status: ${
-          error?.message || 'Please try again.'
-        }`,
-        'error'
-      );
-    }
-
-    return false;
-  }
-}
     <!-- STRIPE ONBOARDING SECTION -->
     <section id="tutor-stripe-section" class="bg-[#112240] border-2 border-[#FF6B35] rounded-2xl p-8 text-center hidden space-y-4 max-w-2xl mx-auto shadow-2xl shadow-[#FF6B35]/10">
       <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
@@ -423,6 +270,102 @@ async function ch*ckStripeOnboardingStatus(options =*{}) {
     let chatPollInterval = null;
     let loadedJobsData = [];
     let loadedLearnersMap = {};
+
+    async function checkStripeOnboardingStatus(options = {}) {
+      const {
+        showSuccessMessage = false,
+        showLoadingMessage = false
+      } = options;
+
+      try {
+        if (showLoadingMessage) {
+          showToast('Checking your Stripe account status...', 'info');
+        }
+
+        const {
+          data: { session },
+          error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) {
+          throw new Error('Your session has expired. Please sign in again.');
+        }
+
+        const response = await fetch(
+          `${SUPABASE_URL}/functions/v1/check-stripe-account`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+              'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({})
+          }
+        );
+
+        let responseData = {};
+        try {
+          responseData = await response.json();
+        } catch (jsonError) {
+          console.error('Could not read Stripe status response:', jsonError);
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            responseData?.error ||
+            `Stripe status check failed with status ${response.status}.`
+          );
+        }
+
+        const stripeSection = document.getElementById('tutor-stripe-section');
+        const activeDashboard = document.getElementById('tutor-active-dashboard');
+
+        if (responseData?.complete === true) {
+          currentProfile.stripe_onboarding_complete = true;
+
+          if (stripeSection) stripeSection.classList.add('hidden');
+          if (activeDashboard) activeDashboard.classList.remove('hidden');
+
+          await loadTutorWorkspace();
+
+          if (showSuccessMessage) {
+            showToast(
+              responseData?.message ||
+              'Stripe setup is complete. Your Tutor dashboard is now active!',
+              'success'
+            );
+          }
+
+          return true;
+        }
+
+        currentProfile.stripe_onboarding_complete = false;
+        if (stripeSection) stripeSection.classList.remove('hidden');
+        if (activeDashboard) activeDashboard.classList.add('hidden');
+
+        if (showSuccessMessage) {
+          const capabilityStatus = responseData?.capabilityStatus || 'pending';
+          const message = responseData?.message ||
+            'Stripe still needs more information. Select Connect Bank Account to continue setup.';
+          showToast(message, capabilityStatus === 'restricted' ? 'error' : 'info');
+        }
+
+        return false;
+      } catch (error) {
+        console.error('Stripe status check error:', error);
+
+        if (showSuccessMessage || showLoadingMessage) {
+          showToast(
+            `Could not confirm Stripe status: ${error?.message || 'Please try again.'}`,
+            'error'
+          );
+        }
+
+        return false;
+      }
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       setProposalDateMinimum();
