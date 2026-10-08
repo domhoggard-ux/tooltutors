@@ -352,10 +352,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     for (const field of includeFields) {
       stripeUrl.searchParams.append(
-        "include[]",
-        field,
-      );
-    }
+  "include[0]",
+  "configuration.recipient",
+);
+
+stripeUrl.searchParams.append(
+  "include[1]",
+  "requirements",
+);
+
+stripeUrl.searchParams.append(
+  "include[2]",
+  "future_requirements",
+);
+
+stripeUrl.searchParams.append(
+  "include[3]",
+  "defaults",
+);
+
+stripeUrl.searchParams.append(
+  "include[4]",
+  "identity",
+);    }
 
     const stripeResponse = await fetch(
       stripeUrl.toString(),
