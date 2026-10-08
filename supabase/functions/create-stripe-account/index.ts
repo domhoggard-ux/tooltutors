@@ -55,6 +55,10 @@ async function createRecipientAccountV2(params: {
       defaults: {
         currency: "gbp",
         locales: ["en-GB"],
+        responsibilities: {
+          fees_collector: "stripe",
+          losses_collector: "stripe",
+        },
       },
       metadata: {
         supabase_user_id: params.userId,
