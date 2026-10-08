@@ -3,205 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolTutors - Sign Up</title>
-  
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>ToolTutors - Choose Your Account</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
-    }
-  </script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };</script>
 </head>
-<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen py-10 px-4">
+<body class="min-h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex items-center justify-center p-4 sm:p-8">
+  <main class="w-full max-w-4xl">
+    <a href="index.html" class="flex items-center justify-center gap-3 mb-8 group">
+      <img src="favicon.svg" alt="ToolTutors" class="w-12 h-12 rounded-xl shadow-lg">
+      <span class="text-3xl font-extrabold tracking-tight text-white group-hover:text-[#FF6B35] transition">Tool<span class="text-[#FF6B35]">Tutors</span></span>
+    </a>
 
-  <div class="max-w-2xl w-full mx-auto bg-[#112240] rounded-2xl border border-[#233554] p-6 sm:p-10 shadow-2xl">
-    <div class="flex items-center justify-center space-x-3 mb-8">
-     <img src="favicon.svg" alt="ToolTutors Icon" class="w-12 h-12 shadow-lg rounded-xl">
-      <span class="text-3xl font-bold tracking-tight text-white">Tool<span class="text-[#FF6B35]">Tutors</span></span>
-    </div>
-
-    <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-6">
-      
-      <!-- Name and Phone -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Full Name</label>
-          <input type="text" id="full-name" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Phone Number</label>
-          <input type="tel" id="phone" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
+    <section class="bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-6 sm:p-10">
+      <div class="text-center mb-8">
+        <p class="text-[11px] font-bold uppercase tracking-[0.25em] text-[#FF6B35] mb-2">Create your account</p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white">How would you like to use ToolTutors?</h1>
+        <p class="text-sm text-[#8892B0] mt-3 max-w-2xl mx-auto">Choose the route that fits. Each account has a short, purpose-built registration form.</p>
       </div>
 
-      <!-- Address Fields -->
-      <div>
-        <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Street Address</label>
-        <input type="text" id="address-line1" required placeholder="123 Example Street" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">City / Town</label>
-          <input type="text" id="city" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Postcode</label>
-          <input type="text" id="postcode" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
-      </div>
-
-      <hr class="border-[#233554]">
-
-      <!-- Email and Password -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email</label>
-          <input type="email" id="email" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Password</label>
-          <input type="password" id="password" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-        </div>
-      </div>
-
-      <hr class="border-[#233554]">
-
-      <!-- Role Selection -->
-      <div>
-        <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">I want to...</label>
-        <select id="role" onchange="toggleTutorTier()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-          <option value="" disabled selected>Select an account type...</option>
-          <option value="learner">Get DIY Help (Learner)</option>
-          <option value="tutor">Offer DIY Help (Tutor)</option>
-        </select>
-      </div>
-
-      <div id="tutor-tier-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/30 rounded-xl">
-        <label class="block text-xs font-semibold text-[#FF6B35] uppercase mb-2"><i class="fa-solid fa-medal mr-1"></i> Tutor Experience Level</label>
-        <select id="tutor-tier" class="w-full px-4 py-2.5 rounded-xl bg-[#112240] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
-          <option value="self_taught">Self-Taught Enthusiast (Standard Rate)</option>
-          <option value="professional">Professional / Trade Certified (Premium Rate)</option>
-        </select>
-        <p class="text-[10px] text-[#8892B0] mt-2">Professionals will need to upload proof of trade certification alongside their photo ID and DBS check.</p>
-      </div>
-
-      <!-- Terms and Conditions Agreement -->
-      <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl mt-4">
-        <label class="flex items-start space-x-3 cursor-pointer">
-          <input type="checkbox" id="terms-agreement" required class="mt-1 h-4 w-4 rounded border-[#233554] text-[#FF6B35] bg-[#112240] focus:ring-[#FF6B35]">
-          <div class="text-xs text-[#8892B0]">
-            I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>.
-            <p id="tutor-commission-note" class="hidden mt-2 p-3 bg-[#FF6B35]/10 border border-[#FF6B35]/30 rounded-lg text-[#FF6B35] font-semibold leading-relaxed">
-              <i class="fa-solid fa-circle-info mr-1"></i> As a Tutor, I understand and agree that ToolTutors deducts a standard 10% commission fee from all completed job payouts to cover platform maintenance, lead generation, and secure payment processing.
-            </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <a href="signup-learner.html" class="group bg-[#0A192F] border border-[#233554] hover:border-[#FF6B35] rounded-2xl p-6 transition shadow-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35]">
+          <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] flex items-center justify-center text-2xl mb-5 group-hover:bg-[#FF6B35] group-hover:text-white transition">
+            <i class="fa-solid fa-house-chimney-user"></i>
           </div>
-        </label>
+          <h2 class="text-xl font-bold text-white">I need DIY help</h2>
+          <p class="text-sm text-[#8892B0] mt-2 leading-relaxed">Create a Learner account, post projects and compare offers from local Tutors.</p>
+          <span class="inline-flex items-center gap-2 text-sm font-bold text-[#FF6B35] mt-6">Register as a Learner <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i></span>
+        </a>
+
+        <a href="signup-tutor.html" class="group bg-[#0A192F] border border-[#233554] hover:border-[#FF6B35] rounded-2xl p-6 transition shadow-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B35]">
+          <div class="w-14 h-14 rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] flex items-center justify-center text-2xl mb-5 group-hover:bg-[#FF6B35] group-hover:text-white transition">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white">I want to become a Tutor</h2>
+          <p class="text-sm text-[#8892B0] mt-2 leading-relaxed">Share practical skills, complete verification and receive project offers.</p>
+          <span class="inline-flex items-center gap-2 text-sm font-bold text-[#FF6B35] mt-6">Register as a Tutor <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i></span>
+        </a>
       </div>
 
-      <button type="submit" id="submit-btn" class="w-full py-3.5 mt-4 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition flex justify-center items-center shadow-lg shadow-[#FF6B35]/20">
-        Create Account
-      </button>
-
-      <div id="error-message" class="hidden p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 text-center"></div>
-
-    </form>
-
-    <div class="mt-6 text-center">
-      <a href="login.html" class="text-xs text-[#8892B0] hover:text-white transition">Already have an account? Log in here.</a>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    function toggleTutorTier() {
-      const role = document.getElementById('role').value;
-      const tierContainer = document.getElementById('tutor-tier-container');
-      const commissionNote = document.getElementById('tutor-commission-note');
-      
-      if (role === 'tutor') {
-        tierContainer.classList.remove('hidden');
-        commissionNote.classList.remove('hidden');
-      } else {
-        tierContainer.classList.add('hidden');
-        commissionNote.classList.add('hidden');
-      }
-    }
-
-    async function handleSignup(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      const errorDiv = document.getElementById('error-message');
-      
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Registering...';
-      btn.disabled = true;
-      errorDiv.classList.add('hidden');
-
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const fullName = document.getElementById('full-name').value;
-      const phone = document.getElementById('phone').value;
-      const addressLine1 = document.getElementById('address-line1').value;
-      const city = document.getElementById('city').value;
-      const postcode = document.getElementById('postcode').value;
-      const role = document.getElementById('role').value;
-      const termsAccepted = document.getElementById('terms-agreement').checked;
-      
-      if (!role) {
-        showError('Please select an account type.');
-        resetBtn(btn);
-        return;
-      }
-
-      if (!termsAccepted) {
-        showError('You must agree to the Terms of Service to create an account.');
-        resetBtn(btn);
-        return;
-      }
-
-      const tutorTier = role === 'tutor' ? document.getElementById('tutor-tier').value : null;
-
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone: phone,
-            address_line1: addressLine1,
-            city: city,
-            postcode: postcode,
-            role: role,
-            tutor_tier: tutorTier,
-            terms_accepted: termsAccepted
-          }
-        }
-      });
-
-      if (error) {
-        showError(error.message);
-        resetBtn(btn);
-      } else {
-        window.location.href = 'portal.html';
-      }
-    }
-
-    function showError(message) {
-      const errorDiv = document.getElementById('error-message');
-      errorDiv.textContent = message;
-      errorDiv.classList.remove('hidden');
-    }
-
-    function resetBtn(btn) {
-      btn.innerHTML = 'Create Account';
-      btn.disabled = false;
-    }
-  </script>
+      <p class="text-center text-xs text-[#8892B0] mt-8">Already registered? <a href="login.html" class="text-[#FF6B35] font-bold hover:underline">Sign in</a></p>
+    </section>
+  </main>
 </body>
 </html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Learner Sign Up</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } };</script>
+</head>
+<body class="min-h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased py-8 px-4">
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+  <main class="max-w-2xl mx-auto">
+    <a href="apply.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#8892B0] hover:text-[#FF6B35] transition mb-5"><i class="fa-solid fa-arrow-left"></i> Back to account choice</a>
+    <section class="bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-6 sm:p-10">
+      <div class="flex items-center gap-4 mb-8">
+        <img src="favicon.svg" alt="ToolTutors" class="w-12 h-12 rounded-xl shadow-lg">
+        <div><p class="text-[10px] uppercase tracking-widest font-bold text-[#FF6B35]">Learner registration</p><h1 class="text-2xl font-extrabold text-white">Find practical DIY help</h1></div>
+      </div>
+
+      <form id="signup-form" class="space-y-5" novalidate>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label for="full-name" class="label">Full name</label><input id="full-name" type="text" autocomplete="name" required maxlength="120" class="field"></div>
+          <div><label for="phone" class="label">Phone number</label><input id="phone" type="tel" autocomplete="tel" required maxlength="30" class="field"></div>
+        </div>
+        <div><label for="address-line1" class="label">Street address</label><input id="address-line1" type="text" autocomplete="address-line1" required maxlength="160" placeholder="123 Example Street" class="field"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label for="city" class="label">Town or city</label><input id="city" type="text" autocomplete="address-level2" required maxlength="100" class="field"></div>
+          <div><label for="postcode" class="label">Postcode</label><input id="postcode" type="text" autocomplete="postal-code" required maxlength="12" class="field uppercase"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label for="email" class="label">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254" class="field"></div>
+          <div><label for="password" class="label">Password</label><input id="password" type="password" autocomplete="new-password" required minlength="8" class="field"><p class="hint">Use at least 8 characters.</p></div>
+        </div>
+        <label class="flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] cursor-pointer">
+          <input id="terms-agreement" type="checkbox" required class="mt-0.5 h-4 w-4 accent-[#FF6B35]">
+          <span class="text-xs text-[#8892B0] leading-relaxed">I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>.</span>
+        </label>
+        <div id="error-message" role="alert" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-400"></div>
+        <button id="submit-btn" type="submit" class="w-full py-3.5 rounded-xl bg-[#FF6B35] hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm transition shadow-lg">Create Learner Account</button>
+      </form>
+      <p class="text-center text-xs text-[#8892B0] mt-6">Already registered? <a href="login.html" class="text-[#FF6B35] font-bold hover:underline">Sign in</a></p>
+    </section>
+  </main>
+  <style>.label{display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;color:#8892B0;margin-bottom:.35rem}.field{width:100%;padding:.7rem 1rem;border-radius:.75rem;background:#0A192F;border:1px solid #233554;color:white;font-size:.875rem;outline:none}.field:focus{border-color:#FF6B35}.hint{font-size:.625rem;color:#8892B0;margin-top:.35rem}</style>
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let submitting = false;
+
+    document.getElementById('signup-form').addEventListener('submit', handleSignup);
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      if (submitting) return;
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+
+      const button = document.getElementById('submit-btn');
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      if (password.length < 8) return showError('Your password must contain at least 8 characters.');
+
+      submitting = true;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Creating account...';
+      hideError();
+
+      try {
+        const metadata = {
+          full_name: document.getElementById('full-name').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          address_line1: document.getElementById('address-line1').value.trim(),
+          city: document.getElementById('city').value.trim(),
+          postcode: document.getElementById('postcode').value.trim().toUpperCase(),
+          role: 'learner',
+          tutor_tier: null,
+          terms_accepted: document.getElementById('terms-agreement').checked
+        };
+
+        const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: metadata } });
+        if (error) throw error;
+
+        if (data.session) {
+          window.location.href = 'learner.html';
+        } else {
+          showToast('Account created. Check your email to confirm your address, then sign in.', 'success');
+          form.reset();
+          setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+        }
+      } catch (error) {
+        showError(error.message || 'Your account could not be created.');
+        submitting = false;
+        button.disabled = false;
+        button.textContent = 'Create Learner Account';
+      }
+    }
+
+    function showError(message) { const box = document.getElementById('error-message'); box.textContent = message; box.classList.remove('hidden'); }
+    function hideError() { document.getElementById('error-message').classList.add('hidden'); }
+    function showToast(message) { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='p-4 rounded-xl bg-[#112240] border border-emerald-500/40 text-emerald-400 text-sm font-bold shadow-2xl'; t.textContent=message; c.appendChild(t); }
+  </script>
+</body>
+</html>
