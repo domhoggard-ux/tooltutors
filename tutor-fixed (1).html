@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Tutor Workspace</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A192F; }
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
+
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
+        <span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>      
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 pr-2">
+          <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
+              <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
+            </div>
+            <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
+              <i class="fa-solid fa-camera text-white text-[10px]"></i>
+            </div>
+          </div>
+          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
+          
+          <div class="hidden sm:block text-left">
+            <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+            <div class="text-[10px] text-[#FF6B35] uppercase">Verified Tutor</div>
+          </div>
+        </div>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- FULL SCREEN IMAGE MODAL -->
+  <div id="image-modal" class="fixed inset-0 z-[10000] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
+    <button class="absolute top-6 right-6 text-[#8892B0] hover:text-white text-3xl transition"><i class="fa-solid fa-xmark"></i></button>
+    <img id="expanded-image" src="" alt="Expanded project attachment" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl border border-[#233554] object-contain">
+  </div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
+
+    <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-extrabold text-white">Tutor Dashboard</h1>
+        <p class="text-xs text-[#8892B0] mt-1">Browse open local requests matching your skills and manage your active projects.</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('archive-modal').classList.remove('hidden')" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-box-archive"></i><span class="hidden sm:inline ml-1">Archive</span></button>
+        <button onclick="loadTutorWorkspace()" class="px-3 sm:px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-rotate-right"></i><span class="hidden sm:inline ml-1">Refresh</span></button>
+      </div>
+    </div>
+
+    <!-- ONBOARDING SECTION -->
+    <section id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden space-y-6">
+      <div id="tutor-rejected-note" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
+      <div>
+        <h2 class="text-lg font-bold text-white mb-1">Complete Profile & Compliance Verification</h2>
+        <p class="text-xs text-[#8892B0]">Upload your credentials and select the DIY categories you are qualified to mentor in.</p>
+      </div>
+      <form id="tutor-docs-form" onsubmit="submitTutorDocuments(event)" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Profile Picture</label><input type="file" id="tutor-profile-pic" accept="image/*" required class="text-xs text-[#8892B0]"></div>
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Photo ID</label><input type="file" id="tutor-id-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
+          
+          <!-- PROFESSIONAL CERTIFICATION -->
+          <div id="pro-cert-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-[#FF6B35] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase shadow-lg">Pro Tier</div>
+            <label class="block text-xs font-semibold text-white mb-2">Trade / Professional Certification</label>
+            <input type="file" id="tutor-pro-doc" accept="image/*,.pdf" class="text-xs text-[#8892B0]">
+            <p class="text-[9px] text-[#8892B0] mt-2 leading-tight">Required for professional-level tutors to access "Complete For Me" requests.</p>
+          </div>
+          
+          <div class="md:col-span-full p-4 bg-[#0A192F] border border-[#233554] rounded-xl">
+            <label class="block text-xs font-semibold text-white mb-2">My Mentorship Skills</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="tutor-skills-container">
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Plumbing" class="rounded text-[#FF6B35]"><span>Plumbing</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Tiling" class="rounded text-[#FF6B35]"><span>Tiling</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Carpentry & Joinery" class="rounded text-[#FF6B35]"><span>Carpentry & Joinery</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Electrical Basics" class="rounded text-[#FF6B35]"><span>Electrical Basics</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Decorating & Painting" class="rounded text-[#FF6B35]"><span>Decorating & Painting</span></label>
+              <label class="flex items-center space-x-2 text-xs text-[#E6F1FF] cursor-pointer"><input type="checkbox" value="Garden & Landscaping" class="rounded text-[#FF6B35]"><span>Garden & Landscaping</span></label>
+            </div>
+          </div>
+        </div>
+        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit For Verification</button>
+      </form>
+    </section>
+
+    <!-- PENDING REVIEW -->
+    <section id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-12 text-center hidden space-y-4">
+      <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500"></i>
+      <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
+      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your credentials have been submitted. Once verified by an admin, your marketplace dashboard will unlock.</p>
+    </section>
+
+    <!-- STRIPE ONBOARDING SECTION -->
+    <section id="tutor-stripe-section" class="bg-[#112240] border-2 border-[#FF6B35] rounded-2xl p-8 text-center hidden space-y-4 max-w-2xl mx-auto shadow-2xl shadow-[#FF6B35]/10">
+      <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
+        <i class="fa-brands fa-stripe text-3xl text-[#FF6B35]"></i>
+      </div>
+      <h3 class="text-2xl font-extrabold text-white">Set Up Payouts</h3>
+      <p class="text-sm text-[#8892B0] max-w-md mx-auto">You have been approved! To start accepting jobs and receiving automated payouts, you must connect your bank account securely via Stripe Connect.</p>
+      <button id="connect-stripe-btn" onclick="startStripeOnboarding()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg mt-4 inline-flex items-center gap-2">
+        <i class="fa-solid fa-building-columns"></i> Connect Bank Account
+      </button>
+    </section>
+
+    <!-- ACTIVE DASHBOARD -->
+    <section id="tutor-active-dashboard" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+      <div class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl">
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">Matching Open Jobs</h3>
+        <div id="tutor-open-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+      </div>
+      
+      <div class="bg-[#112240] rounded-2xl border border-[#FF6B35]/20 p-6 shadow-xl border-t-4 border-t-[#FF6B35]">
+        <h3 class="font-bold text-white text-sm border-b border-[#233554] pb-3 mb-4">My Projects</h3>
+        <div id="tutor-accepted-jobs-list" class="space-y-4 max-h-[700px] overflow-y-auto pr-2"><p class="text-xs text-[#8892B0] text-center">Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- ARCHIVE MODAL -->
+    <div id="archive-modal" class="fixed inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
+        <button onclick="document.getElementById('archive-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center mb-4 pb-4 border-b border-[#233554]">
+          <div class="w-10 h-10 rounded-xl bg-[#0A192F] border border-[#233554] flex items-center justify-center text-[#FF6B35] mr-3"><i class="fa-solid fa-box-archive"></i></div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Archived Jobs</h3>
+            <p class="text-[10px] text-[#8892B0] uppercase font-bold">Your past projects</p>
+          </div>
+        </div>
+        <div id="archive-list-container" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- OFFER MODAL (BIDDING) -->
+    <div id="offer-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-lg font-bold text-white mb-1">Make an Offer</h3>
+        <p id="offer-job-title" class="text-xs text-[#8892B0] mb-6"></p>
+        <form id="offer-form" onsubmit="submitOffer(event)" class="space-y-4">
+          <input type="hidden" id="offer-job-id">
+          <div>
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Price (£)</label>
+            <input type="number" id="offer-price" required min="1" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white focus:border-[#FF6B35] focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Pitch</label>
+            <textarea id="offer-message" required rows="3" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white focus:border-[#FF6B35] focus:outline-none"></textarea>
+          </div>
+          <button type="submit" id="submit-offer-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Submit Offer</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- PROPOSE TIME & TOOLS MODAL -->
+    <div id="propose-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
+        <p class="text-xs text-[#8892B0] mb-6">Propose the appointment time and list the tools the Learner needs to prepare.</p>
+        <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-4">
+          <input type="hidden" id="propose-job-id">
+          
+          <div>
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-2">Proposed Appointment</label>
+            <div class="grid grid-cols-2 gap-4">
+              <input type="date" id="propose-date" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+              <input type="time" id="propose-time-only" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+            </div>
+          </div>
+          
+          <div id="propose-tools-container">
+            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
+            <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
+          </div>
+          <button type="submit" id="submit-proposal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Send Proposal to Learner</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- JOB CARD MODAL -->
+    <div id="job-card-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+        <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
+          <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
+          <span id="card-status-badge" class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] uppercase font-bold rounded">Active</span>
+        </div>
+        
+        <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F] cursor-pointer" onclick="openImageModal(document.getElementById('card-photo').src)">
+            <img id="card-photo" src="" alt="Project attachment" class="w-full h-full object-cover hover:opacity-80 transition" title="Click to enlarge">
+        </div>
+
+        <div class="space-y-4">
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project</p><p id="card-title" class="text-sm text-white font-semibold"></p></div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Learner</p><p id="card-learner" class="text-sm text-white"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Job Type</p><p id="card-job-type" class="text-sm font-bold"></p></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Time</p><p id="card-time" class="text-sm text-emerald-400 font-bold"></p></div>
+            <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Tools Needed</p><p id="card-tools" class="text-sm text-[#FF6B35] bg-[#FF6B35]/10 p-2 rounded-lg border border-[#FF6B35]/20 italic"></p></div>
+          </div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Full Address (Private)</p><p id="card-address" class="text-sm text-white bg-[#0A192F] p-3 rounded-lg border border-[#233554]"></p></div>
+          <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
+        </div>
+        
+        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+           <!-- Dynamic Buttons go here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT MODAL -->
+    <div id="chat-modal" class="fixed inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
+        <div class="flex justify-between items-center p-4 border-b border-[#233554]">
+          <div><h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3><p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting...</p></div>
+          <button onclick="closeChat()" class="text-[#8892B0] hover:text-[#FF6B35] transition text-lg px-2"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col scroll-smooth"></div>
+        <form onsubmit="sendMessage(event)" class="p-4 border-t border-[#233554] flex gap-2">
+          <input type="text" id="chat-input" required autocomplete="off" placeholder="Type a message..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+          <button type="submit" id="chat-send-btn" class="px-4 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white rounded-xl font-bold transition"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentProfile = null;
+    let currentChatJobId = null;
+    let currentChatReceiverId = null; 
+    let chatPollInterval = null;
+    let loadedJobsData = [];
+    let loadedLearnersMap = {};
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      setProposalDateMinimum();
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return window.location.href = 'login.html';
+
+        const user = session.user;
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+        if (!profile || profile.role !== 'tutor') {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        currentProfile = profile;
+        updateHeaderUI();
+        document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier || 'self_taught').replaceAll('_', ' ')} tier`;
+
+        // Stripe completion must be written by a trusted webhook/Edge Function.
+        // The return URL only refreshes the profile and reflects the server-side value.
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('stripe_return') === 'true') {
+          const { data: refreshedProfile, error: refreshError } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (refreshError) throw refreshError;
+          currentProfile = refreshedProfile || profile;
+          updateHeaderUI();
+
+          if (currentProfile.stripe_onboarding_complete) {
+            showToast('Bank details connected securely!', 'success');
+          } else {
+            showToast('Stripe setup is still being confirmed. Refresh shortly.', 'info');
+          }
+
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (urlParams.get('stripe_refresh') === 'true') {
+          showToast('Stripe setup was not completed. Please try again.', 'error');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        const status = currentProfile.validation_status || 'pending';
+        
+        if (status === 'approved') {
+          if (!currentProfile.stripe_onboarding_complete) {
+            // Unlocked, but needs Stripe
+            document.getElementById('tutor-stripe-section').classList.remove('hidden');
+          } else {
+            // Fully active
+            document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+            loadTutorWorkspace();
+          }
+        } else if (status === 'submitted') {
+          document.getElementById('tutor-pending-review').classList.remove('hidden');
+        } else {
+          document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+          
+          if (currentProfile.tutor_tier === 'professional') {
+            const proContainer = document.getElementById('pro-cert-container');
+            const proInput = document.getElementById('tutor-pro-doc');
+            if (proContainer && proInput) {
+              proContainer.classList.remove('hidden');
+              proInput.setAttribute('required', 'true');
+            }
+          }
+
+          if (status === 'rejected' && currentProfile.validation_notes) {
+            const noteDiv = document.getElementById('tutor-rejected-note');
+            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
+            noteDiv.classList.remove('hidden');
+          }
+        }
+      } catch (err) {
+        console.error('Tutor initialisation error:', err);
+        showToast(`Unable to load the tutor workspace: ${err.message || 'Unknown error'}`, 'error');
+      }
+    });
+
+    // STRIPE ONBOARDING TRIGGER
+    async function startStripeOnboarding() {
+      const btn = document.getElementById('connect-stripe-btn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
+
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+
+        // Call the Stripe onboarding Edge Function
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-stripe-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to communicate with Stripe.');
+        
+        if (data.url) {
+          window.location.href = data.url; // Redirects the tutor to Stripe
+        } else {
+          throw new Error('No onboarding URL was returned.');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast(`Stripe Error: ${err.message}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // Shared display and safety helpers.
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      })[character]);
+    }
+
+    function safePublicUrl(value) {
+      if (!value) return null;
+      try {
+        const parsed = new URL(String(value), window.location.origin);
+        return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function setProposalDateMinimum() {
+      const dateInput = document.getElementById('propose-date');
+      if (!dateInput) return;
+      const today = new Date();
+      const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+      dateInput.min = localDate;
+    }
+
+    // Modal and distance logic.
+    function openImageModal(url) {
+      const safeUrl = safePublicUrl(url);
+      if (!safeUrl) return;
+      document.getElementById('expanded-image').src = safeUrl;
+      document.getElementById('image-modal').classList.remove('hidden');
+    }
+    
+    function closeImageModal() {
+      document.getElementById('image-modal').classList.add('hidden');
+      document.getElementById('expanded-image').src = '';
+    }
+
+    function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
+      if (![lat1, lon1, lat2, lon2].every(value => Number.isFinite(Number(value)))) return null;
+      const R = 3958.8; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return parseFloat((R * c).toFixed(1));
+    }
+
+    const getFirstPhoto = (job) => {
+      let photoData = job.photo_urls || job.photo_url;
+      if (!photoData) return null;
+      if (Array.isArray(photoData)) return safePublicUrl(photoData[0]); 
+      if (typeof photoData === 'string') return safePublicUrl(photoData.split(',')[0].trim()); 
+      return null;
+    };
+
+    async function submitTutorDocuments(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-docs-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Securely...';
+      
+      const skills = Array.from(document.querySelectorAll('#tutor-skills-container input:checked')).map(cb => cb.value);
+      if (!skills.length) {
+        showToast('Select at least one skill', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Submit For Verification';
+        return;
+      }
+
+      try {
+        const picFile = document.getElementById('tutor-profile-pic').files[0];
+        const idFile = document.getElementById('tutor-id-doc').files[0];
+        const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
+        const proFile = document.getElementById('tutor-pro-doc')?.files[0];
+
+        let picUrl = currentProfile?.profile_picture_url || null;
+        let idPath = currentProfile?.id_document_url || null;
+        let dbsPath = currentProfile?.dbs_document_url || null;
+        let proPath = currentProfile?.trade_certificate_url || null;
+
+        if (picFile) {
+          const ext = picFile.name.split('.').pop();
+          const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+          const { error: picErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, picFile, { upsert: true });
+          if (picErr) throw picErr;
+          const { data } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
+          picUrl = data.publicUrl;
+        }
+
+        if (idFile) {
+          const ext = idFile.name.split('.').pop();
+          idPath = `id_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: idErr } = await supabaseClient.storage.from('tutor_documents').upload(idPath, idFile, { upsert: true });
+          if (idErr) throw idErr;
+        }
+
+        if (dbsFile) {
+          const ext = dbsFile.name.split('.').pop();
+          dbsPath = `dbs_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile, { upsert: true });
+          if (dbsErr) throw dbsErr;
+        }
+
+        if (proFile && currentProfile.tutor_tier === 'professional') {
+          const ext = proFile.name.split('.').pop();
+          proPath = `pro_cert_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: proErr } = await supabaseClient.storage.from('tutor_documents').upload(proPath, proFile, { upsert: true });
+          if (proErr) throw proErr;
+        }
+
+        const { error: dbErr } = await supabaseClient.from('profiles').update({ 
+          validation_status: 'submitted', 
+          skills: skills,
+          profile_picture_url: picUrl,
+          id_document_url: idPath,
+          dbs_document_url: dbsPath,
+          trade_certificate_url: proPath
+        }).eq('id', currentProfile.id);
+        
+        if (dbErr) throw dbErr;
+        
+        try {
+          await supabaseClient.functions.invoke('send-completion-email', {
+            body: {
+              action: 'admin_verification_required',
+              recipientEmail: 'Admin@Tooltutors.co.uk',
+              recipientName: currentProfile.full_name || currentProfile.email || 'A New Tutor'
+            }
+          });
+        } catch (emailErr) { console.error("Email notification failed:", emailErr); }
+
+        showToast('Submitted for review!', 'success');
+        
+        if (picUrl) {
+          currentProfile.profile_picture_url = picUrl;
+          await supabaseClient.auth.updateUser({ data: { profile_picture_url: picUrl } });
+          updateHeaderUI();
+        }
+
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err) {
+        showToast(`Upload Error: ${err.message}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Submit For Verification';
+      }
+    }
+
+    async function loadTutorWorkspace() {
+      try {
+        const { data: rawJobs, error: rawJobsErr } = await supabaseClient.from('job_requests').select('*').eq('status', 'open');
+        if(rawJobsErr) throw rawJobsErr;
+
+        const { data: activeJobs, error: activeJobsErr } = await supabaseClient.from('job_requests').select('*').eq('tutor_id', currentProfile.id).in('status', ['accepted', 'pending_payment', 'scheduled', 'completed', 'cancelled']);
+        if(activeJobsErr) throw activeJobsErr;
+
+        const { data: myOffers, error: myOffersErr } = await supabaseClient.from('job_offers').select('*').eq('tutor_id', currentProfile.id);
+        if(myOffersErr) throw myOffersErr;
+
+        let openJobs = (rawJobs || []).filter(j => {
+          const hasSkill = currentProfile.skills?.includes(j.category);
+          const isTierMatch = j.preferred_tier === 'any' || j.preferred_tier === currentProfile.tutor_tier;
+          const notArchivedByLearner = !j.learner_archived;
+          
+          if (j.job_type === 'complete_for_me' && currentProfile.tutor_tier !== 'professional') {
+            return false; 
+          }
+          
+          return hasSkill && isTierMatch && notArchivedByLearner;
+        });
+        
+        openJobs = openJobs.map(job => {
+          job.distance = calculateDistanceMiles(currentProfile.latitude, currentProfile.longitude, job.latitude, job.longitude);
+          return job;
+        });
+
+        openJobs.sort((a, b) => {
+          if (a.distance !== null && b.distance !== null) return a.distance - b.distance;
+          if (a.distance !== null) return -1;
+          if (b.distance !== null) return 1;
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
+        
+        const learnerIds = [...new Set([...openJobs, ...(activeJobs || [])].map(j => j.learner_id).filter(Boolean))];
+        let learners = [];
+        if (learnerIds.length) {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', learnerIds);
+          if (error) throw error;
+          learners = data || [];
+        }
+        loadedLearnersMap = learners.reduce((acc, learner) => {
+          acc[learner.id] = learner.full_name;
+          return acc;
+        }, {});
+        loadedJobsData = activeJobs || [];
+
+        const activeAcceptedJobs = loadedJobsData.filter(j => !j.tutor_archived);
+        const archivedAcceptedJobs = loadedJobsData.filter(j => j.tutor_archived);
+
+        document.getElementById('tutor-open-jobs-list').innerHTML = openJobs.length ? openJobs.map(j => {
+          const bid = (myOffers || []).find(o => o.job_id === j.id && o.status !== 'withdrawn' && o.status !== 'rejected');
+          const lName = loadedLearnersMap[j.learner_id] || 'Learner';
+          const distanceHtml = j.distance !== null 
+            ? `<span class="text-[#FF6B35] font-bold"><i class="fa-solid fa-location-arrow mr-1"></i> ${j.distance} miles away</span>` 
+            : `<span class="text-[#8892B0]"><i class="fa-solid fa-location-dot mr-1"></i> Distance unknown</span>`;
+
+          const firstPhoto = getFirstPhoto(j);
+          const photoThumbnail = firstPhoto 
+            ? `<div class="w-16 h-16 rounded overflow-hidden border border-[#233554] flex-shrink-0 cursor-pointer" onclick="openImageModal('${firstPhoto}')" title="Click to enlarge">
+                 <img src="${firstPhoto}" class="w-full h-full object-cover hover:scale-110 transition duration-300">
+               </div>` 
+            : '';
+
+          const jobTypeBadge = j.job_type === 'complete_for_me' 
+            ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+            : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
+          return `
+            <div class="p-5 bg-[#0A192F] border border-[#233554] rounded-xl text-xs space-y-3 relative overflow-hidden">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-white text-sm pr-2">${j.title}</span>
+                <span class="text-[9px] uppercase bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded font-bold ml-2 h-fit">Match</span>
+              </div>
+              
+              <div class="mb-1">${jobTypeBadge}</div>
+
+              <div class="flex justify-between items-center bg-[#112240] p-3 rounded-lg border border-[#233554]">
+                ${distanceHtml}
+                <span class="text-[#8892B0] font-bold">Budget: £${j.budget_estimate}</span>
+              </div>
+              
+              <div class="flex gap-3">
+                <p class="text-[#E6F1FF] italic border-l-2 border-[#233554] pl-3 leading-relaxed flex-1">"${j.description}"</p>
+                ${photoThumbnail}
+              </div>
+
+              ${bid ? `<div class="flex gap-2 mt-2">
+                         <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName.replace(/'/g,"\\'")}', '${j.learner_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-1"></i> Chat</button>
+                         <button disabled class="flex-[2] py-2 bg-[#233554]/50 text-[#8892B0] font-bold rounded-lg">Offer Pending: £${bid.offer_price}</button>
+                       </div>` 
+                    : `<button onclick="showOfferModal('${j.id}', '${j.title.replace(/'/g,"\\'")}')" class="w-full mt-2 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition shadow">Make Offer</button>`}
+            </div>
+          `;
+        }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No matching open jobs right now.</p>';
+
+        document.getElementById('tutor-accepted-jobs-list').innerHTML = activeAcceptedJobs.length ? activeAcceptedJobs.map(j => {
+          const lName = loadedLearnersMap[j.learner_id] || 'Learner';
+          let actionHtml = '';
+          
+          if (j.status === 'accepted') {
+            actionHtml = `<button onclick="openProposeModal('${j.id}')" class="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-calendar-plus mr-1"></i> Propose Time & Tools</button>`;
+          } else if (j.status === 'pending_payment') {
+            actionHtml = `<div class="w-full py-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold rounded-lg text-center"><i class="fa-solid fa-hourglass-half mr-1"></i> Awaiting Learner Payment</div>`;
+          } else if (['scheduled', 'completed', 'cancelled'].includes(j.status)) {
+            actionHtml = `<button onclick="openJobCard('${j.id}')" class="w-full py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Open Job Card</button>`;
+          }
+
+          const firstPhoto = getFirstPhoto(j);
+          const photoThumbnail = firstPhoto 
+            ? `<div class="w-16 h-16 rounded overflow-hidden border border-[#233554] flex-shrink-0 cursor-pointer" onclick="openImageModal('${firstPhoto}')" title="Click to enlarge">
+                 <img src="${firstPhoto}" class="w-full h-full object-cover hover:scale-110 transition duration-300">
+               </div>` 
+            : '';
+
+          const isSuccess = ['scheduled', 'completed'].includes(j.status);
+          const borderColor = isSuccess ? 'border-emerald-500/50' : (j.status === 'cancelled' ? 'border-rose-500/30' : 'border-[#FF6B35]/30');
+          const badgeColor = isSuccess ? 'text-emerald-400 bg-emerald-400/10' : (j.status === 'cancelled' ? 'text-rose-400 bg-rose-500/10' : 'text-[#FF6B35] bg-[#FF6B35]/10');
+
+          const jobTypeBadge = j.job_type === 'complete_for_me' 
+            ? `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-toolbox mr-1"></i> Complete For Me</span>`
+            : `<span class="text-[9px] uppercase font-bold px-2 py-1 rounded bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30"><i class="fa-solid fa-chalkboard-user mr-1"></i> Teach Me</span>`;
+
+          return `
+            <div class="p-5 bg-[#0A192F] border ${borderColor} rounded-xl text-xs space-y-3">
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-bold text-white text-sm pr-2">${j.title}</span>
+                <span class="text-[9px] uppercase font-bold ${badgeColor} px-2 py-1 rounded ml-2 h-fit">${j.status.replace('_', ' ')}</span>
+              </div>
+              
+              <div class="mb-1">${jobTypeBadge}</div>
+
+              <div class="flex gap-3 mb-3">
+                 <div class="flex-1"></div>
+                 ${photoThumbnail}
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button onclick="openChat('${j.id}', '${j.title.replace(/'/g,"\\'")}', '${lName.replace(/'/g,"\\'")}', '${j.learner_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition flex items-center justify-center"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
+                ${actionHtml ? `<div class="flex-[2]">${actionHtml}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('') : '<p class="text-xs text-[#8892B0] text-center py-6">No active projects right now.</p>';
+
+        const archiveContainer = document.getElementById('archive-list-container');
+        archiveContainer.innerHTML = archivedAcceptedJobs.length ? archivedAcceptedJobs.map(job => `
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl text-xs flex justify-between items-center">
+            <div>
+              <h4 class="font-bold text-white text-sm">${job.title}</h4>
+              <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-[#233554] text-[#8892B0] mt-1 inline-block">${job.status.replace('_', ' ')}</span>
+            </div>
+            <button onclick="openJobCard('${job.id}')" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white rounded-lg transition font-bold shadow-lg">View Details</button>
+          </div>
+        `).join('') : '<p class="text-xs text-[#8892B0] text-center italic py-4">No archived jobs found.</p>';
+
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      }
+    }
+
+    async function archiveJob(jobId) {
+      if (!confirm('Move this job to your archive?')) return;
+      const btn = document.getElementById('card-archive-btn');
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('job_requests')
+          .update({ tutor_archived: true })
+          .eq('id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (error) throw error;
+
+        showToast('Job archived successfully.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Archive error:', error);
+        showToast(`Failed to archive: ${error.message || 'Unknown error'}`, 'error');
+        if (btn) btn.innerHTML = originalHtml;
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function showOfferModal(jobId, jobTitle) {
+      document.getElementById('offer-job-id').value = jobId;
+      document.getElementById('offer-job-title').textContent = jobTitle;
+      document.getElementById('offer-modal').classList.remove('hidden');
+    }
+
+    async function submitOffer(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-offer-btn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+      try {
+        const jobId = document.getElementById('offer-job-id').value;
+        const offerPrice = Number(document.getElementById('offer-price').value);
+        const message = document.getElementById('offer-message').value.trim();
+
+        if (!jobId || !Number.isFinite(offerPrice) || offerPrice <= 0 || !message) {
+          throw new Error('Enter a valid price and message.');
+        }
+
+        const { error } = await supabaseClient.from('job_offers').insert([{
+          job_id: jobId,
+          tutor_id: currentProfile.id,
+          offer_price: offerPrice,
+          message
+        }]);
+
+        if (error) throw error;
+
+        document.getElementById('offer-modal').classList.add('hidden');
+        document.getElementById('offer-form').reset();
+        showToast('Offer submitted successfully!', 'success');
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Offer submission error:', error);
+        showToast(`Offer failed: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    function openProposeModal(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      if (!job) {
+        showToast('This project could not be found. Refresh and try again.', 'error');
+        return;
+      }
+      setProposalDateMinimum();
+      document.getElementById('propose-job-id').value = jobId;
+      
+      const toolsContainer = document.getElementById('propose-tools-container');
+      const toolsInput = document.getElementById('propose-tools');
+      
+      if (job && job.job_type === 'complete_for_me') {
+        toolsContainer.classList.add('hidden');
+        toolsInput.removeAttribute('required');
+        toolsInput.value = 'N/A - Complete For Me service';
+      } else {
+        toolsContainer.classList.remove('hidden');
+        toolsInput.setAttribute('required', 'true');
+        toolsInput.value = '';
+      }
+      
+      document.getElementById('propose-modal').classList.remove('hidden');
+    }
+
+    async function submitProposal(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-proposal-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+      const jobId = document.getElementById('propose-job-id').value;
+      const date = document.getElementById('propose-date').value;
+      const time = document.getElementById('propose-time-only').value;
+      const tools = document.getElementById('propose-tools').value;
+      
+      try {
+        const proposedDate = new Date(`${date}T${time}`);
+        if (Number.isNaN(proposedDate.getTime()) || proposedDate <= new Date()) {
+          throw new Error('Choose a valid future date and time.');
+        }
+        const combinedDateTime = proposedDate.toISOString();
+
+        const { error } = await supabaseClient
+          .from('job_requests')
+          .update({ 
+            appointment_time: combinedDateTime, 
+            required_tools: tools, 
+            status: 'pending_payment' 
+          })
+          .eq('id', jobId);
+        
+        if (error) throw error;
+        
+        document.getElementById('propose-modal').classList.add('hidden');
+        document.getElementById('propose-form').reset();
+        showToast('Proposal sent to learner!', 'success');
+        loadTutorWorkspace();
+
+      } catch (error) {
+        showToast(`Database Error: ${error.message || error.details || 'Unknown error'}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Send Proposal to Learner';
+      }
+    }
+
+    function openJobCard(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      if(!job) return;
+
+      document.getElementById('archive-modal').classList.add('hidden');
+
+      const photoContainer = document.getElementById('card-photo-container');
+      const firstPhoto = getFirstPhoto(job);
+      if (firstPhoto) {
+        document.getElementById('card-photo').src = firstPhoto;
+        photoContainer.classList.remove('hidden');
+      } else {
+        photoContainer.classList.add('hidden');
+        document.getElementById('card-photo').src = '';
+      }
+
+      document.getElementById('card-title').textContent = job.title;
+      document.getElementById('card-learner').textContent = loadedLearnersMap[job.learner_id] || 'Unknown';
+      
+      const jobTypeEl = document.getElementById('card-job-type');
+      if (job.job_type === 'complete_for_me') {
+         jobTypeEl.textContent = 'Complete For Me';
+         jobTypeEl.className = 'text-sm font-bold text-emerald-400';
+      } else {
+         jobTypeEl.textContent = 'Teach Me';
+         jobTypeEl.className = 'text-sm font-bold text-[#FF6B35]';
+      }
+
+      document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
+      document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
+      document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
+      document.getElementById('card-desc').textContent = job.description;
+      
+      const badge = document.getElementById('card-status-badge');
+      badge.textContent = job.status.replace('_', ' ');
+      
+      const actionContainer = document.getElementById('card-action-buttons');
+      let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Chat</button>`;
+      
+      if (job.status === 'completed' || job.status === 'cancelled') {
+        buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
+      } else {
+        buttonsHtml += `<button id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> Cancel Job</button>`;
+      }
+      
+      actionContainer.innerHTML = buttonsHtml;
+      document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
+    async function cancelJob(jobId) {
+      if (!confirm('Are you sure you want to cancel this job? It will be returned to the open marketplace for other tutors to bid on.')) return;
+      const btn = document.getElementById('card-cancel-btn');
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      }
+
+      try {
+        const { error: jobError } = await supabaseClient
+          .from('job_requests')
+          .update({ status: 'open', tutor_id: null, appointment_time: null, required_tools: null })
+          .eq('id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (jobError) throw jobError;
+
+        const { error: offerError } = await supabaseClient
+          .from('job_offers')
+          .update({ status: 'withdrawn' })
+          .eq('job_id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (offerError) throw offerError;
+
+        showToast('Job cancelled and returned to the board.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Job cancellation error:', error);
+        showToast(`Failed to cancel: ${error.message || 'Unknown error'}`, 'error');
+        if (btn) btn.innerHTML = originalHtml;
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function openChat(jobId, jobTitle, participantName, receiverId) {
+      currentChatJobId = jobId;
+      currentChatReceiverId = receiverId; 
+      document.getElementById('chat-job-title').textContent = jobTitle;
+      document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
+      document.getElementById('chat-modal').classList.remove('hidden');
+      clearInterval(chatPollInterval);
+      loadMessages();
+      chatPollInterval = setInterval(loadMessages, 3000);
+    }
+    
+    function closeChat() { 
+      document.getElementById('chat-modal').classList.add('hidden'); 
+      currentChatJobId = null; 
+      currentChatReceiverId = null; 
+      clearInterval(chatPollInterval); 
+    }
+    
+    async function loadMessages() {
+      if (!currentChatJobId || !currentChatReceiverId) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .eq('job_id', currentChatJobId)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+
+        const container = document.getElementById('chat-messages');
+        const filteredData = (data || []).filter(message =>
+          (message.sender_id === currentProfile.id && message.receiver_id === currentChatReceiverId) ||
+          (message.sender_id === currentChatReceiverId && message.receiver_id === currentProfile.id)
+        );
+
+        if (!filteredData.length) {
+          container.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello!</p>';
+          return;
+        }
+
+        const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+        container.innerHTML = filteredData.map(message => {
+          const mine = message.sender_id === currentProfile.id;
+          const classes = mine
+            ? 'self-end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg'
+            : 'self-start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg';
+          return `<div class="${classes} max-w-[85%] text-xs p-3 shadow-md break-words">${escapeHTML(message.content)}</div>`;
+        }).join('');
+
+        if (isScrolledToBottom) container.scrollTop = container.scrollHeight;
+      } catch (error) {
+        console.error('Message load error:', error);
+      }
+    }
+
+    async function sendMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const button = document.getElementById('chat-send-btn');
+      const text = input.value.trim();
+      if (!text || !currentChatJobId || !currentChatReceiverId) return;
+
+      button.disabled = true;
+      try {
+        const { error } = await supabaseClient.from('messages').insert([{
+          job_id: currentChatJobId,
+          sender_id: currentProfile.id,
+          receiver_id: currentChatReceiverId,
+          content: text
+        }]);
+        if (error) throw error;
+        input.value = '';
+        await loadMessages();
+      } catch (error) {
+        console.error('Message send error:', error);
+        showToast(`Message failed: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        button.disabled = false;
+        input.focus();
+      }
+    }
+
+    function updateHeaderUI() {
+      if (!currentProfile) return;
+      
+      const fullName = currentProfile.full_name || currentProfile.email || 'User';
+      const initials = fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      
+      const nameEl = document.getElementById('header-user-name');
+      if (nameEl) nameEl.textContent = fullName;
+      
+      const initialsContainer = document.getElementById('header-user-initials');
+      if (initialsContainer) {
+        const safeAvatarUrl = safePublicUrl(currentProfile.profile_picture_url);
+        if (safeAvatarUrl) {
+          initialsContainer.innerHTML = `<img src="${safeAvatarUrl}" alt="Tutor profile" class="w-full h-full object-cover rounded-full">`;
+        } else {
+          initialsContainer.innerHTML = initials;
+        }
+      }
+    }
+
+    async function handleGlobalAvatarUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Please choose an image file.', 'error');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Profile pictures must be 5 MB or smaller.', 'error');
+        e.target.value = '';
+        return;
+      }
+
+      showToast('Uploading profile picture...', 'info');
+      try {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabaseClient.storage
+          .from('profile_pictures')
+          .upload(fileName, file, { upsert: true });
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from('profile_pictures')
+          .getPublicUrl(fileName);
+        const newUrl = publicUrlData?.publicUrl;
+        if (!newUrl) throw new Error('No profile image URL was returned.');
+
+        const { error: profileError } = await supabaseClient
+          .from('profiles')
+          .update({ profile_picture_url: newUrl })
+          .eq('id', currentProfile.id);
+        if (profileError) throw profileError;
+
+        const { error: authError } = await supabaseClient.auth.updateUser({
+          data: { profile_picture_url: newUrl }
+        });
+        if (authError) throw authError;
+
+        currentProfile.profile_picture_url = newUrl;
+        updateHeaderUI();
+        showToast('Profile picture updated!', 'success');
+      } catch (error) {
+        console.error('Profile picture error:', error);
+        showToast(`Failed to update picture: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        e.target.value = '';
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        showToast(`Sign out failed: ${error.message || 'Unknown error'}`, 'error');
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const styles = {
+        success: 'border-emerald-500/50 text-emerald-400',
+        error: 'border-rose-500/50 text-rose-400',
+        info: 'border-sky-500/50 text-sky-400'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        info: 'fa-circle-info'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto p-4 rounded-xl bg-[#112240] border ${styles[type] || styles.info} text-sm font-bold shadow-2xl`;
+
+      const row = document.createElement('div');
+      row.className = 'flex items-start';
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${icons[type] || icons.info} mt-0.5 mr-2`;
+      const text = document.createElement('span');
+      text.textContent = String(msg ?? '');
+      row.append(icon, text);
+      toast.appendChild(row);
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
+    }
+  </script>
+</body>
+</html>
