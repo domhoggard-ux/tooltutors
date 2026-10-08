@@ -26,14 +26,7 @@ async function createRecipientAccountV2(params: {
   displayName: string;
   userId: string;
 }): Promise<string> {
-  const response = await fetch("https://api.stripe.com/v2/core/accounts", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${params.stripeSecretKey}`,
-      "Content-Type": "application/json",
-      "Stripe-Version": STRIPE_V2_VERSION,
-    },
-    body: JSON.stringify({
+  const accountPayload = {
       contact_email: params.email,
       display_name: params.displayName,
       dashboard: "express",
@@ -44,8 +37,8 @@ async function createRecipientAccountV2(params: {
       configuration: {
         recipient: {
           capabilities: {
-            _balance: {
-              _transfers: {
+            "stripe_balance": {
+              "stripe_transfers": {
                 requested: true,
               },
             },
@@ -69,7 +62,18 @@ async function createRecipientAccountV2(params: {
         "identity",
         "requirements",
       ],
-    }),
+  };
+
+  console.log("Stripe Accounts v2 capability payload:", JSON.stringify(accountPayload.configuration.recipient.capabilities));
+
+  const response = await fetch("https://api.stripe.com/v2/core/accounts", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${params.stripeSecretKey}`,
+      "Content-Type": "application/json",
+      "Stripe-Version": STRIPE_V2_VERSION,
+    },
+    body: JSON.stringify(accountPayload),
   });
 
   const payload = await response.json();
