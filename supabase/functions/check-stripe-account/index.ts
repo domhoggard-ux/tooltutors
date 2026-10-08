@@ -1,15 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
-
-const STRIPE_API_VERSION = "2026-09-30.preview";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(
+  body: Record<string, unknown>,
+  status = 200,
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -19,175 +21,535 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-Deno.serve(async (request) => {
-  if (request.method === "OPTIONS") {
+function cleanText(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const cleaned = value.trim();
+
+  return cleaned || null;
+}
+
+function firstText(...values: unknown[]): string | null {
+  for (const value of values) {
+    const cleaned = cleanText(value);
+
+    if (cleaned) {
+      return cleaned;
+    }
+  }
+
+  return null;
+}
+
+function readCapabilityStatus(account: any): string {
+  return (
+    account?.configuration?.recipient?.capabilities
+      ?.stripe_balance?.stripe_transfers?.status ||
+    account?.configuration?.recipient?.capabilities
+      ?.stripe_transfers?.status ||
+    account?.configurations?.recipient?.capabilities
+      ?.stripe_balance?.stripe_transfers?.status ||
+    account?.configurations?.recipient?.capabilities
+      ?.stripe_transfers?.status ||
+    account?.capabilities?.stripe_balance
+      ?.stripe_transfers?.status ||
+    account?.capabilities?.stripe_transfers?.status ||
+    "pending"
+  );
+}
+
+function extractIdentity(account: any) {
+  const individual =
+    account?.identity?.individual ||
+    account?.individual ||
+    account?.identity?.representative ||
+    null;
+
+  const business =
+    account?.identity?.business_details ||
+    account?.business_details ||
+    account?.company ||
+    null;
+
+  const person =
+    individual ||
+    business ||
+    account?.identity ||
+    account;
+
+  const address =
+    person?.address ||
+    business?.address ||
+    account?.address ||
+    account?.identity?.address ||
+    null;
+
+  const phone = firstText(
+    person?.phone,
+    person?.phone_number,
+    person?.phone_numbers?.[0]?.phone_number,
+    person?.phone_numbers?.[0]?.number,
+    business?.phone,
+    business?.phone_number,
+    account?.phone,
+    account?.phone_number,
+    account?.contact_phone,
+  );
+
+  return {
+    phone,
+
+    addressLine1: firstText(
+      address?.line1,
+      address?.address_line1,
+      address?.street,
+    ),
+
+    addressLine2: firstText(
+      address?.line2,
+      address?.address_line2,
+    ),
+
+    city: firstText(
+      address?.city,
+      address?.town,
+      address?.locality,
+    ),
+
+    postcode: firstText(
+      address?.postal_code,
+      address?.postcode,
+      address?.zip,
+    ),
+
+    country: firstText(
+      address?.country,
+      address?.country_code,
+    ),
+  };
+}
+
+function normaliseUkPostcode(postcode: string): string {
+  return postcode
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/^(.+)(\d[A-Z]{2})$/, "$1 $2");
+}
+
+async function geocodeUkPostcode(
+  postcode: string,
+): Promise<{
+  latitude: number | null;
+  longitude: number | null;
+}> {
+  const response = await fetch(
+    `https://api.postcodes.io/postcodes/${
+      encodeURIComponent(postcode)
+    }`,
+  );
+
+  if (!response.ok) {
+    console.error(
+      "Postcode geocoding failed with status:",
+      response.status,
+    );
+
+    return {
+      latitude: null,
+      longitude: null,
+    };
+  }
+
+  const result = await response.json();
+
+  const latitude = Number(result?.result?.latitude);
+  const longitude = Number(result?.result?.longitude);
+
+  return {
+    latitude:
+      Number.isFinite(latitude)
+        ? latitude
+        : null,
+
+    longitude:
+      Number.isFinite(longitude)
+        ? longitude
+        : null,
+  };
+}
+
+Deno.serve(async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
     return new Response("ok", {
-      status: 200,
       headers: corsHeaders,
     });
   }
 
-  if (request.method !== "POST") {
-    return jsonResponse({ error: "Method not allowed" }, 405);
+  if (req.method !== "POST") {
+    return jsonResponse(
+      {
+        error: "Method not allowed.",
+      },
+      405,
+    );
   }
 
   try {
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const authorization = request.headers.get("Authorization");
+    const stripeSecretKey =
+      Deno.env.get("STRIPE_SECRET_KEY");
 
-    if (!stripeSecretKey) {
-      throw new Error("Missing STRIPE_SECRET_KEY.");
+    const supabaseUrl =
+      Deno.env.get("SUPABASE_URL");
+
+    const supabaseAnonKey =
+      Deno.env.get("SUPABASE_ANON_KEY");
+
+    const supabaseServiceRoleKey =
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    const authorization =
+      req.headers.get("Authorization");
+
+    if (
+      !stripeSecretKey ||
+      !supabaseUrl ||
+      !supabaseAnonKey ||
+      !supabaseServiceRoleKey
+    ) {
+      throw new Error(
+        "Missing required environment variables.",
+      );
     }
 
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
-      throw new Error("One or more required Supabase environment variables are missing.");
+    if (!authorization?.startsWith("Bearer ")) {
+      return jsonResponse(
+        {
+          error: "Unauthorised.",
+        },
+        401,
+      );
     }
 
-    if (!authorization || !authorization.startsWith("Bearer ")) {
-      return jsonResponse({ error: "Your login session was not included. Please sign in again." }, 401);
-    }
+    const accessToken = authorization
+      .replace(/^Bearer\s+/i, "")
+      .trim();
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: authorization,
+    const userClient = createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        global: {
+          headers: {
+            Authorization: authorization,
+          },
+        },
+
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
         },
       },
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
-    });
+    );
 
     const {
-      data: { user },
+      data: userData,
       error: userError,
-    } = await userClient.auth.getUser();
+    } = await userClient.auth.getUser(accessToken);
 
-    if (userError || !user) {
-      console.error("Stripe status authentication failed:", userError);
-      return jsonResponse({ error: "Your login session could not be verified. Please sign in again." }, 401);
+    if (userError || !userData?.user) {
+      console.error(
+        "User authentication error:",
+        userError,
+      );
+
+      return jsonResponse(
+        {
+          error:
+            "Your login session could not be verified.",
+        },
+        401,
+      );
     }
 
-    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
-      },
-    });
+    const user = userData.user;
 
-    const { data: profile, error: profileError } = await adminClient
+    const adminClient = createClient(
+      supabaseUrl,
+      supabaseServiceRoleKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      },
+    );
+
+    const {
+      data: profile,
+      error: profileError,
+    } = await adminClient
       .from("profiles")
-      .select("id, role, validation_status, stripe_account_id, stripe_onboarding_complete")
+      .select(`
+        id,
+        role,
+        stripe_account_id,
+        stripe_onboarding_complete
+      `)
       .eq("id", user.id)
       .single();
 
-    if (profileError) {
-      console.error("Stripe status profile lookup failed:", profileError);
-      return jsonResponse({ error: `Tutor profile lookup failed: ${profileError.message}` }, 400);
-    }
+    if (profileError || !profile) {
+      console.error(
+        "Tutor profile lookup error:",
+        profileError,
+      );
 
-    if (!profile) {
-      return jsonResponse({ error: "Tutor profile not found." }, 404);
+      return jsonResponse(
+        {
+          error: "Tutor profile not found.",
+        },
+        404,
+      );
     }
 
     if (profile.role !== "tutor") {
-      return jsonResponse({ error: "Only Tutor accounts can check Stripe onboarding." }, 403);
+      return jsonResponse(
+        {
+          error:
+            "Only Tutor accounts can check Stripe status.",
+        },
+        403,
+      );
     }
 
     if (!profile.stripe_account_id) {
       return jsonResponse({
         complete: false,
-        capabilityStatus: "not_requested",
-        requirements: [],
-        futureRequirements: [],
-        message: "No Stripe account has been connected yet.",
+        capabilityStatus: "not_started",
+        message:
+          "No Stripe account has been connected yet.",
+        addressSynced: false,
       });
     }
 
+    /*
+      Accounts v2 can return optional identity fields as null
+      unless they are requested using include[].
+    */
     const stripeUrl = new URL(
-      `https://api.stripe.com/v2/core/accounts/${encodeURIComponent(profile.stripe_account_id)}`,
+      `https://api.stripe.com/v2/core/accounts/${
+        encodeURIComponent(profile.stripe_account_id)
+      }`,
     );
-    stripeUrl.searchParams.append(
-  "include[0]",
-  "configuration.recipient",
-);
 
-stripeUrl.searchParams.append(
-  "include[1]",
-  "requirements",
-);
+    const includeFields = [
+      "identity",
+      "configuration.recipient",
+      "requirements",
+    ];
 
-stripeUrl.searchParams.append(
-  "include[2]",
-  "future_requirements",
-);
-
-stripeUrl.searchParams.append(
-  "include[3]",
-  "defaults",
-);
-
-    const stripeResponse = await fetch(stripeUrl.toString(), {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${stripeSecretKey}`,
-        "Stripe-Version": STRIPE_API_VERSION,
-      },
-    });
-
-    const account = await stripeResponse.json();
-
-    if (!stripeResponse.ok) {
-      const stripeMessage = account?.error?.message || account?.error || "Stripe could not retrieve this account.";
-      throw new Error(stripeMessage);
+    for (const field of includeFields) {
+      stripeUrl.searchParams.append(
+        "include[]",
+        field,
+      );
     }
 
-    const transferCapability =
-      account?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers || null;
-    const capabilityStatus = transferCapability?.status || "pending";
-    const capabilityStatusDetails = transferCapability?.status_details || [];
-    const onboardingComplete = capabilityStatus === "active";
+    const stripeResponse = await fetch(
+      stripeUrl.toString(),
+      {
+        method: "GET",
 
-    const { error: updateError } = await adminClient
+        headers: {
+          "Authorization":
+            `Bearer ${stripeSecretKey}`,
+
+          "Stripe-Version":
+            "2026-09-30.preview",
+
+          "Content-Type":
+            "application/json",
+        },
+      },
+    );
+
+    const stripeAccount =
+      await stripeResponse.json();
+
+    if (!stripeResponse.ok) {
+      console.error(
+        "Stripe account retrieval failed:",
+        stripeAccount,
+      );
+
+      return jsonResponse(
+        {
+          error:
+            stripeAccount?.error?.message ||
+            "Stripe account retrieval failed.",
+        },
+        stripeResponse.status,
+      );
+    }
+
+    const capabilityStatus =
+      readCapabilityStatus(stripeAccount);
+
+    const onboardingComplete =
+      capabilityStatus === "active";
+
+    const identity =
+      extractIdentity(stripeAccount);
+
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+
+    if (identity.postcode) {
+      identity.postcode =
+        normaliseUkPostcode(identity.postcode);
+
+      const coordinates =
+        await geocodeUkPostcode(identity.postcode);
+
+      latitude = coordinates.latitude;
+      longitude = coordinates.longitude;
+    }
+
+    const addressAvailable = Boolean(
+      identity.addressLine1 &&
+      identity.city &&
+      identity.postcode,
+    );
+
+    const profileUpdate: Record<string, unknown> = {
+      stripe_onboarding_complete:
+        onboardingComplete,
+    };
+
+    if (identity.phone) {
+      profileUpdate.phone = identity.phone;
+    }
+
+    if (identity.addressLine1) {
+      profileUpdate.address_line1 =
+        identity.addressLine1;
+    }
+
+    if (identity.addressLine2) {
+      profileUpdate.address_line2 =
+        identity.addressLine2;
+    }
+
+    if (identity.city) {
+      profileUpdate.city = identity.city;
+    }
+
+    if (identity.postcode) {
+      profileUpdate.postcode =
+        identity.postcode;
+    }
+
+    if (identity.country) {
+      profileUpdate.country =
+        identity.country.toUpperCase();
+    }
+
+    if (latitude !== null) {
+      profileUpdate.latitude = latitude;
+    }
+
+    if (longitude !== null) {
+      profileUpdate.longitude = longitude;
+    }
+
+    if (
+      identity.phone ||
+      addressAvailable
+    ) {
+      profileUpdate.stripe_address_synced_at =
+        new Date().toISOString();
+    }
+
+    const {
+      error: updateError,
+    } = await adminClient
       .from("profiles")
-      .update({ stripe_onboarding_complete: onboardingComplete })
+      .update(profileUpdate)
       .eq("id", user.id);
 
     if (updateError) {
-      console.error("Stripe status profile update failed:", updateError);
-      return jsonResponse({
-        error: `Stripe status was retrieved, but the profile could not be updated: ${updateError.message}`,
-      }, 400);
+      console.error(
+        "Profile synchronisation error:",
+        updateError,
+      );
+
+      return jsonResponse(
+        {
+          error:
+            `Stripe was checked, but the Tutor profile could not be updated: ${updateError.message}`,
+        },
+        400,
+      );
     }
 
-    let message = "Stripe onboarding still needs more information.";
-    if (capabilityStatus === "active") {
-      message = "Stripe onboarding is complete and the Tutor can receive transfers.";
-    } else if (capabilityStatus === "pending") {
-      message = "Stripe information has been submitted and is being reviewed.";
-    } else if (capabilityStatus === "restricted") {
-      message = "Stripe requires more information before transfers can be enabled.";
+    let message =
+      "Stripe still needs more information.";
+
+    if (
+      onboardingComplete &&
+      addressAvailable &&
+      latitude !== null &&
+      longitude !== null
+    ) {
+      message =
+        "Stripe verification and marketplace location setup are complete.";
+    } else if (
+      onboardingComplete &&
+      !addressAvailable
+    ) {
+      message =
+        "Stripe verification is complete, but no complete address was returned.";
+    } else if (
+      onboardingComplete &&
+      addressAvailable &&
+      (
+        latitude === null ||
+        longitude === null
+      )
+    ) {
+      message =
+        "Stripe verification is complete, but the postcode could not be mapped.";
     }
 
     return jsonResponse({
       complete: onboardingComplete,
       capabilityStatus,
-      capabilityStatusDetails,
-      requirements: account?.requirements || [],
-      futureRequirements: account?.future_requirements || [],
+      addressSynced:
+        addressAvailable &&
+        latitude !== null &&
+        longitude !== null,
+      phoneSynced:
+        Boolean(identity.phone),
       message,
     });
   } catch (error) {
-    console.error("Check Stripe account function failed:", error);
-    const errorMessage = error instanceof Error
-      ? error.message
-      : "An unexpected Stripe status error occurred.";
-    return jsonResponse({ error: errorMessage }, 500);
+    console.error(
+      "check-stripe-account failed:",
+      error,
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unexpected Stripe status error.";
+
+    return jsonResponse(
+      {
+        error: message,
+      },
+      500,
+    );
   }
 });
