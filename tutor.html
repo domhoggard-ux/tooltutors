@@ -329,6 +329,17 @@
         if (responseData?.complete === true) {
           currentProfile.stripe_onboarding_complete = true;
 
+          const { data: syncedProfile, error: syncedProfileError } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', currentProfile.id)
+            .single();
+
+          if (!syncedProfileError && syncedProfile) {
+            currentProfile = syncedProfile;
+            updateHeaderUI();
+          }
+
           if (stripeSection) stripeSection.classList.add('hidden');
           if (activeDashboard) activeDashboard.classList.remove('hidden');
 
@@ -426,8 +437,22 @@
         
         if (status === 'approved') {
           if (profile.stripe_onboarding_complete) {
-            document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-            await loadTutorWorkspace();
+            const missingMarketplaceLocation =
+              profile.latitude === null ||
+              profile.latitude === undefined ||
+              profile.longitude === null ||
+              profile.longitude === undefined ||
+              (Number(profile.latitude) === 0 && Number(profile.longitude) === 0);
+
+            if (missingMarketplaceLocation && !returnedFromStripe) {
+              await checkStripeOnboardingStatus({
+                showSuccessMessage: false,
+                showLoadingMessage: false
+              });
+            } else {
+              document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+              await loadTutorWorkspace();
+            }
           } else if (!returnedFromStripe) {
             const stripeComplete = await checkStripeOnboardingStatus({
               showSuccessMessage: false,
