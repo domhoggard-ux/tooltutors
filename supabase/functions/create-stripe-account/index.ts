@@ -44,8 +44,8 @@ async function createRecipientAccountV2(params: {
       configuration: {
         recipient: {
           capabilities: {
-            stripe_balance: {
-              stripe_transfers: {
+            _balance: {
+              _transfers: {
                 requested: true,
               },
             },
@@ -56,8 +56,8 @@ async function createRecipientAccountV2(params: {
         currency: "gbp",
         locales: ["en-GB"],
         responsibilities: {
-          fees_collector: "stripe",
-          losses_collector: "stripe",
+          fees_collector: "application",
+          losses_collector: "application",
         },
       },
       metadata: {
