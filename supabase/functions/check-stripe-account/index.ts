@@ -7,10 +7,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-function jsonResponse(
- *body: Record<string, unknown>,
-  s*atus = 200,
+function jsonRe*ponse(
+  body: Record<string, unkn*wn>,
+  status = 200
 ): Response {
+*
   return*new Response(JSON.stringify(body),*{
     status,
     headers: {
