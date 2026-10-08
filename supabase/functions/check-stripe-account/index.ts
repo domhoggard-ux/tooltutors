@@ -1,317 +1,178 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "npm:stripe@^13.0.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+const STRIPE_API_VERSION = "2026-09-30.preview";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-function jsonRe*ponse(
-  body: Record<string, unkn*wn>,
-  status = 200
-): Response {
-*
-  return*new Response(JSON.stringify(body),*{
+
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
     status,
     headers: {
-     *...corsHeaders,
-      "Content-Typ*": "application/json",
+      ...corsHeaders,
+      "Content-Type": "application/json",
     },
-  })*
+  });
 }
 
-serve(async (req: Request): Pr*mise<Response> => {
-  if (req.meth*d === "OPTIONS") {
-    return new *esponse("ok", {
-      status: 200,*      headers: corsHeaders,
-    })*
+Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
-  if (req.method !== "POST")*{
-    return jsonResponse(
-      {*        error: "Method not allowed*",
-      },
-      405,
-    );
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
-*  try {
-    const stripeSecretKey * Deno.env.get("STRIPE_SECRET_KEY")*
-    const supabaseUrl = Deno.env.*et("SUPABASE_URL");
-    const supa*aseAnonKey = Deno.env.get("SUPABAS*_ANON_KEY");
-    const supabaseSer*iceRoleKey = Deno.env.get(
-      "*UPABASE_SERVICE_ROLE_KEY",
-    );
-*    if (!stripeSecretKey) {
-      *hrow new Error("Missing STRIPE_SEC*ET_KEY.");
+
+  try {
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const authorization = request.headers.get("Authorization");
+
+    if (!stripeSecretKey) {
+      throw new Error("Missing STRIPE_SECRET_KEY.");
     }
 
-    if (
-      !*upabaseUrl ||
-      !supabaseAnonK*y ||
-      !supabaseServiceRoleKey*    ) {
-      throw new Error(
-   *    "One or more Supabase environm*nt variables are missing.",
-      *;
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+      throw new Error("One or more required Supabase environment variables are missing.");
     }
 
-    const authorizationHe*der = req.headers.get("Authorizati*n");
-
-    if (!authorizationHeader* {
-      return jsonResponse(
-    *   {
-          error:
-            *Your login session was not include*. Please sign in again.",
-        *,
-        401,
-      );
+    if (!authorization || !authorization.startsWith("Bearer ")) {
+      return jsonResponse({ error: "Your login session was not included. Please sign in again." }, 401);
     }
 
-   *const accessToken = authorizationH*ader
-      .replace(/^Bearer\s+/i,*"")
-      .trim();
-
-    if (!acces*Token) {
-      return jsonResponse*
-        {
-          error:
-      *     "Your login session is invali*. Please sign in again.",
-        *,
-        401,
-      );
-    }
-
-   *const userClient = createClient(
- *    supabaseUrl,
-      supabaseAno*Key,
-      {
-        global: {
-   *      headers: {
-            Autho*ization: `Bearer ${accessToken}`,
-*         },
-        },
-
-        au*h: {
-          persistSession: fal*e,
-          autoRefreshToken: fal*e,
-          detectSessionInUrl: f*lse,
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authorization,
         },
       },
-    );
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
 
- *  const {
-      data: userData,
-  *   error: userError,
-    } = await*userClient.auth.getUser(accessToke*);
+    const {
+      data: { user },
+      error: userError,
+    } = await userClient.auth.getUser();
 
-    if (userError || !userData*.user) {
-      console.error(
-    *   "Stripe status authentication f*iled:",
-        userError,
-      )*
-
-      return jsonResponse(
-     *  {
-          error:
-            "*our login session could not be ver*fied. Please sign in again.",
-    *   },
-        401,
-      );
+    if (userError || !user) {
+      console.error("Stripe status authentication failed:", userError);
+      return jsonResponse({ error: "Your login session could not be verified. Please sign in again." }, 401);
     }
-*    const user = userData.user;
 
- *  const {
-      data: profile,
-   *  error: profileError,
-    } = awa*t userClient
-      .from("profiles*)
-      .select(`
-        id,
-    *   role,
-        validation_status*
-        stripe_account_id,
-      * stripe_onboarding_complete
-      *)
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+
+    const { data: profile, error: profileError } = await adminClient
+      .from("profiles")
+      .select("id, role, validation_status, stripe_account_id, stripe_onboarding_complete")
       .eq("id", user.id)
-      .*ingle();
+      .single();
 
     if (profileError) {
-*     console.error(
-        "Strip* status profile lookup failed:",
- *      profileError,
-      );
-
-    * return jsonResponse(
-        {
-  *       error:
-            `Tutor p*ofile lookup failed: ${profileErro*.message}`,
-        },
-        400*
-      );
+      console.error("Stripe status profile lookup failed:", profileError);
+      return jsonResponse({ error: `Tutor profile lookup failed: ${profileError.message}` }, 400);
     }
 
-    if (!profile)*{
-      return jsonResponse(
-     *  {
-          error: "Tutor profil* not found.",
-        },
-        4*4,
-      );
+    if (!profile) {
+      return jsonResponse({ error: "Tutor profile not found." }, 404);
     }
 
-    if (profile*role !== "tutor") {
-      return j*onResponse(
-        {
-          er*or:
-            "Only Tutor accoun*s can check Stripe onboarding.",
- *      },
-        403,
-      );
-   *}
-
-    if (!profile.stripe_account*id) {
-      return jsonResponse(
- *      {
-          complete: false,*          detailsSubmitted: false,*          payoutsEnabled: false,
- *        chargesEnabled: false,
-   *      currentlyDue: [],
-          *endingVerification: [],
-          *essage:
-            "No Stripe acc*unt has been connected yet.",
-    *   },
-        200,
-      );
+    if (profile.role !== "tutor") {
+      return jsonResponse({ error: "Only Tutor accounts can check Stripe onboarding." }, 403);
     }
-*    const stripe = new Stripe(stri*eSecretKey, {
-      apiVersion: "2*23-10-16",
-      httpClient: Strip*.createFetchHttpClient(),
+
+    if (!profile.stripe_account_id) {
+      return jsonResponse({
+        complete: false,
+        capabilityStatus: "not_requested",
+        requirements: [],
+        futureRequirements: [],
+        message: "No Stripe account has been connected yet.",
+      });
+    }
+
+    const stripeUrl = new URL(
+      `https://api.stripe.com/v2/core/accounts/${encodeURIComponent(profile.stripe_account_id)}`,
+    );
+    stripeUrl.searchParams.append("include[]", "configuration.recipient");
+    stripeUrl.searchParams.append("include[]", "requirements");
+    stripeUrl.searchParams.append("include[]", "future_requirements");
+    stripeUrl.searchParams.append("include[]", "defaults");
+
+    const stripeResponse = await fetch(stripeUrl.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${stripeSecretKey}`,
+        "Stripe-Version": STRIPE_API_VERSION,
+      },
     });
-*    const account = await stripe.a*counts.retrieve(
-      profile.str*pe_account_id,
-    );
 
-    if (acc*unt.deleted) {
-      return jsonRe*ponse(
-        {
-          complet*: false,
-          detailsSubmitte*: false,
-          payoutsEnabled: false,
-          chargesEnabled: false,
-          currentlyDue: [],
-          pendingVerification: [],
-          message:
-            "The connected Stripe account is no longer available.",
-        },
-        400,
-      );
+    const account = await stripeResponse.json();
+
+    if (!stripeResponse.ok) {
+      const stripeMessage = account?.error?.message || account?.error || "Stripe could not retrieve this account.";
+      throw new Error(stripeMessage);
     }
 
-    const currentlyDue =
-      account.requirements?.currently_due || [];
+    const transferCapability =
+      account?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers || null;
+    const capabilityStatus = transferCapability?.status || "pending";
+    const capabilityStatusDetails = transferCapability?.status_details || [];
+    const onboardingComplete = capabilityStatus === "active";
 
-    const pastDue =
-      account.requirements?.past_due || [];
+    const { error: updateError } = await adminClient
+      .from("profiles")
+      .update({ stripe_onboarding_complete: onboardingComplete })
+      .eq("id", user.id);
 
-    const pendingVerification =
-      account.requirements?.pending_verification || [];
-
-    /*
-      Stripe may still be verifying submitted information.
-
-      For ToolTutors onboarding, the account is considered submitted when:
-      1. details_submitted is true;
-      2. there are no currently-due fields; and
-      3. there are no past-due fields.
-
-      Pending verification does not force the Tutor to repeat onboarding.
-    */
-    const onboardingComplete =
- *    account.details_submitted === *rue &&
-      currentlyDue.length =*= 0 &&
-      pastDue.length === 0;*
-    const adminClient = createCli*nt(
-      supabaseUrl,
-      supab*seServiceRoleKey,
-      {
-        *uth: {
-          persistSession: f*lse,
-          autoRefreshToken: f*lse,
-          detectSessionInUrl:*false,
-        },
-      },
-    );
-*    const {
-      error: updateErr*r,
-    } = await adminClient
-     *.from("profiles")
-      .update({
-*       stripe_onboarding_complete:*onboardingComplete,
-      })
-     *.eq("id", user.id);
-
-    if (updat*Error) {
-      console.error(
-    *   "Stripe status profile update f*iled:",
-        updateError,
-     *);
-
-      return jsonResponse(
-   *    {
-          error:
-           *`Stripe status was retrieved, but *he profile could not be updated: $*updateError.message}`,
-        },
-*       400,
-      );
+    if (updateError) {
+      console.error("Stripe status profile update failed:", updateError);
+      return jsonResponse({
+        error: `Stripe status was retrieved, but the profile could not be updated: ${updateError.message}`,
+      }, 400);
     }
 
-    le* message =
-      "Your Stripe setu* still needs more information.";
-
-*   if (onboardingComplete && accou*t.payouts_enabled) {
-      message*=
-        "Stripe onboarding is co*plete and payouts are enabled.";
- *  } else if (
-      onboardingComp*ete &&
-      pendingVerification.l*ngth > 0
-    ) {
-      message =
- *      "Your Stripe information has*been submitted and is being verifi*d.";
-    } else if (onboardingComp*ete) {
-      message =
-        "Yo*r Stripe information has been subm*tted successfully.";
+    let message = "Stripe onboarding still needs more information.";
+    if (capabilityStatus === "active") {
+      message = "Stripe onboarding is complete and the Tutor can receive transfers.";
+    } else if (capabilityStatus === "pending") {
+      message = "Stripe information has been submitted and is being reviewed.";
+    } else if (capabilityStatus === "restricted") {
+      message = "Stripe requires more information before transfers can be enabled.";
     }
 
-    re*urn jsonResponse(
-      {
-        *omplete: onboardingComplete,
-     *  detailsSubmitted:
-          acco*nt.details_submitted === true,
-   *    payoutsEnabled:
-          acco*nt.payouts_enabled === true,
-     *  chargesEnabled:
-          accoun*.charges_enabled === true,
-       *currentlyDue,
-        pastDue,
-   *    pendingVerification,
-        m*ssage,
-      },
-      200,
-    );
-* } catch (error) {
-    console.err*r(
-      "Check Stripe account fun*tion failed:",
-      error,
-    );*
-    const errorMessage =
-      er*or instanceof Error
-        ? erro*.message
-        : "An unexpected *tripe status error occurred.";
-
-  * return jsonResponse(
-      {
-    *   error: errorMessage,
-      },
- *    500,
-    );
+    return jsonResponse({
+      complete: onboardingComplete,
+      capabilityStatus,
+      capabilityStatusDetails,
+      requirements: account?.requirements || [],
+      futureRequirements: account?.future_requirements || [],
+      message,
+    });
+  } catch (error) {
+    console.error("Check Stripe account function failed:", error);
+    const errorMessage = error instanceof Error
+      ? error.message
+      : "An unexpected Stripe status error occurred.";
+    return jsonResponse({ error: errorMessage }, 500);
   }
 });
