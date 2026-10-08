@@ -61,7 +61,7 @@
   <!-- FULL SCREEN IMAGE MODAL -->
   <div id="image-modal" class="fixed inset-0 z-[10000] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
     <button class="absolute top-6 right-6 text-[#8892B0] hover:text-white text-3xl transition"><i class="fa-solid fa-xmark"></i></button>
-    <img id="expanded-image" src="" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl border border-[#233554] object-contain">
+    <img id="expanded-image" src="" alt="Expanded project attachment" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl border border-[#233554] object-contain">
   </div>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
@@ -147,7 +147,7 @@
     </section>
 
     <!-- ARCHIVE MODAL -->
-    <div id="archive-modal" class="absolute inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="archive-modal" class="fixed inset-0 z-[150] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative flex flex-col max-h-[85vh]">
         <button onclick="document.getElementById('archive-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex items-center mb-4 pb-4 border-b border-[#233554]">
@@ -164,7 +164,7 @@
     </div>
 
     <!-- OFFER MODAL (BIDDING) -->
-    <div id="offer-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="offer-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
         <button onclick="document.getElementById('offer-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <h3 class="text-lg font-bold text-white mb-1">Make an Offer</h3>
@@ -185,7 +185,7 @@
     </div>
 
     <!-- PROPOSE TIME & TOOLS MODAL -->
-    <div id="propose-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="propose-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
         <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
@@ -211,7 +211,7 @@
     </div>
 
     <!-- JOB CARD MODAL -->
-    <div id="job-card-modal" class="absolute inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="job-card-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
@@ -220,7 +220,7 @@
         </div>
         
         <div id="card-photo-container" class="hidden mb-4 rounded-xl overflow-hidden border border-[#233554] h-48 bg-[#0A192F] cursor-pointer" onclick="openImageModal(document.getElementById('card-photo').src)">
-            <img id="card-photo" src="" class="w-full h-full object-cover hover:opacity-80 transition" title="Click to enlarge">
+            <img id="card-photo" src="" alt="Project attachment" class="w-full h-full object-cover hover:opacity-80 transition" title="Click to enlarge">
         </div>
 
         <div class="space-y-4">
@@ -244,7 +244,7 @@
     </div>
 
     <!-- CHAT MODAL -->
-    <div id="chat-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="chat-modal" class="fixed inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl flex flex-col h-[600px] max-h-[80vh]">
         <div class="flex justify-between items-center p-4 border-b border-[#233554]">
           <div><h3 id="chat-job-title" class="text-white font-bold text-sm">Job Title</h3><p id="chat-participant" class="text-[10px] text-[#8892B0]">Chatting...</p></div>
@@ -273,35 +273,58 @@
     let loadedLearnersMap = {};
 
     window.addEventListener('DOMContentLoaded', async () => {
+      setProposalDateMinimum();
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return window.location.href = 'login.html';
 
         const user = session.user;
-        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
-        if (profile.role !== 'tutor') return window.location.href = 'login.html';
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+        if (!profile || profile.role !== 'tutor') {
+          window.location.href = 'login.html';
+          return;
+        }
 
         currentProfile = profile;
         updateHeaderUI();
-        document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier||'self_taught').replace('_',' ')} tier`;
+        document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier || 'self_taught').replaceAll('_', ' ')} tier`;
 
-        // Handle return from Stripe Onboarding
+        // Stripe completion must be written by a trusted webhook/Edge Function.
+        // The return URL only refreshes the profile and reflects the server-side value.
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('stripe_return') === 'true') {
-          // Optimistic update for Sprint 1 (Sprint 3 will use secure webhooks for this)
-          await supabaseClient.from('profiles').update({ stripe_onboarding_complete: true }).eq('id', user.id);
-          profile.stripe_onboarding_complete = true;
-          showToast('Bank details connected securely!', 'success');
+          const { data: refreshedProfile, error: refreshError } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (refreshError) throw refreshError;
+          currentProfile = refreshedProfile || profile;
+          updateHeaderUI();
+
+          if (currentProfile.stripe_onboarding_complete) {
+            showToast('Bank details connected securely!', 'success');
+          } else {
+            showToast('Stripe setup is still being confirmed. Refresh shortly.', 'info');
+          }
+
           window.history.replaceState({}, document.title, window.location.pathname);
         } else if (urlParams.get('stripe_refresh') === 'true') {
-          showToast('Stripe setup interrupted. Please try again.', 'error');
+          showToast('Stripe setup was not completed. Please try again.', 'error');
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        const status = profile.validation_status || 'pending';
+        const status = currentProfile.validation_status || 'pending';
         
         if (status === 'approved') {
-          if (!profile.stripe_onboarding_complete) {
+          if (!currentProfile.stripe_onboarding_complete) {
             // Unlocked, but needs Stripe
             document.getElementById('tutor-stripe-section').classList.remove('hidden');
           } else {
@@ -314,7 +337,7 @@
         } else {
           document.getElementById('tutor-onboarding-section').classList.remove('hidden');
           
-          if (profile.tutor_tier === 'professional') {
+          if (currentProfile.tutor_tier === 'professional') {
             const proContainer = document.getElementById('pro-cert-container');
             const proInput = document.getElementById('tutor-pro-doc');
             if (proContainer && proInput) {
@@ -323,13 +346,16 @@
             }
           }
 
-          if (status === 'rejected' && profile.validation_notes) {
+          if (status === 'rejected' && currentProfile.validation_notes) {
             const noteDiv = document.getElementById('tutor-rejected-note');
-            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${profile.validation_notes}`;
+            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
             noteDiv.classList.remove('hidden');
           }
         }
-      } catch (err) { showToast('Init error', 'error'); }
+      } catch (err) {
+        console.error('Tutor initialisation error:', err);
+        showToast(`Unable to load the tutor workspace: ${err.message || 'Unknown error'}`, 'error');
+      }
     });
 
     // STRIPE ONBOARDING TRIGGER
@@ -340,9 +366,11 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
 
       try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        
-        // Call the newly deployed Edge Function
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+
+        // Call the Stripe onboarding Edge Function
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-stripe-account`, {
           method: 'POST',
           headers: {
@@ -369,10 +397,42 @@
       }
     }
 
-    // Modal and Distance logic...
+    // Shared display and safety helpers.
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      })[character]);
+    }
+
+    function safePublicUrl(value) {
+      if (!value) return null;
+      try {
+        const parsed = new URL(String(value), window.location.origin);
+        return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function setProposalDateMinimum() {
+      const dateInput = document.getElementById('propose-date');
+      if (!dateInput) return;
+      const today = new Date();
+      const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+        .toISOString()
+        .split('T')[0];
+      dateInput.min = localDate;
+    }
+
+    // Modal and distance logic.
     function openImageModal(url) {
-      if(!url) return;
-      document.getElementById('expanded-image').src = url;
+      const safeUrl = safePublicUrl(url);
+      if (!safeUrl) return;
+      document.getElementById('expanded-image').src = safeUrl;
       document.getElementById('image-modal').classList.remove('hidden');
     }
     
@@ -382,7 +442,7 @@
     }
 
     function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
-      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      if (![lat1, lon1, lat2, lon2].every(value => Number.isFinite(Number(value)))) return null;
       const R = 3958.8; 
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -394,8 +454,8 @@
     const getFirstPhoto = (job) => {
       let photoData = job.photo_urls || job.photo_url;
       if (!photoData) return null;
-      if (Array.isArray(photoData)) return photoData[0]; 
-      if (typeof photoData === 'string') return photoData.split(',')[0]; 
+      if (Array.isArray(photoData)) return safePublicUrl(photoData[0]); 
+      if (typeof photoData === 'string') return safePublicUrl(photoData.split(',')[0].trim()); 
       return null;
     };
 
@@ -427,7 +487,7 @@
         if (picFile) {
           const ext = picFile.name.split('.').pop();
           const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
-          const { error: picErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, picFile);
+          const { error: picErr } = await supabaseClient.storage.from('profile_pictures').upload(fileName, picFile, { upsert: true });
           if (picErr) throw picErr;
           const { data } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
           picUrl = data.publicUrl;
@@ -436,21 +496,21 @@
         if (idFile) {
           const ext = idFile.name.split('.').pop();
           idPath = `id_${currentProfile.id}_${Date.now()}.${ext}`;
-          const { error: idErr } = await supabaseClient.storage.from('tutor_documents').upload(idPath, idFile);
+          const { error: idErr } = await supabaseClient.storage.from('tutor_documents').upload(idPath, idFile, { upsert: true });
           if (idErr) throw idErr;
         }
 
         if (dbsFile) {
           const ext = dbsFile.name.split('.').pop();
           dbsPath = `dbs_${currentProfile.id}_${Date.now()}.${ext}`;
-          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile);
+          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile, { upsert: true });
           if (dbsErr) throw dbsErr;
         }
 
         if (proFile && currentProfile.tutor_tier === 'professional') {
           const ext = proFile.name.split('.').pop();
           proPath = `pro_cert_${currentProfile.id}_${Date.now()}.${ext}`;
-          const { error: proErr } = await supabaseClient.storage.from('tutor_documents').upload(proPath, proFile);
+          const { error: proErr } = await supabaseClient.storage.from('tutor_documents').upload(proPath, proFile, { upsert: true });
           if (proErr) throw proErr;
         }
 
@@ -526,9 +586,20 @@
           return new Date(b.created_at) - new Date(a.created_at);
         });
         
-        const learnerIds = [...new Set([...openJobs, ...(activeJobs || [])].map(j => j.learner_id))];
-        const { data: learners } = await supabaseClient.from('profiles').select('id, full_name').in('id', learnerIds);
-        loadedLearnersMap = (learners || []).reduce((acc, l) => ({ ...acc, [l.id]: l.full_name }), {});
+        const learnerIds = [...new Set([...openJobs, ...(activeJobs || [])].map(j => j.learner_id).filter(Boolean))];
+        let learners = [];
+        if (learnerIds.length) {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', learnerIds);
+          if (error) throw error;
+          learners = data || [];
+        }
+        loadedLearnersMap = learners.reduce((acc, learner) => {
+          acc[learner.id] = learner.full_name;
+          return acc;
+        }, {});
         loadedJobsData = activeJobs || [];
 
         const activeAcceptedJobs = loadedJobsData.filter(j => !j.tutor_archived);
@@ -646,20 +717,31 @@
     }
 
     async function archiveJob(jobId) {
-      if(!confirm('Move this job to your archive?')) return;
-      
+      if (!confirm('Move this job to your archive?')) return;
       const btn = document.getElementById('card-archive-btn');
-      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-      
-      const { error } = await supabaseClient.from('job_requests').update({ tutor_archived: true }).eq('id', jobId);
-      
-      if (error) {
-        showToast(`Failed to archive: ${error.message}`, 'error');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-box-archive mr-2"></i> Archive Job';
-      } else {
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('job_requests')
+          .update({ tutor_archived: true })
+          .eq('id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (error) throw error;
+
         showToast('Job archived successfully.', 'success');
         document.getElementById('job-card-modal').classList.add('hidden');
-        loadTutorWorkspace();
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Archive error:', error);
+        showToast(`Failed to archive: ${error.message || 'Unknown error'}`, 'error');
+        if (btn) btn.innerHTML = originalHtml;
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
@@ -672,27 +754,48 @@
     async function submitOffer(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-offer-btn');
+      const originalHtml = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
-      await supabaseClient.from('job_offers').insert([{
-        job_id: document.getElementById('offer-job-id').value,
-        tutor_id: currentProfile.id,
-        offer_price: document.getElementById('offer-price').value,
-        message: document.getElementById('offer-message').value
-      }]);
-      
-      document.getElementById('offer-modal').classList.add('hidden');
-      document.getElementById('offer-form').reset();
-      btn.disabled = false;
-      btn.innerHTML = 'Submit Offer';
-      
-      showToast('Offer submitted successfully!', 'success');
-      loadTutorWorkspace();
+      try {
+        const jobId = document.getElementById('offer-job-id').value;
+        const offerPrice = Number(document.getElementById('offer-price').value);
+        const message = document.getElementById('offer-message').value.trim();
+
+        if (!jobId || !Number.isFinite(offerPrice) || offerPrice <= 0 || !message) {
+          throw new Error('Enter a valid price and message.');
+        }
+
+        const { error } = await supabaseClient.from('job_offers').insert([{
+          job_id: jobId,
+          tutor_id: currentProfile.id,
+          offer_price: offerPrice,
+          message
+        }]);
+
+        if (error) throw error;
+
+        document.getElementById('offer-modal').classList.add('hidden');
+        document.getElementById('offer-form').reset();
+        showToast('Offer submitted successfully!', 'success');
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Offer submission error:', error);
+        showToast(`Offer failed: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
     }
 
     function openProposeModal(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
+      if (!job) {
+        showToast('This project could not be found. Refresh and try again.', 'error');
+        return;
+      }
+      setProposalDateMinimum();
       document.getElementById('propose-job-id').value = jobId;
       
       const toolsContainer = document.getElementById('propose-tools-container');
@@ -722,9 +825,13 @@
       const time = document.getElementById('propose-time-only').value;
       const tools = document.getElementById('propose-tools').value;
       
-      const combinedDateTime = new Date(`${date}T${time}`).toISOString();
-
       try {
+        const proposedDate = new Date(`${date}T${time}`);
+        if (Number.isNaN(proposedDate.getTime()) || proposedDate <= new Date()) {
+          throw new Error('Choose a valid future date and time.');
+        }
+        const combinedDateTime = proposedDate.toISOString();
+
         const { error } = await supabaseClient
           .from('job_requests')
           .update({ 
@@ -777,7 +884,7 @@
          jobTypeEl.className = 'text-sm font-bold text-[#FF6B35]';
       }
 
-      document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString() : 'TBD';
+      document.getElementById('card-time').textContent = job.appointment_time ? new Date(job.appointment_time).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : 'TBD';
       document.getElementById('card-address').textContent = job.full_address || 'Address not provided.';
       document.getElementById('card-tools').textContent = job.required_tools || 'None specified.';
       document.getElementById('card-desc').textContent = job.description;
@@ -799,26 +906,38 @@
     }
 
     async function cancelJob(jobId) {
-      if(!confirm('Are you sure you want to cancel this job? It will be returned to the open marketplace for other tutors to bid on.')) return;
-      
+      if (!confirm('Are you sure you want to cancel this job? It will be returned to the open marketplace for other tutors to bid on.')) return;
       const btn = document.getElementById('card-cancel-btn');
-      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      }
 
-      const { error } = await supabaseClient.from('job_requests').update({ 
-        status: 'open', 
-        tutor_id: null,
-        appointment_time: null 
-      }).eq('id', jobId);
+      try {
+        const { error: jobError } = await supabaseClient
+          .from('job_requests')
+          .update({ status: 'open', tutor_id: null, appointment_time: null, required_tools: null })
+          .eq('id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (jobError) throw jobError;
 
-      await supabaseClient.from('job_offers').delete().eq('job_id', jobId).eq('tutor_id', currentProfile.id);
+        const { error: offerError } = await supabaseClient
+          .from('job_offers')
+          .update({ status: 'withdrawn' })
+          .eq('job_id', jobId)
+          .eq('tutor_id', currentProfile.id);
+        if (offerError) throw offerError;
 
-      if (error) {
-        showToast(`Failed to cancel: ${error.message}`, 'error');
-        if (btn) btn.innerHTML = '<i class="fa-solid fa-ban mr-2"></i> Cancel Job';
-      } else {
         showToast('Job cancelled and returned to the board.', 'success');
         document.getElementById('job-card-modal').classList.add('hidden');
-        loadTutorWorkspace();
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Job cancellation error:', error);
+        showToast(`Failed to cancel: ${error.message || 'Unknown error'}`, 'error');
+        if (btn) btn.innerHTML = originalHtml;
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
@@ -828,6 +947,7 @@
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
       document.getElementById('chat-modal').classList.remove('hidden');
+      clearInterval(chatPollInterval);
       loadMessages();
       chatPollInterval = setInterval(loadMessages, 3000);
     }
@@ -841,38 +961,66 @@
     
     async function loadMessages() {
       if (!currentChatJobId || !currentChatReceiverId) return;
-      
-      const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
-      const c = document.getElementById('chat-messages');
-      
-      const filteredData = (data || []).filter(m => 
-        (m.sender_id === currentProfile.id && m.receiver_id === currentChatReceiverId) ||
-        (m.sender_id === currentChatReceiverId && m.receiver_id === currentProfile.id)
-      );
 
-      if (filteredData.length === 0) {
-        c.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello!</p>';
-        return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .eq('job_id', currentChatJobId)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+
+        const container = document.getElementById('chat-messages');
+        const filteredData = (data || []).filter(message =>
+          (message.sender_id === currentProfile.id && message.receiver_id === currentChatReceiverId) ||
+          (message.sender_id === currentChatReceiverId && message.receiver_id === currentProfile.id)
+        );
+
+        if (!filteredData.length) {
+          container.innerHTML = '<p class="text-xs text-[#8892B0] text-center mt-10">No messages yet. Say hello!</p>';
+          return;
+        }
+
+        const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50;
+        container.innerHTML = filteredData.map(message => {
+          const mine = message.sender_id === currentProfile.id;
+          const classes = mine
+            ? 'self-end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg'
+            : 'self-start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg';
+          return `<div class="${classes} max-w-[85%] text-xs p-3 shadow-md break-words">${escapeHTML(message.content)}</div>`;
+        }).join('');
+
+        if (isScrolledToBottom) container.scrollTop = container.scrollHeight;
+      } catch (error) {
+        console.error('Message load error:', error);
       }
-      
-      const isScrolledToBottom = c.scrollHeight - c.clientHeight <= c.scrollTop + 50;
-      c.innerHTML = filteredData.map(m => `<div class="self-${m.sender_id === currentProfile.id ? 'end bg-[#FF6B35] text-white rounded-tr-lg rounded-tl-lg rounded-bl-lg' : 'start bg-[#233554] text-[#E6F1FF] border border-[#233554] rounded-tr-lg rounded-tl-lg rounded-br-lg'} max-w-[85%] text-xs p-3 shadow-md">${m.content}</div>`).join('');
-      if (isScrolledToBottom) c.scrollTop = c.scrollHeight;
     }
-    
+
     async function sendMessage(e) {
       e.preventDefault();
-      const text = document.getElementById('chat-input').value.trim();
+      const input = document.getElementById('chat-input');
+      const button = document.getElementById('chat-send-btn');
+      const text = input.value.trim();
       if (!text || !currentChatJobId || !currentChatReceiverId) return;
-      document.getElementById('chat-input').value = '';
-      
-      await supabaseClient.from('messages').insert([{ 
-        job_id: currentChatJobId, 
-        sender_id: currentProfile.id, 
-        receiver_id: currentChatReceiverId, 
-        content: text 
-      }]);
-      loadMessages();
+
+      button.disabled = true;
+      try {
+        const { error } = await supabaseClient.from('messages').insert([{
+          job_id: currentChatJobId,
+          sender_id: currentProfile.id,
+          receiver_id: currentChatReceiverId,
+          content: text
+        }]);
+        if (error) throw error;
+        input.value = '';
+        await loadMessages();
+      } catch (error) {
+        console.error('Message send error:', error);
+        showToast(`Message failed: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        button.disabled = false;
+        input.focus();
+      }
     }
 
     function updateHeaderUI() {
@@ -886,8 +1034,9 @@
       
       const initialsContainer = document.getElementById('header-user-initials');
       if (initialsContainer) {
-        if (currentProfile.profile_picture_url) {
-          initialsContainer.innerHTML = `<img src="${currentProfile.profile_picture_url}" class="w-full h-full object-cover rounded-full">`;
+        const safeAvatarUrl = safePublicUrl(currentProfile.profile_picture_url);
+        if (safeAvatarUrl) {
+          initialsContainer.innerHTML = `<img src="${safeAvatarUrl}" alt="Tutor profile" class="w-full h-full object-cover rounded-full">`;
         } else {
           initialsContainer.innerHTML = initials;
         }
@@ -895,36 +1044,95 @@
     }
 
     async function handleGlobalAvatarUpload(e) {
-      const file = e.target.files[0];
+      const file = e.target.files?.[0];
       if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        showToast('Please choose an image file.', 'error');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Profile pictures must be 5 MB or smaller.', 'error');
+        e.target.value = '';
+        return;
+      }
 
       showToast('Uploading profile picture...', 'info');
       try {
-        const ext = file.name.split('.').pop();
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const fileName = `${currentProfile.id}_avatar_${Date.now()}.${ext}`;
-        await supabaseClient.storage.from('profile_pictures').upload(fileName, file);
-        const { data: publicUrlData } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
-        const newUrl = publicUrlData.publicUrl;
+        const { error: uploadError } = await supabaseClient.storage
+          .from('profile_pictures')
+          .upload(fileName, file, { upsert: true });
+        if (uploadError) throw uploadError;
 
-        await supabaseClient.from('profiles').update({ profile_picture_url: newUrl }).eq('id', currentProfile.id);
-        await supabaseClient.auth.updateUser({ data: { profile_picture_url: newUrl } });
+        const { data: publicUrlData } = supabaseClient.storage
+          .from('profile_pictures')
+          .getPublicUrl(fileName);
+        const newUrl = publicUrlData?.publicUrl;
+        if (!newUrl) throw new Error('No profile image URL was returned.');
+
+        const { error: profileError } = await supabaseClient
+          .from('profiles')
+          .update({ profile_picture_url: newUrl })
+          .eq('id', currentProfile.id);
+        if (profileError) throw profileError;
+
+        const { error: authError } = await supabaseClient.auth.updateUser({
+          data: { profile_picture_url: newUrl }
+        });
+        if (authError) throw authError;
 
         currentProfile.profile_picture_url = newUrl;
         updateHeaderUI();
         showToast('Profile picture updated!', 'success');
-      } catch (err) {
-        showToast('Failed to update picture.', 'error');
+      } catch (error) {
+        console.error('Profile picture error:', error);
+        showToast(`Failed to update picture: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        e.target.value = '';
       }
     }
 
-    async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
-    function showToast(msg, type='info') {
-      const c = document.getElementById('toast-container');
+    async function handleLogout() {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error('Logout error:', error);
+        showToast(`Sign out failed: ${error.message || 'Unknown error'}`, 'error');
+      }
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const styles = {
+        success: 'border-emerald-500/50 text-emerald-400',
+        error: 'border-rose-500/50 text-rose-400',
+        info: 'border-sky-500/50 text-sky-400'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        info: 'fa-circle-info'
+      };
+
       const toast = document.createElement('div');
-      toast.className = `p-4 rounded-xl bg-[#112240] border ${type==='error'?'border-rose-500/50 text-rose-400':'border-emerald-500/50 text-emerald-400'} text-sm font-bold shadow-2xl`;
-      toast.innerHTML = `<div class="flex items-start"><i class="fa-solid ${type==='error'?'fa-circle-exclamation':'fa-circle-check'} mt-0.5 mr-2"></i><span>${msg}</span></div>`;
-      c.appendChild(toast);
-      setTimeout(() => toast.remove(), 6000); 
+      toast.className = `pointer-events-auto p-4 rounded-xl bg-[#112240] border ${styles[type] || styles.info} text-sm font-bold shadow-2xl`;
+
+      const row = document.createElement('div');
+      row.className = 'flex items-start';
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${icons[type] || icons.info} mt-0.5 mr-2`;
+      const text = document.createElement('span');
+      text.textContent = String(msg ?? '');
+      row.append(icon, text);
+      toast.appendChild(row);
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
     }
   </script>
 </body>
