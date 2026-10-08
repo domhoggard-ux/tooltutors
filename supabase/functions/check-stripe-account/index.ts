@@ -338,45 +338,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
       Accounts v2 can return optional identity fields as null
       unless they are requested using include[].
     */
+    
     const stripeUrl = new URL(
-      `https://api.stripe.com/v2/core/accounts/${
-        encodeURIComponent(profile.stripe_account_id)
-      }`,
-    );
+  `https://api.stripe.com/v2/core/accounts/${encodeURIComponent(
+    profile.stripe_account_id,
+  )}`,
+);
 
-    const includeFields = [
-      "identity",
-      "configuration.recipient",
-      "requirements",
-    ];
-
-    for (const field of includeFields) {
-      stripeUrl.searchParams.append(
+stripeUrl.searchParams.set(
   "include[0]",
   "configuration.recipient",
-);
-
-stripeUrl.searchParams.append(
-  "include[1]",
-  "requirements",
-);
-
-stripeUrl.searchParams.append(
-  "include[2]",
-  "future_requirements",
-);
-
-stripeUrl.searchParams.append(
-  "include[3]",
-  "defaults",
-);
-
-stripeUrl.searchParams.append(
-  "include[4]",
-  "identity",
-);    }
-
-    const stripeResponse = await fetch(
+);    const stripeResponse = await fetch(
       stripeUrl.toString(),
       {
         method: "GET",
