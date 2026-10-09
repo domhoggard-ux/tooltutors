@@ -112,27 +112,18 @@
           <div class="pt-2 border-t border-[#233554]"><span class="text-[10px] uppercase font-bold text-[#8892B0]">Agreed Price</span><p id="pay-price" class="text-xl font-extrabold text-white"></p></div>
         </div>
 
-        <form id="stripe-payment-form" onsubmit="processPayment(event)" class="space-y-4">
+        <form id="dummy-payment-form" onsubmit="processPayment(event)" class="space-y-4">
           <input type="hidden" id="pay-job-id">
-
-          <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <div class="flex items-start gap-3">
-              <i class="fa-solid fa-lock text-emerald-400 mt-0.5"></i>
-              <div>
-                <p class="text-sm font-bold text-emerald-400">Secure payment through Stripe</p>
-                <p class="text-[11px] text-[#8892B0] mt-1 leading-relaxed">
-                  You will be redirected to Stripe's secure checkout page. ToolTutors does not receive or store your card number, expiry date or security code.
-                </p>
-              </div>
-            </div>
+          <div>
+            <label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">Card Number (Dummy)</label>
+            <input type="text" required placeholder="0000 0000 0000 0000" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500">
           </div>
-
-          <p class="text-[10px] text-[#8892B0] text-center leading-relaxed">
-            Payment is collected securely. Tutor payment is handled according to the ToolTutors payment, completion and cancellation terms.
-          </p>
-
-          <button type="submit" id="pay-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">
-            <i class="fa-solid fa-lock mr-2"></i>Continue to Secure Payment
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">Expiry</label><input type="text" required placeholder="MM/YY" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500"></div>
+            <div><label class="block text-[10px] font-bold text-[#8892B0] uppercase mb-1">CVC</label><input type="text" required placeholder="123" class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-emerald-500"></div>
+          </div>
+          <button type="submit" id="pay-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">
+            Pay & Confirm Appointment
           </button>
         </form>
       </div>
@@ -265,56 +256,9 @@
       currentProfile = profile;
       updateHeaderUI(); 
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
-      const paymentParams = new URLSearchParams(window.location.search);
-      const paymentSucceeded = paymentParams.get('payment_success') === 'true';
-      const paymentCancelled = paymentParams.get('payment_cancelled') === 'true';
-      const returnedJobId = paymentParams.get('job_id');
-
-      if (paymentSucceeded) {
-        showToast('Payment received. Stripe is confirming your appointment.', 'success');
-        window.history.replaceState({}, document.title, window.location.pathname);
-        await waitForPaymentConfirmation(returnedJobId);
-      } else {
-        if (paymentCancelled) {
-          showToast('Payment was cancelled. No appointment has been confirmed.', 'error');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        await loadLearnerRequests();
-      }
-
+      loadLearnerRequests();
       setupReviewStars();
     });
-
-
-    async function waitForPaymentConfirmation(jobId) {
-      if (!jobId) {
-        await loadLearnerRequests();
-        return;
-      }
-
-      const maximumAttempts = 10;
-      const delayMilliseconds = 1500;
-
-      for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
-        const { data: job, error } = await supabaseClient
-          .from('job_requests')
-          .select('status, payment_status')
-          .eq('id', jobId)
-          .eq('learner_id', currentProfile.id)
-          .single();
-
-        if (!error && job?.payment_status === 'paid') {
-          showToast('Payment confirmed. Your appointment is scheduled!', 'success');
-          await loadLearnerRequests();
-          return;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, delayMilliseconds));
-      }
-
-      showToast('Your payment is still being confirmed. Use Refresh shortly.', 'success');
-      await loadLearnerRequests();
-    }
 
     function setupReviewStars() {
       document.querySelectorAll('.star-btn').forEach(star => {
@@ -588,54 +532,24 @@
 
     async function processPayment(e) {
       e.preventDefault();
-
-      const btn = document.getElementById('pay-btn');
-      const jobId = document.getElementById('pay-job-id').value;
-
-      if (!jobId) {
-        showToast('The job could not be identified. Refresh and try again.', 'error');
-        return;
-      }
-
-      const originalHtml = btn.innerHTML;
+      const btn = document.getElementById('pay-btn'); 
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...'; 
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Opening secure checkout...';
-
-      try {
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
-
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({ jobId })
-        });
-
-        let result = {};
-        try {
-          result = await response.json();
-        } catch (jsonError) {
-          console.error('Could not read checkout response:', jsonError);
+      
+      setTimeout(async () => {
+        const { error } = await supabaseClient.from('job_requests').update({ status: 'scheduled', payment_status: 'paid' }).eq('id', document.getElementById('pay-job-id').value);
+        if (error) {
+          showToast(`Database Error: ${error.message}`, 'error');
+        } else { 
+          document.getElementById('payment-modal').classList.add('hidden'); 
+          showToast('Payment successful! Job scheduled.', 'success'); 
+          loadLearnerRequests(); 
         }
-
-        if (!response.ok) {
-          throw new Error(result?.error || `Checkout could not be created (${response.status}).`);
-        }
-        if (!result?.url) throw new Error('Stripe did not return a checkout address.');
-
-        window.location.assign(result.url);
-      } catch (error) {
-        console.error('Stripe Checkout error:', error);
-        showToast(`Payment could not start: ${error?.message || 'Please try again.'}`, 'error');
+        btn.innerHTML = 'Pay & Confirm Appointment'; 
         btn.disabled = false;
-        btn.innerHTML = originalHtml;
-      }
+      }, 1500);
     }
+
     function openJobCard(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
@@ -712,53 +626,54 @@
 
     async function submitReview(e) {
       e.preventDefault();
-      const btn = document.getElementById('submit-review-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
 
+      const btn = document.getElementById('submit-review-btn');
       const jobId = document.getElementById('review-job-id').value;
-      const tutorId = document.getElementById('review-tutor-id').value;
-      const rating = parseInt(document.getElementById('review-rating').value);
-      const comment = document.getElementById('review-comment').value;
+      const rating = parseInt(document.getElementById('review-rating').value, 10);
+      const comment = document.getElementById('review-comment').value.trim();
+      const originalHtml = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Completing job and releasing payment...';
 
       try {
-        const { error: jobErr } = await supabaseClient.from('job_requests').update({ status: 'completed' }).eq('id', jobId);
-        if (jobErr) throw jobErr;
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
 
-        const { error: revErr } = await supabaseClient.from('reviews').insert([{
-          job_id: jobId,
-          tutor_id: tutorId,
-          reviewer_name: currentProfile.full_name || 'Learner',
-          rating: rating,
-          comment: comment
-        }]);
-        if (revErr) throw revErr;
-
-        const { data: offerData } = await supabaseClient.from('job_offers').select('offer_price').eq('job_id', jobId).eq('status', 'accepted').single();
-        const { data: tutorData } = await supabaseClient.from('profiles').select('full_name').eq('id', tutorId).single();
-        const { data: jobData } = await supabaseClient.from('job_requests').select('title').eq('id', jobId).single();
-        
-        await supabaseClient.functions.invoke('send-completion-email', {
-          body: {
-            action: 'admin_completion',
-            recipientEmail: 'Admin@Tooltutors.co.uk',
-            recipientName: tutorData?.full_name || 'Unknown Tutor',
-            jobTitle: jobData?.title || 'Job',
-            price: offerData?.offer_price || 'Unknown'
-          }
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/complete-job-and-release-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ jobId, rating, comment })
         });
 
-        showToast('Job completed and review submitted!', 'success');
+        let result = {};
+        try {
+          result = await response.json();
+        } catch (jsonError) {
+          console.error('Could not read payout response:', jsonError);
+        }
+
+        if (!response.ok) {
+          throw new Error(result?.error || `Tutor payment release failed (${response.status}).`);
+        }
+
+        showToast('Job completed, review submitted and Tutor payment released!', 'success');
         closeReviewModal();
-        loadLearnerRequests();
-      } catch(err) {
-        showToast(`Error: ${err.message}`, 'error');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        await loadLearnerRequests();
+      } catch (err) {
+        console.error('Complete job error:', err);
+        showToast(`Could not complete the job: ${err.message}`, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = 'Submit & Complete Job';
+        btn.innerHTML = originalHtml;
       }
     }
-
     function openChat(jobId, jobTitle, participantName, receiverId) {
       currentChatJobId = jobId;
       currentChatReceiverId = receiverId; 
