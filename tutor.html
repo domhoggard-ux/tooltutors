@@ -1053,7 +1053,7 @@
       if (job.status === 'completed' || job.status === 'cancelled') {
         buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
       } else {
-        const cancelLabel = job.status === 'scheduled' && job.payment_status === 'paid' ? 'Cancel & Refund Learner' : 'Cancel Job';
+        const cancelLabel = job.status === 'scheduled' ? 'Cancel & Refund Learner' : 'Cancel Job';
         buttonsHtml += `<button id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> ${cancelLabel}</button>`;
       }
       
@@ -1064,7 +1064,9 @@
     async function cancelJob(jobId) {
       const job = loadedJobsData.find(item => item.id === jobId);
       if (!job) { showToast('This project could not be found. Refresh and try again.', 'error'); return; }
-      if (job.status === 'scheduled' && job.payment_status === 'paid') {
+
+      // Every scheduled job has passed Checkout, so cancellation must use the refund function.
+      if (job.status === 'scheduled') {
         const reason = prompt('Please briefly explain why you are cancelling this paid job:');
         if (reason === null) return;
         if (reason.trim().length < 5) { showToast('Please provide a short cancellation reason.', 'error'); return; }
@@ -1076,27 +1078,47 @@
           const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
           if (sessionError) throw sessionError;
           if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
-          const response = await fetch(`${SUPABASE_URL}/functions/v1/cancel-job-and-refund`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`,'apikey':SUPABASE_ANON_KEY}, body:JSON.stringify({jobId,reason:reason.trim()}) });
-          let result={}; try { result=await response.json(); } catch(parseError) { console.error('Refund response parse error:',parseError); }
-          if(!response.ok) throw new Error(result?.error || `Cancellation refund failed (${response.status}).`);
-          showToast('Job cancelled and Learner refund submitted successfully.','success');
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/cancel-job-and-refund`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`,'apikey':SUPABASE_ANON_KEY},
+            body: JSON.stringify({ jobId, reason: reason.trim() })
+          });
+          let result = {};
+          try { result = await response.json(); } catch (parseError) { console.error('Refund response parse error:', parseError); }
+          if (!response.ok) throw new Error(result?.error || `Cancellation refund failed (${response.status}).`);
+          showToast('Job cancelled and Learner refund submitted successfully.', 'success');
           document.getElementById('job-card-modal').classList.add('hidden');
           await loadTutorWorkspace();
-        } catch(error) { console.error('Tutor cancel and refund error:',error); showToast(`Failed to cancel and refund: ${error.message || 'Unknown error'}`,'error'); if(btn) btn.innerHTML=originalHtml; }
-        finally { if(btn) btn.disabled=false; }
+        } catch (error) {
+          console.error('Tutor cancel and refund error:', error);
+          showToast(`Failed to cancel and refund: ${error.message || 'Unknown error'}`, 'error');
+          if (btn) btn.innerHTML = originalHtml;
+        } finally { if (btn) btn.disabled = false; }
         return;
       }
+
       if (!confirm('Are you sure you want to cancel this unpaid job? It will be returned to the open marketplace for other tutors to bid on.')) return;
-      const btn=document.getElementById('card-cancel-btn'), originalHtml=btn?.innerHTML||'';
-      if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';}
+      const btn = document.getElementById('card-cancel-btn');
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
       try {
-        const {error:jobError}=await supabaseClient.from('job_requests').update({status:'open',tutor_id:null,appointment_time:null,required_tools:null}).eq('id',jobId).eq('tutor_id',currentProfile.id).in('status',['accepted','pending_payment']);
-        if(jobError) throw jobError;
-        const {error:offerError}=await supabaseClient.from('job_offers').update({status:'withdrawn'}).eq('job_id',jobId).eq('tutor_id',currentProfile.id);
-        if(offerError) throw offerError;
-        showToast('Job cancelled and returned to the board.','success'); document.getElementById('job-card-modal').classList.add('hidden'); await loadTutorWorkspace();
-      } catch(error) { console.error('Job cancellation error:',error); showToast(`Failed to cancel: ${error.message || 'Unknown error'}`,'error'); if(btn) btn.innerHTML=originalHtml; }
-      finally { if(btn) btn.disabled=false; }
+        const { error: jobError } = await supabaseClient.from('job_requests')
+          .update({ status: 'open', tutor_id: null, appointment_time: null, required_tools: null })
+          .eq('id', jobId).eq('tutor_id', currentProfile.id).in('status', ['accepted', 'pending_payment']);
+        if (jobError) throw jobError;
+        // "withdrawn" is not allowed by the existing job_offers_status_check constraint.
+        // "rejected" is already an allowed terminal state used by this UI.
+        const { error: offerError } = await supabaseClient.from('job_offers')
+          .update({ status: 'rejected' }).eq('job_id', jobId).eq('tutor_id', currentProfile.id);
+        if (offerError) throw offerError;
+        showToast('Job cancelled and returned to the board.', 'success');
+        document.getElementById('job-card-modal').classList.add('hidden');
+        await loadTutorWorkspace();
+      } catch (error) {
+        console.error('Job cancellation error:', error);
+        showToast(`Failed to cancel: ${error.message || 'Unknown error'}`, 'error');
+        if (btn) btn.innerHTML = originalHtml;
+      } finally { if (btn) btn.disabled = false; }
     }
 
     function openChat(jobId, jobTitle, participantName, receiverId) {
