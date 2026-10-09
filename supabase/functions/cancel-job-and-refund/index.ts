@@ -1,128 +1,38 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import Stripe from "npm:stripe@^16.0.0";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-function json(body: Record<string, unknown>, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-Deno.serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
-
-  try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const authorization = req.headers.get("Authorization");
-
-    if (!stripeKey || !supabaseUrl || !anonKey || !serviceKey) {
-      throw new Error("Missing required environment variables.");
-    }
-    if (!authorization?.startsWith("Bearer ")) return json({ error: "Unauthorised." }, 401);
-
-    const { jobId, reason } = await req.json();
-    if (!jobId || typeof jobId !== "string") return json({ error: "Missing jobId." }, 400);
-    const cancellationReason = typeof reason === "string" && reason.trim()
-      ? reason.trim().slice(0, 450)
-      : "Cancelled by Learner";
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authorization } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) return json({ error: "Unauthorised." }, 401);
-
-    const admin = createClient(supabaseUrl, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-
-    const { data: job, error: jobError } = await admin
-      .from("job_requests")
-      .select("id, learner_id, status, payment_status, amount_paid_pence, stripe_payment_intent_id, stripe_transfer_id")
-      .eq("id", jobId)
-      .single();
-
-    if (jobError || !job) return json({ error: "Job not found." }, 404);
-    if (job.learner_id !== user.id) return json({ error: "This job does not belong to the signed-in Learner." }, 403);
-    if (job.status !== "scheduled") return json({ error: "Only scheduled jobs can be cancelled through this flow." }, 409);
-    if (job.payment_status !== "paid") return json({ error: "This scheduled job is not recorded as paid." }, 409);
-    if (!job.stripe_payment_intent_id) return json({ error: "Stripe Payment Intent is missing." }, 409);
-    if (job.stripe_transfer_id) return json({ error: "Tutor funds have already been transferred. Admin review is required." }, 409);
-
-    const stripe = new Stripe(stripeKey, { httpClient: Stripe.createFetchHttpClient() });
-    const paymentIntent = await stripe.paymentIntents.retrieve(job.stripe_payment_intent_id, {
-      expand: ["latest_charge"],
-    });
-    const latestCharge = paymentIntent.latest_charge;
-    const charge = typeof latestCharge === "string"
-      ? await stripe.charges.retrieve(latestCharge)
-      : latestCharge;
-
-    if (!charge || charge.object !== "charge") return json({ error: "Stripe charge could not be found." }, 409);
-
-    const refundablePence = charge.amount - charge.amount_refunded;
-    if (refundablePence <= 0) return json({ error: "This payment has already been fully refunded." }, 409);
-
-    const refund = await stripe.refunds.create(
-      {
-        payment_intent: job.stripe_payment_intent_id,
-        amount: refundablePence,
-        reason: "requested_by_customer",
-        metadata: {
-          job_id: job.id,
-          learner_id: user.id,
-          cancellation_reason: cancellationReason,
-        },
-      },
-      { idempotencyKey: `cancel_job_${job.id}_refund_full` },
-    );
-
-    const now = new Date().toISOString();
-    const { error: updateError } = await admin
-      .from("job_requests")
-      .update({
-        status: "cancelled",
-        payment_status: "refunded",
-        refunded_amount_pence: charge.amount,
-        stripe_refund_id: refund.id,
-        refunded_at: now,
-        refunded_by: user.id,
-        cancellation_reason: cancellationReason,
-        cancelled_at: now,
-      })
-      .eq("id", job.id)
-      .eq("status", "scheduled");
-
-    if (updateError) {
-      console.error("Refund succeeded but job update failed", { jobId: job.id, refundId: refund.id, updateError });
-      return json({
-        error: "Stripe refund succeeded, but the job record could not be updated. Contact ToolTutors support.",
-        refundId: refund.id,
-      }, 500);
-    }
-
-    return json({
-      success: true,
-      jobId: job.id,
-      refundId: refund.id,
-      refundedPence: refundablePence,
-      status: "cancelled",
-      paymentStatus: "refunded",
-    });
-  } catch (error) {
-    console.error("cancel-job-and-refund failed:", error);
-    return json({ error: error instanceof Error ? error.message : "Unexpected cancellation error." }, 500);
-  }
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const reply=(body:Record<string,unknown>,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
+Deno.serve(async(req:Request)=>{
+ if(req.method==="OPTIONS") return new Response("ok",{headers:cors});
+ if(req.method!=="POST") return reply({error:"Method not allowed."},405);
+ try{
+  const stripeKey=Deno.env.get("STRIPE_SECRET_KEY"),url=Deno.env.get("SUPABASE_URL"),anon=Deno.env.get("SUPABASE_ANON_KEY"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),auth=req.headers.get("Authorization");
+  if(!stripeKey||!url||!anon||!service) throw new Error("Missing required environment variables.");
+  if(!auth?.startsWith("Bearer ")) return reply({error:"Unauthorised."},401);
+  const body=await req.json(),jobId=typeof body?.jobId==="string"?body.jobId:"",reason=typeof body?.reason==="string"?body.reason.trim().slice(0,450):"";
+  if(!jobId||reason.length<5) return reply({error:"A job and cancellation reason are required."},400);
+  const userDb=createClient(url,anon,{global:{headers:{Authorization:auth}},auth:{persistSession:false,autoRefreshToken:false}});
+  const {data:{user},error:userError}=await userDb.auth.getUser();
+  if(userError||!user) return reply({error:"Unauthorised."},401);
+  const admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+  const {data:job,error:jobError}=await admin.from("job_requests").select("id,learner_id,tutor_id,status,payment_status,stripe_payment_intent_id,stripe_transfer_id").eq("id",jobId).single();
+  if(jobError||!job) return reply({error:"Job not found."},404);
+  const role=job.tutor_id===user.id?"tutor":job.learner_id===user.id?"learner":null;
+  if(!role) return reply({error:"You are not authorised to cancel this job."},403);
+  if(job.status!=="scheduled"||job.payment_status!=="paid") return reply({error:"Only a paid, scheduled job can be cancelled and refunded."},409);
+  if(!job.stripe_payment_intent_id) return reply({error:"Stripe Payment Intent is missing."},409);
+  if(job.stripe_transfer_id) return reply({error:"Tutor funds have already been transferred. Admin review is required."},409);
+  const stripe=new Stripe(stripeKey,{httpClient:Stripe.createFetchHttpClient()});
+  const pi=await stripe.paymentIntents.retrieve(job.stripe_payment_intent_id,{expand:["latest_charge"]});
+  const charge=typeof pi.latest_charge==="string"?await stripe.charges.retrieve(pi.latest_charge):pi.latest_charge;
+  if(!charge||charge.object!=="charge") return reply({error:"Stripe charge could not be found."},409);
+  const amount=charge.amount-charge.amount_refunded;
+  if(amount<=0) return reply({error:"This payment has already been fully refunded."},409);
+  const refund=await stripe.refunds.create({payment_intent:job.stripe_payment_intent_id,amount,reason:"requested_by_customer",metadata:{job_id:job.id,cancelled_by:user.id,cancelled_by_role:role,cancellation_reason:reason}},{idempotencyKey:`cancel_job_${job.id}_refund_full`});
+  const now=new Date().toISOString();
+  const {error:updateError}=await admin.from("job_requests").update({status:"cancelled",payment_status:"refunded",refunded_amount_pence:charge.amount,stripe_refund_id:refund.id,refunded_at:now,refunded_by:user.id,cancellation_reason:reason,cancelled_at:now,cancelled_by:user.id,cancelled_by_role:role}).eq("id",job.id).eq("status","scheduled");
+  if(updateError){console.error("Refund succeeded but DB update failed",{jobId,refundId:refund.id,updateError});return reply({error:"Stripe refund succeeded, but the job record could not be updated.",refundId:refund.id},500);}
+  return reply({success:true,jobId,refundId:refund.id,refundedPence:amount,cancelledByRole:role});
+ }catch(error){console.error("cancel-job-and-refund failed",error);return reply({error:error instanceof Error?error.message:"Unexpected cancellation error."},500);}
 });
