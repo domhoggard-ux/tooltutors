@@ -429,11 +429,13 @@
         .from('job_requests')
         .update({
           issue_status: status,
+          status: 'scheduled',
           issue_admin_notes: notes,
           issue_resolved_at: new Date().toISOString(),
           issue_resolved_by: currentAdminProfile.id
         })
-        .eq('id', jobId);
+        .eq('id', jobId)
+        .eq('status', 'payment_review');
 
       if (error) {
         showToast(`Could not update the issue: ${error.message}`, 'error');
