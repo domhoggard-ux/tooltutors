@@ -171,6 +171,22 @@
       </div>
     </div>
 
+    <!-- RAISE ISSUE MODAL -->
+    <div id="issue-modal" class="absolute inset-0 z-[210] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md p-6 relative shadow-2xl">
+        <button onclick="closeIssueModal()" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-triangle-exclamation text-amber-400 mr-2"></i>Raise an Issue</h3>
+        <p class="text-xs text-[#8892B0] mb-5">This pauses job completion and Tutor payment release while the issue is reviewed.</p>
+        <form onsubmit="submitIssue(event)" class="space-y-4">
+          <input type="hidden" id="issue-job-id">
+          <select id="issue-category" required class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm"><option value="">Choose a category</option><option>Tutor did not attend</option><option>Appointment problem</option><option>Work or advice concern</option><option>Safety concern</option><option>Other</option></select>
+          <textarea id="issue-description" required minlength="10" maxlength="1500" rows="5" placeholder="Please describe the issue clearly..." class="w-full px-4 py-2 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm"></textarea>
+          <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">The job will move to Payment Review. Completion and Tutor payment will be paused.</div>
+          <button type="submit" id="submit-issue-btn" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-[#0A192F] font-bold text-sm rounded-xl">Submit Issue</button>
+        </form>
+      </div>
+    </div>
+
     <!-- REVIEW MODAL -->
     <div id="review-modal" class="absolute inset-0 z-[200] hidden bg-[#0A192F]/95 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md p-6 relative shadow-2xl">
@@ -495,6 +511,8 @@
                             <button onclick="openChat('${job.id}', '${safeJobTitle}', '${safeTName}', '${job.tutor_id}')" class="flex-1 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition"><i class="fa-solid fa-comments mr-2"></i> Chat</button>
                             <button onclick="openJobCard('${job.id}')" class="flex-1 py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Job Card</button>
                           </div>`;
+              } else if (job.status === 'payment_review') {
+                action = `<div class="mt-4 pt-4 border-t border-[#233554] space-y-2"><div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center text-xs font-bold text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Payment paused while your issue is reviewed.</div><button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold rounded-lg text-xs">View Job Card</button></div>`;
               } else if (job.status === 'completed') {
                 action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
                             <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
@@ -503,7 +521,7 @@
             }
 
             const outerBorder = (job.status === 'scheduled') ? 'border-emerald-500/50 border-2' : (job.status !== 'open' ? 'border-[#FF6B35]/50 border-2' : 'border-[#233554]');
-            const archiveBtn = (job.status !== 'scheduled' && job.status !== 'accepted' && job.status !== 'pending_payment') ? `<button onclick="archiveJob('${job.id}', '${job.status}')" class="absolute top-4 right-4 text-[#233554] hover:text-[#FF6B35] transition text-sm" title="Archive Job"><i class="fa-solid fa-box-archive"></i></button>` : '';
+            const archiveBtn = (job.status !== 'scheduled' && job.status !== 'accepted' && job.status !== 'pending_payment' && job.status !== 'payment_review') ? `<button onclick="archiveJob('${job.id}', '${job.status}')" class="absolute top-4 right-4 text-[#233554] hover:text-[#FF6B35] transition text-sm" title="Archive Job"><i class="fa-solid fa-box-archive"></i></button>` : '';
             
             const firstPhoto = getFirstPhoto(job);
             const photoThumbnail = firstPhoto ? `<div class="mt-2 h-20 w-20 rounded-lg overflow-hidden border border-[#233554] flex-shrink-0"><img src="${firstPhoto}" class="w-full h-full object-cover"></div>` : '';
@@ -684,11 +702,37 @@
       }
       
       if (job.status === 'scheduled') {
+         buttonsHtml += `<button onclick="openIssueModal('${job.id}')" class="flex-1 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Raise an Issue</button>`;
          buttonsHtml += `<button onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-check mr-2"></i> Complete Job</button>`;
+      } else if (job.status === 'payment_review') {
+         buttonsHtml += `<div class="w-full p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center text-xs font-bold text-amber-400"><i class="fa-solid fa-lock mr-2"></i>Completion and Tutor payment are paused for review.</div>`;
       }
       
       actionContainer.innerHTML = buttonsHtml;
       document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
+    function openIssueModal(jobId) {
+      const job = loadedJobsData.find(j => j.id === jobId);
+      if (!job || job.status !== 'scheduled') { showToast('This job is no longer available for issue submission.', 'error'); loadLearnerRequests(); return; }
+      document.getElementById('issue-job-id').value = jobId;
+      document.getElementById('issue-category').value = '';
+      document.getElementById('issue-description').value = '';
+      document.getElementById('job-card-modal').classList.add('hidden');
+      document.getElementById('issue-modal').classList.remove('hidden');
+    }
+    function closeIssueModal() { document.getElementById('issue-modal').classList.add('hidden'); }
+    async function submitIssue(event) {
+      event.preventDefault();
+      const jobId=document.getElementById('issue-job-id').value, category=document.getElementById('issue-category').value, description=document.getElementById('issue-description').value.trim(), btn=document.getElementById('submit-issue-btn'), original=btn.innerHTML;
+      if (!jobId || !category || description.length < 10) { showToast('Choose a category and provide at least 10 characters of detail.', 'error'); return; }
+      btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-2"></i>Pausing payment...';
+      try {
+        const {data,error}=await supabaseClient.from('job_requests').update({status:'payment_review',issue_category:category,issue_description:description,issue_status:'open',issue_raised_at:new Date().toISOString()}).eq('id',jobId).eq('learner_id',currentProfile.id).eq('status','scheduled').select('id').single();
+        if(error) throw error; if(!data) throw new Error('The job changed before the issue could be submitted.');
+        closeIssueModal(); showToast('Issue submitted. Completion and Tutor payment are now paused.','success'); await loadLearnerRequests();
+      } catch(error) { console.error('Raise issue error:',error); showToast(`Could not raise the issue: ${error.message}`,'error'); }
+      finally { btn.disabled=false; btn.innerHTML=original; }
     }
 
     function openReviewModal(jobId, tutorId) {
