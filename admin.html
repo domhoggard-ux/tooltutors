@@ -67,9 +67,14 @@
         <h1 class="text-2xl font-extrabold text-white">Admin Management Hub</h1>
         <p class="text-xs text-[#8892B0] mt-1">Oversee platform safety, adjust tutor skills, and manage user accounts.</p>
       </div>
-      <button onclick="refreshActiveTab()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
-        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Data
-      </button>
+      <div class="flex flex-wrap gap-2">
+        <a href="finance-ledger.html" class="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-xl transition flex-shrink-0">
+          <i class="fa-solid fa-sterling-sign mr-1"></i> Finance Ledger
+        </a>
+        <button onclick="refreshActiveTab()" class="px-4 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition flex-shrink-0">
+          <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Data
+        </button>
+      </div>
     </div>
 
     <div class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
@@ -80,6 +85,10 @@
         </button>
         <button onclick="switchTab('jobs')" id="tab-btn-jobs" class="flex-1 py-4 px-6 text-sm font-bold text-[#8892B0] hover:bg-[#233554]/30 hover:text-white border-b-2 border-transparent transition whitespace-nowrap">
           <i class="fa-solid fa-list-check mr-2"></i>All Jobs Registry
+        </button>
+        <button onclick="switchTab('issues')" id="tab-btn-issues" class="flex-1 py-4 px-6 text-sm font-bold text-[#8892B0] hover:bg-[#233554]/30 hover:text-white border-b-2 border-transparent transition whitespace-nowrap">
+          <i class="fa-solid fa-triangle-exclamation mr-2"></i>Payment Issues
+          <span id="issue-count-badge" class="hidden ml-1 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px]">0</span>
         </button>
         <button onclick="switchTab('users')" id="tab-btn-users" class="flex-1 py-4 px-6 text-sm font-bold text-[#8892B0] hover:bg-[#233554]/30 hover:text-white border-b-2 border-transparent transition whitespace-nowrap">
           <i class="fa-solid fa-users mr-2"></i>User Directory
@@ -102,7 +111,25 @@
           </div>
         </div>
 
-        <!-- SECTION 3: USER DIRECTORY -->
+        <!-- SECTION 3: PAYMENT ISSUES -->
+        <div id="section-issues" class="tab-content hidden space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white text-sm">Payment Issues</h3>
+              <p class="text-[10px] text-[#8892B0] mt-1">Review paused payments, record a resolution, or start a secure Stripe refund.</p>
+            </div>
+            <select id="issue-status-filter" onchange="loadPaymentIssues()" class="px-3 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
+              <option value="open">Open issues</option>
+              <option value="all">All issues</option>
+              <option value="resolved">Resolved issues</option>
+              <option value="refunded">Refunded issues</option>
+            </select>
+          </div>
+          <div id="admin-issues-list" class="space-y-4">
+            <p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading payment issues...</p>
+          </div>
+        </div>
+        <!-- SECTION 4: USER DIRECTORY -->
         <div id="section-users" class="tab-content hidden space-y-4">
           <div class="flex gap-2 mb-4">
              <input type="text" id="user-search" placeholder="Search by name or email..." class="flex-1 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
@@ -125,6 +152,7 @@
     let currentAdminProfile = null;
     let currentActiveTab = 'reviews';
     let allLoadedUsers = [];
+    let allLoadedIssues = [];
     const AVAILABLE_SKILLS = ['Plumbing', 'Tiling', 'Carpentry & Joinery', 'Electrical Basics', 'Decorating & Painting', 'Garden & Landscaping'];
 
     // --- INITIALIZATION ---
@@ -144,6 +172,7 @@
         currentAdminProfile = profile;
         document.getElementById('header-user-name').textContent = profile.full_name || user.email;
         loadPendingTutors();
+        loadIssueCount();
 
       } catch (err) {
         console.error(err);
@@ -154,7 +183,7 @@
     // --- UI NAVIGATION ---
     function switchTab(tabId) {
       currentActiveTab = tabId;
-      ['reviews', 'jobs', 'users'].forEach(t => {
+      ['reviews', 'jobs', 'issues', 'users'].forEach(t => {
         document.getElementById(`section-${t}`).classList.add('hidden');
         const btn = document.getElementById(`tab-btn-${t}`);
         btn.classList.remove('bg-[#233554]/50', 'text-white', 'border-[#FF6B35]');
@@ -172,6 +201,7 @@
     function refreshActiveTab() {
       if (currentActiveTab === 'reviews') loadPendingTutors();
       if (currentActiveTab === 'jobs') loadAllJobs();
+      if (currentActiveTab === 'issues') loadPaymentIssues();
       if (currentActiveTab === 'users') loadAllUsers();
     }
 
@@ -244,7 +274,10 @@
             <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-[#233554] text-[#8892B0]">${job.status}</span>
           </div>
           <p class="text-[#8892B0]">Learner: ${job.learner?.full_name || 'Unknown'} | Tutor: ${job.tutor?.full_name || 'Unassigned'}</p>
-          <button onclick="adminDeleteJob('${job.id}')" class="w-full mt-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded transition">Delete Job</button>
+          ${job.issue_status ? `<button onclick="switchTab('issues')" class="w-full mt-2 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold rounded transition"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Review Payment Issue</button>` : ''}
+          ${(!job.payment_status || job.payment_status === 'unpaid') && !job.issue_status
+            ? `<button onclick="adminDeleteJob('${job.id}')" class="w-full mt-2 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded transition">Delete Unpaid Job</button>`
+            : `<div class="mt-2 p-2 rounded bg-[#112240] border border-[#233554] text-[10px] text-[#8892B0]"><i class="fa-solid fa-lock mr-1"></i>Financial records cannot be deleted.</div>`}
         </div>
       `).join('');
     }
@@ -254,6 +287,225 @@
         await supabaseClient.from('job_requests').delete().eq('id', id);
         showToast('Job deleted', 'success');
         loadAllJobs();
+      }
+    }
+
+    async function loadIssueCount() {
+      const { count, error } = await supabaseClient
+        .from('job_requests')
+        .select('id', { count: 'exact', head: true })
+        .not('issue_status', 'is', null)
+        .in('issue_status', ['open', 'pending', 'under_review']);
+      if (error) {
+        console.error('Issue count error:', error);
+        return;
+      }
+      const badge = document.getElementById('issue-count-badge');
+      const total = count || 0;
+      badge.textContent = String(total);
+      badge.classList.toggle('hidden', total === 0);
+    }
+
+    function formatMoneyFromPence(value) {
+      const amount = Number(value);
+      if (!Number.isFinite(amount)) return 'Not recorded';
+      return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP'
+      }).format(amount / 100);
+    }
+
+    function issueStatusClasses(status) {
+      if (status === 'refunded') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+      if (status === 'resolved') return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+      if (status === 'rejected') return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    }
+
+    async function loadPaymentIssues() {
+      const container = document.getElementById('admin-issues-list');
+      const filter = document.getElementById('issue-status-filter')?.value || 'open';
+      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading payment issues...</p>';
+
+      let query = supabaseClient
+        .from('job_requests')
+        .select('*, learner:profiles!learner_id(full_name,email,phone), tutor:profiles!tutor_id(full_name,email,phone)')
+        .not('issue_status', 'is', null)
+        .order('issue_raised_at', { ascending: false });
+
+      if (filter === 'open') query = query.in('issue_status', ['open', 'pending', 'under_review']);
+      if (filter === 'resolved') query = query.eq('issue_status', 'resolved');
+      if (filter === 'refunded') query = query.eq('issue_status', 'refunded');
+
+      const { data: issues, error } = await query;
+      if (error) {
+        console.error('Payment issues load error:', error);
+        container.innerHTML = `<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">Could not load payment issues: ${escapeHTML(error.message)}</div>`;
+        return;
+      }
+
+      allLoadedIssues = issues || [];
+      if (allLoadedIssues.length === 0) {
+        container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8 italic">No payment issues match this filter.</p>';
+        await loadIssueCount();
+        return;
+      }
+
+      container.innerHTML = allLoadedIssues.map(job => {
+        const status = job.issue_status || 'open';
+        const transferReleased = Boolean(job.stripe_transfer_id || job.transferred_at);
+        const paymentReference = job.stripe_payment_intent_id || job.stripe_checkout_session_id || 'Not recorded';
+        const grossAmount = job.gross_amount_pence ?? job.amount_paid_pence;
+        return `
+          <article class="bg-[#0A192F] border ${status === 'open' || status === 'pending' || status === 'under_review' ? 'border-amber-500/40' : 'border-[#233554]'} rounded-xl p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h4 class="font-bold text-white text-sm">${escapeHTML(job.title || 'Untitled job')}</h4>
+                  <span class="px-2 py-0.5 border rounded text-[9px] uppercase font-bold ${issueStatusClasses(status)}">${escapeHTML(status.replaceAll('_', ' '))}</span>
+                </div>
+                <p class="text-[10px] text-[#8892B0] mt-1">Job ${escapeHTML(job.id)}</p>
+              </div>
+              <a href="finance-ledger.html?job_id=${encodeURIComponent(job.id)}" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold whitespace-nowrap">
+                <i class="fa-solid fa-book mr-1"></i>View in Ledger
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-lg bg-[#112240] border border-[#233554] space-y-1">
+                <p><span class="text-[#8892B0]">Learner:</span> <span class="text-white">${escapeHTML(job.learner?.full_name || 'Unknown')}</span></p>
+                <p><span class="text-[#8892B0]">Tutor:</span> <span class="text-white">${escapeHTML(job.tutor?.full_name || 'Unassigned')}</span></p>
+                <p><span class="text-[#8892B0]">Raised:</span> <span class="text-white">${job.issue_raised_at ? new Date(job.issue_raised_at).toLocaleString('en-GB') : 'Not recorded'}</span></p>
+              </div>
+              <div class="p-3 rounded-lg bg-[#112240] border border-[#233554] space-y-1">
+                <p><span class="text-[#8892B0]">Gross payment:</span> <span class="text-white font-bold">${formatMoneyFromPence(grossAmount)}</span></p>
+                <p><span class="text-[#8892B0]">Payment:</span> <span class="text-white">${escapeHTML(job.payment_status || 'Unknown')}</span></p>
+                <p><span class="text-[#8892B0]">Tutor transfer:</span> <span class="${transferReleased ? 'text-emerald-400' : 'text-amber-400'}">${transferReleased ? 'Already released' : 'Not released / paused'}</span></p>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+              <p class="text-[10px] uppercase font-bold text-amber-400 mb-1">${escapeHTML(job.issue_category || 'Payment issue')}</p>
+              <p class="text-xs text-white whitespace-pre-wrap">${escapeHTML(job.issue_description || 'No description supplied.')}</p>
+            </div>
+
+            <div class="p-3 rounded-lg bg-[#112240] border border-[#233554] text-[10px] space-y-1">
+              <p><span class="text-[#8892B0]">Payment reference:</span> <span class="text-white break-all">${escapeHTML(paymentReference)}</span></p>
+              <p><span class="text-[#8892B0]">Transfer reference:</span> <span class="text-white break-all">${escapeHTML(job.stripe_transfer_id || 'No transfer recorded')}</span></p>
+            </div>
+
+            <div>
+              <label class="block text-[10px] uppercase font-bold text-[#8892B0] mb-1" for="issue-notes-${job.id}">Admin resolution notes</label>
+              <textarea id="issue-notes-${job.id}" rows="2" class="w-full px-3 py-2 rounded-lg bg-[#112240] border border-[#233554] text-white text-xs focus:outline-none focus:border-[#FF6B35]" placeholder="Record the investigation outcome or refund reason...">${escapeHTML(job.issue_admin_notes || '')}</textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button onclick="resolvePaymentIssue('${job.id}', 'resolved')" class="py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-xs font-bold">
+                <i class="fa-solid fa-check mr-1"></i>Resolve, No Refund
+              </button>
+              <button onclick="resolvePaymentIssue('${job.id}', 'rejected')" class="py-2 bg-[#233554] hover:bg-[#31466b] text-white border border-[#31466b] rounded-lg text-xs font-bold">
+                <i class="fa-solid fa-xmark mr-1"></i>Reject Issue
+              </button>
+              <button onclick="startAdminRefund('${job.id}')" class="py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-bold">
+                <i class="fa-solid fa-rotate-left mr-1"></i>Refund Payment
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      await loadIssueCount();
+    }
+
+    async function resolvePaymentIssue(jobId, status) {
+      const notes = document.getElementById(`issue-notes-${jobId}`)?.value.trim() || '';
+      if (!notes) {
+        showToast('Add Admin resolution notes before closing the issue.', 'error');
+        return;
+      }
+      if (!confirm(`Mark this payment issue as ${status.replaceAll('_', ' ')}?`)) return;
+
+      const { error } = await supabaseClient
+        .from('job_requests')
+        .update({
+          issue_status: status,
+          issue_admin_notes: notes,
+          issue_resolved_at: new Date().toISOString(),
+          issue_resolved_by: currentAdminProfile.id
+        })
+        .eq('id', jobId);
+
+      if (error) {
+        showToast(`Could not update the issue: ${error.message}`, 'error');
+        return;
+      }
+      showToast('Payment issue updated.', 'success');
+      await loadPaymentIssues();
+    }
+
+    async function startAdminRefund(jobId) {
+      const job = allLoadedIssues.find(item => item.id === jobId);
+      if (!job) {
+        showToast('The selected issue could not be found.', 'error');
+        return;
+      }
+
+      const grossPence = Number(job.gross_amount_pence ?? job.amount_paid_pence ?? 0);
+      if (!Number.isFinite(grossPence) || grossPence <= 0) {
+        showToast('No refundable payment amount is recorded for this job.', 'error');
+        return;
+      }
+
+      const fullAmount = (grossPence / 100).toFixed(2);
+      const amountInput = prompt(`Refund amount in GBP. Maximum £${fullAmount}:`, fullAmount);
+      if (amountInput === null) return;
+
+      const refundAmountPence = Math.round(Number(amountInput) * 100);
+      if (!Number.isInteger(refundAmountPence) || refundAmountPence <= 0 || refundAmountPence > grossPence) {
+        showToast(`Enter a valid refund amount up to £${fullAmount}.`, 'error');
+        return;
+      }
+
+      const notes = document.getElementById(`issue-notes-${jobId}`)?.value.trim() || '';
+      if (!notes) {
+        showToast('Add the refund reason to Admin resolution notes first.', 'error');
+        return;
+      }
+
+      const transferWarning = job.stripe_transfer_id
+        ? '\n\nTutor funds have already been transferred. The refund function must reverse the appropriate Tutor transfer amount before refunding the Learner.'
+        : '\n\nTutor funds have not been transferred.';
+
+      if (!confirm(`Refund £${(refundAmountPence / 100).toFixed(2)} to the Learner?${transferWarning}`)) return;
+
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your Admin session has expired.');
+
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/admin-refund-payment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            jobId,
+            amountPence: refundAmountPence,
+            reason: notes
+          })
+        });
+
+        let result = {};
+        try { result = await response.json(); } catch (jsonError) { console.error('Refund response parse error:', jsonError); }
+        if (!response.ok) throw new Error(result?.error || `Refund failed (${response.status}).`);
+
+        showToast('Refund submitted successfully.', 'success');
+        await loadPaymentIssues();
+      } catch (error) {
+        console.error('Admin refund error:', error);
+        showToast(`Refund failed: ${error.message}`, 'error');
       }
     }
 
