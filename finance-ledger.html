@@ -1,166 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-[#0A192F]">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolTutors - Read-only Finance Ledger</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']}}}}</script>
-  <style>
-    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0A192F}::-webkit-scrollbar-thumb{background:#233554;border-radius:4px}
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ToolTutors - Finance Ledger</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']}}}}</script>
 </head>
 <body class="min-h-screen bg-[#0A192F] text-[#E6F1FF] font-sans">
-  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
-        <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase font-bold">Read-only Finance</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <a href="admin.html" class="px-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-arrow-left mr-1"></i>Admin Hub</a>
-        <button onclick="loadLedger()" class="px-3 py-2 bg-[#233554] hover:bg-[#FF6B35] text-white text-xs font-bold rounded-xl transition"><i class="fa-solid fa-rotate-right mr-1"></i>Refresh</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-    <section class="bg-[#112240] border border-[#233554] rounded-2xl p-6 shadow-xl">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 class="text-2xl font-extrabold text-white">Finance Ledger</h1>
-          <p class="text-xs text-[#8892B0] mt-1">Database reconciliation only. This page cannot create transfers, refunds, payouts or edits.</p>
-        </div>
-        <div id="last-refreshed" class="text-[10px] text-[#8892B0] uppercase font-bold">Not loaded</div>
-      </div>
-    </section>
-
-    <section id="ledger-error" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-xl p-4 text-sm"></section>
-
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-      <div class="bg-[#112240] border border-[#233554] rounded-2xl p-5"><p class="text-[10px] uppercase font-bold text-[#8892B0]">Gross learner payments</p><p id="metric-gross" class="text-2xl font-extrabold text-white mt-2">£0.00</p></div>
-      <div class="bg-[#112240] border border-amber-500/30 rounded-2xl p-5"><p class="text-[10px] uppercase font-bold text-amber-400">Protected Tutor funds</p><p id="metric-protected" class="text-2xl font-extrabold text-amber-400 mt-2">£0.00</p><p class="text-[10px] text-[#8892B0] mt-1">Paid jobs not yet released</p></div>
-      <div class="bg-[#112240] border border-emerald-500/30 rounded-2xl p-5"><p class="text-[10px] uppercase font-bold text-emerald-400">Tutor transfers released</p><p id="metric-released" class="text-2xl font-extrabold text-emerald-400 mt-2">£0.00</p></div>
-      <div class="bg-[#112240] border border-blue-500/30 rounded-2xl p-5"><p class="text-[10px] uppercase font-bold text-blue-400">Gross commission earned</p><p id="metric-commission" class="text-2xl font-extrabold text-blue-400 mt-2">£0.00</p><p class="text-[10px] text-[#8892B0] mt-1">Before Stripe fees/refunds</p></div>
-      <div class="bg-[#112240] border border-[#FF6B35]/30 rounded-2xl p-5"><p class="text-[10px] uppercase font-bold text-[#FF6B35]">Exceptions</p><p id="metric-exceptions" class="text-2xl font-extrabold text-[#FF6B35] mt-2">0</p><p class="text-[10px] text-[#8892B0] mt-1">Records needing review</p></div>
-    </section>
-
-    <section class="bg-[#112240] border border-[#233554] rounded-2xl p-5 shadow-xl">
-      <div class="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-        <div class="flex-1"><h2 class="font-bold text-white">Transaction reconciliation</h2><p id="ledger-count" class="text-[10px] text-[#8892B0] mt-1">0 records</p></div>
-        <input id="ledger-search" oninput="renderLedger()" type="search" placeholder="Search job, learner, Tutor or Stripe ID" class="w-full md:w-80 px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs focus:outline-none focus:border-[#FF6B35]">
-        <select id="ledger-filter" onchange="renderLedger()" class="px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-white text-xs">
-          <option value="all">All payment records</option><option value="protected">Awaiting Tutor release</option><option value="released">Tutor transfer released</option><option value="exceptions">Exceptions only</option>
-        </select>
-      </div>
-      <div class="overflow-x-auto rounded-xl border border-[#233554]">
-        <table class="min-w-[1250px] w-full text-left text-xs">
-          <thead class="bg-[#0A192F] text-[#8892B0] uppercase text-[9px] tracking-wide">
-            <tr><th class="p-3">Job</th><th class="p-3">People</th><th class="p-3">Status</th><th class="p-3 text-right">Paid</th><th class="p-3 text-right">Tutor share</th><th class="p-3 text-right">Commission</th><th class="p-3">Payment received</th><th class="p-3">Tutor released</th><th class="p-3">Payment Intent</th><th class="p-3">Transfer</th></tr>
-          </thead>
-          <tbody id="ledger-body" class="divide-y divide-[#233554]"><tr><td colspan="10" class="p-8 text-center text-[#8892B0]"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading ledger...</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 text-xs text-blue-200 leading-relaxed">
-      <strong>Important:</strong> “Gross commission earned” is not the same as safe cash to withdraw. This ledger does not retrieve the live Stripe balance, Stripe processing fees, refunds, disputes, reserves or bank payouts. Reconcile those separately before withdrawing funds.
-    </section>
-  </main>
-
+<header class="sticky top-0 z-40 bg-[#0A192F]/95 border-b border-[#233554] px-4 py-3"><div class="max-w-7xl mx-auto flex justify-between items-center gap-3"><div class="flex items-center gap-3"><img src="logo.svg" alt="ToolTutors" class="h-10"><span class="text-[10px] px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase font-bold">Read-only Finance</span></div><div class="flex gap-2"><a href="admin.html" class="px-3 py-2 bg-[#233554] hover:bg-[#FF6B35] rounded-xl text-xs font-bold"><i class="fa-solid fa-arrow-left mr-1"></i>Admin Hub</a><button onclick="loadLedger()" class="px-3 py-2 bg-[#233554] hover:bg-[#FF6B35] rounded-xl text-xs font-bold"><i class="fa-solid fa-rotate-right mr-1"></i>Refresh</button></div></div></header>
+<main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+<section class="bg-[#112240] border border-[#233554] rounded-2xl p-6"><h1 class="text-2xl font-extrabold text-white">Finance Ledger</h1><p class="text-xs text-[#8892B0] mt-1">Read-only database reconciliation. No transfers, refunds, payouts or record edits.</p><p id="refreshed" class="text-[10px] text-[#8892B0] mt-3 uppercase">Not loaded</p></section>
+<div id="error" class="hidden p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm"></div>
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+<div class="card"><span>Gross learner payments</span><strong id="gross">£0.00</strong></div>
+<div class="card border-amber-500/30"><span class="text-amber-400">Protected Tutor funds</span><strong id="protected" class="text-amber-400">£0.00</strong><small>Paid jobs awaiting release</small></div>
+<div class="card border-emerald-500/30"><span class="text-emerald-400">Tutor transfers released</span><strong id="released" class="text-emerald-400">£0.00</strong></div>
+<div class="card border-blue-500/30"><span class="text-blue-400">Gross commission earned</span><strong id="commission" class="text-blue-400">£0.00</strong></div>
+<div class="card border-purple-500/30"><span class="text-purple-400">Estimated Stripe fees</span><strong id="fees" class="text-purple-400">£0.00</strong><small>1.5% + 20p per paid checkout</small></div>
+<div class="card border-cyan-500/30"><span class="text-cyan-400">Estimated net commission</span><strong id="net" class="text-cyan-400">£0.00</strong><small>Released commission less estimated fees</small></div>
+<div class="card border-[#FF6B35]/30"><span class="text-[#FF6B35]">Exceptions</span><strong id="exceptions" class="text-[#FF6B35]">0</strong></div>
+</section>
+<section class="bg-[#112240] border border-[#233554] rounded-2xl p-5"><div class="flex flex-col md:flex-row gap-3 mb-4"><div class="flex-1"><h2 class="font-bold text-white">Transaction reconciliation</h2><p id="count" class="text-[10px] text-[#8892B0]">0 records</p></div><input id="search" oninput="render()" placeholder="Search job, person or Stripe ID" class="px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-xs"><select id="filter" onchange="render()" class="px-4 py-2 bg-[#0A192F] border border-[#233554] rounded-xl text-xs"><option value="all">All records</option><option value="protected">Awaiting Tutor release</option><option value="released">Released</option><option value="exceptions">Exceptions</option></select></div>
+<div class="overflow-x-auto border border-[#233554] rounded-xl"><table class="min-w-[1450px] w-full text-xs"><thead class="bg-[#0A192F] text-[#8892B0] uppercase text-[9px]"><tr><th>Job</th><th>People</th><th>Status</th><th>Paid</th><th>Tutor share</th><th>Commission</th><th>Est. fee</th><th>Est. net</th><th>Paid at</th><th>Released at</th><th>Payment Intent</th><th>Transfer</th></tr></thead><tbody id="body"><tr><td colspan="12" class="p-8 text-center text-[#8892B0]">Loading…</td></tr></tbody></table></div></section>
+<section class="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-200"><strong>Estimate only:</strong> fees use 1.5% + 20p for standard UK cards. Actual fees can differ for premium UK, EEA or international cards, currency conversion, disputes, refunds, Connect charges or custom pricing.</section>
+</main>
+<style>.card{background:#112240;border:1px solid #233554;border-radius:1rem;padding:1.25rem}.card span{display:block;font-size:10px;text-transform:uppercase;font-weight:700;color:#8892B0}.card strong{display:block;font-size:1.5rem;margin-top:.5rem}.card small{display:block;font-size:10px;color:#8892B0;margin-top:.25rem}th,td{padding:.75rem;text-align:left}tbody tr{border-top:1px solid #233554}</style>
 <script>
-const SUPABASE_URL='https://gfygaqbxhcggnkqimzrg.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-let ledgerRows=[];
-
-const money=pence=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format((Number(pence)||0)/100);
-const dateTime=value=>value?new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)):'—';
-const safe=value=>String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const shortId=value=>value?`${safe(value.slice(0,12))}…`:'—';
-
-window.addEventListener('DOMContentLoaded',async()=>{
-  const {data:{session}}=await supabaseClient.auth.getSession();
-  if(!session){location.href='login.html';return;}
-  const {data:profile,error}=await supabaseClient.from('profiles').select('role').eq('id',session.user.id).single();
-  if(error||profile?.role!=='admin'){location.href='login.html';return;}
-  await loadLedger();
-});
-
-function deriveRow(job){
-  const paid=Number(job.amount_paid_pence)||0;
-  const released=job.tutor_payment_released===true || Boolean(job.stripe_transfer_id);
-  const tutorShare=Number.isFinite(Number(job.tutor_payout_amount_pence)) && job.tutor_payout_amount_pence!==null
-    ? Number(job.tutor_payout_amount_pence)
-    : Math.round(paid*0.90);
-  const commission=Number.isFinite(Number(job.platform_commission_pence)) && job.platform_commission_pence!==null
-    ? Number(job.platform_commission_pence)
-    : paid-tutorShare;
-  const paidJob=job.payment_status==='paid';
-  const protectedAmount=paidJob&&!released?tutorShare:0;
-  const issues=[];
-  if(paidJob&&!job.stripe_payment_intent_id)issues.push('Paid without Payment Intent');
-  if(released&&!job.stripe_transfer_id)issues.push('Released without Transfer ID');
-  if(job.status==='completed'&&paidJob&&!released)issues.push('Completed but Tutor not released');
-  if(released&&job.status!=='completed')issues.push('Transfer released before completion');
-  if(paid&&tutorShare+commission!==paid)issues.push('Split does not equal payment');
-  return {...job,paid,released,tutorShare,commission,protectedAmount,issues};
-}
-
-async function loadLedger(){
-  const errorBox=document.getElementById('ledger-error');
-  errorBox.classList.add('hidden');
-  document.getElementById('ledger-body').innerHTML='<tr><td colspan="10" class="p-8 text-center text-[#8892B0]"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Loading ledger...</td></tr>';
-  const {data,error}=await supabaseClient.from('job_requests').select('id,title,status,payment_status,amount_paid_pence,paid_at,stripe_payment_intent_id,tutor_payment_released,stripe_transfer_id,tutor_paid_at,tutor_payout_amount_pence,platform_commission_pence,learner:profiles!learner_id(full_name),tutor:profiles!tutor_id(full_name)').or('payment_status.eq.paid,stripe_payment_intent_id.not.is.null,stripe_transfer_id.not.is.null').order('paid_at',{ascending:false,nullsFirst:false});
-  if(error){
-    errorBox.textContent=`Ledger could not load: ${error.message}`;errorBox.classList.remove('hidden');
-    document.getElementById('ledger-body').innerHTML='<tr><td colspan="10" class="p-8 text-center text-rose-400">Unable to load finance records.</td></tr>';return;
-  }
-  ledgerRows=(data||[]).map(deriveRow);
-  updateMetrics();renderLedger();
-  document.getElementById('last-refreshed').textContent=`Refreshed ${new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date())}`;
-}
-
-function updateMetrics(){
-  const sum=key=>ledgerRows.reduce((total,row)=>total+(Number(row[key])||0),0);
-  document.getElementById('metric-gross').textContent=money(sum('paid'));
-  document.getElementById('metric-protected').textContent=money(sum('protectedAmount'));
-  document.getElementById('metric-released').textContent=money(ledgerRows.filter(r=>r.released).reduce((t,r)=>t+r.tutorShare,0));
-  document.getElementById('metric-commission').textContent=money(ledgerRows.filter(r=>r.released).reduce((t,r)=>t+r.commission,0));
-  document.getElementById('metric-exceptions').textContent=String(ledgerRows.filter(r=>r.issues.length).length);
-}
-
-function renderLedger(){
-  const body=document.getElementById('ledger-body');
-  const term=document.getElementById('ledger-search').value.trim().toLowerCase();
-  const filter=document.getElementById('ledger-filter').value;
-  const rows=ledgerRows.filter(r=>{
-    const haystack=[r.title,r.learner?.full_name,r.tutor?.full_name,r.stripe_payment_intent_id,r.stripe_transfer_id].join(' ').toLowerCase();
-    if(term&&!haystack.includes(term))return false;
-    if(filter==='protected'&&!r.protectedAmount)return false;
-    if(filter==='released'&&!r.released)return false;
-    if(filter==='exceptions'&&!r.issues.length)return false;
-    return true;
-  });
-  document.getElementById('ledger-count').textContent=`${rows.length} of ${ledgerRows.length} records`;
-  if(!rows.length){body.innerHTML='<tr><td colspan="10" class="p-8 text-center text-[#8892B0]">No matching finance records.</td></tr>';return;}
-  body.innerHTML=rows.map(r=>{
-    const issue=r.issues.length?`<div class="mt-2 text-[9px] text-rose-400">${r.issues.map(safe).join(' · ')}</div>`:'';
-    const paymentBadge=r.payment_status==='paid'?'<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400">Paid</span>':'<span class="px-2 py-1 rounded bg-amber-500/10 text-amber-400">'+safe(r.payment_status||'Unknown')+'</span>';
-    const transferBadge=r.released?'<span class="px-2 py-1 rounded bg-blue-500/10 text-blue-400">Released</span>':'<span class="px-2 py-1 rounded bg-amber-500/10 text-amber-400">Protected</span>';
-    return `<tr class="hover:bg-[#233554]/20 align-top">
-      <td class="p-3"><div class="font-bold text-white">${safe(r.title||'Untitled')}</div><div class="text-[9px] text-[#8892B0] mt-1">${safe(r.id)}</div>${issue}</td>
-      <td class="p-3"><div>L: ${safe(r.learner?.full_name||'Unknown')}</div><div class="text-[#8892B0] mt-1">T: ${safe(r.tutor?.full_name||'Unassigned')}</div></td>
-      <td class="p-3 space-y-2">${paymentBadge}<div>${transferBadge}</div><div class="text-[9px] text-[#8892B0] uppercase">${safe(r.status||'unknown')}</div></td>
-      <td class="p-3 text-right font-bold text-white">${money(r.paid)}</td><td class="p-3 text-right text-emerald-400 font-bold">${money(r.tutorShare)}</td><td class="p-3 text-right text-blue-400 font-bold">${money(r.commission)}</td>
-      <td class="p-3 text-[#8892B0]">${dateTime(r.paid_at)}</td><td class="p-3 text-[#8892B0]">${dateTime(r.tutor_paid_at)}</td>
-      <td class="p-3 font-mono text-[9px]" title="${safe(r.stripe_payment_intent_id||'')}">${shortId(r.stripe_payment_intent_id)}</td><td class="p-3 font-mono text-[9px]" title="${safe(r.stripe_transfer_id||'')}">${shortId(r.stripe_transfer_id)}</td>
-    </tr>`;
-  }).join('');
-}
-</script>
-</body>
-</html>
+const SUPABASE_URL='https://gfygaqbxhcggnkqimzrg.supabase.co',SUPABASE_ANON_KEY='sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);let rows=[];
+const money=p=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format((Number(p)||0)/100);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dt=v=>v?new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'—';
+const short=v=>v?esc(v.slice(0,12))+'…':'—';
+window.addEventListener('DOMContentLoaded',async()=>{const{data:{session}}=await db.auth.getSession();if(!session)return location.href='login.html';const{data:p}=await db.from('profiles').select('role').eq('id',session.user.id).single();if(p?.role!=='admin')return location.href='login.html';loadLedger()});
+function derive(j){const paid=Number(j.amount_paid_pence)||0,released=j.tutor_payment_released===true||!!j.stripe_transfer_id,tutor=j.tutor_payout_amount_pence==null?Math.round(paid*.9):Number(j.tutor_payout_amount_pence),commission=j.platform_commission_pence==null?paid-tutor:Number(j.platform_commission_pence),fee=j.payment_status==='paid'?Math.round(paid*.015)+20:0,net=released?commission-fee:0,issues=[];if(j.payment_status==='paid'&&!j.stripe_payment_intent_id)issues.push('Paid without Payment Intent');if(released&&!j.stripe_transfer_id)issues.push('Released without Transfer ID');if(j.status==='completed'&&j.payment_status==='paid'&&!released)issues.push('Completed but Tutor not released');if(released&&j.status!=='completed')issues.push('Released before completion');if(paid&&tutor+commission!==paid)issues.push('Split mismatch');return{...j,paid,released,tutor,commission,fee,net,protected:j.payment_status==='paid'&&!released?tutor:0,issues}}
+async function loadLedger(){document.getElementById('error').classList.add('hidden');const{data,error}=await db.from('job_requests').select('id,title,status,payment_status,amount_paid_pence,paid_at,stripe_payment_intent_id,tutor_payment_released,stripe_transfer_id,tutor_paid_at,tutor_payout_amount_pence,platform_commission_pence,learner:profiles!learner_id(full_name),tutor_profile:profiles!tutor_id(full_name)').or('payment_status.eq.paid,stripe_payment_intent_id.not.is.null,stripe_transfer_id.not.is.null').order('paid_at',{ascending:false,nullsFirst:false});if(error){const e=document.getElementById('error');e.textContent='Ledger could not load: '+error.message;e.classList.remove('hidden');return}rows=(data||[]).map(derive);metrics();render();document.getElementById('refreshed').textContent='Refreshed '+dt(new Date())}
+function metrics(){const sum=(arr,key)=>arr.reduce((a,r)=>a+(Number(r[key])||0),0),releasedRows=rows.filter(r=>r.released);gross.textContent=money(sum(rows,'paid'));protected.textContent=money(sum(rows,'protected'));released.textContent=money(sum(releasedRows,'tutor'));commission.textContent=money(sum(releasedRows,'commission'));fees.textContent=money(sum(rows,'fee'));net.textContent=money(sum(releasedRows,'net'));exceptions.textContent=rows.filter(r=>r.issues.length).length}
+function render(){const q=search.value.toLowerCase(),f=filter.value,list=rows.filter(r=>{const h=[r.title,r.learner?.full_name,r.tutor_profile?.full_name,r.stripe_payment_intent_id,r.stripe_transfer_id].join(' ').toLowerCase();return(!q||h.includes(q))&&(f==='all'||f==='protected'&&r.protected||f==='released'&&r.released||f==='exceptions'&&r.issues.length)});count.textContent=`${list.length} of ${rows.length} records`;body.innerHTML=list.length?list.map(r=>`<tr><td><b class="text-white">${esc(r.title)}</b><div class="text-[9px] text-[#8892B0]">${esc(r.id)}</div><div class="text-[9px] text-rose-400">${r.issues.map(esc).join(' · ')}</div></td><td>L: ${esc(r.learner?.full_name||'Unknown')}<br><span class="text-[#8892B0]">T: ${esc(r.tutor_profile?.full_name||'Unassigned')}</span></td><td>${esc(r.payment_status)} / ${r.released?'released':'protected'}<br><span class="text-[#8892B0]">${esc(r.status)}</span></td><td>${money(r.paid)}</td><td class="text-emerald-400">${money(r.tutor)}</td><td class="text-blue-400">${money(r.commission)}</td><td class="text-purple-400">${money(r.fee)}</td><td class="text-cyan-400">${r.released?money(r.net):'—'}</td><td>${dt(r.paid_at)}</td><td>${dt(r.tutor_paid_at)}</td><td title="${esc(r.stripe_payment_intent_id)}">${short(r.stripe_payment_intent_id)}</td><td title="${esc(r.stripe_transfer_id)}">${short(r.stripe_transfer_id)}</td></tr>`).join(''):'<tr><td colspan="12" class="p-8 text-center text-[#8892B0]">No matching records.</td></tr>'}
+</script></body></html>
