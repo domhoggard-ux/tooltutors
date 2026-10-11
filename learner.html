@@ -709,10 +709,47 @@
          buttonsHtml += `<button onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-check mr-2"></i> Complete Job</button>`;
       } else if (job.status === 'payment_review') {
          buttonsHtml += `<div class="w-full p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center text-xs font-bold text-amber-400"><i class="fa-solid fa-lock mr-2"></i>Completion and Tutor payment are paused for review.</div>`;
+      } else if (job.status === 'completed') {
+         buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="flex-1 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> Download Service Invoice</button>`;
       }
       
       actionContainer.innerHTML = buttonsHtml;
       document.getElementById('job-card-modal').classList.remove('hidden');
+    }
+
+    async function downloadInvoice(jobId, documentType, button) {
+      const originalHtml = button?.innerHTML || '';
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Preparing invoice...';
+      }
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-invoice-download-url`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({ jobId, documentType })
+        });
+        let result = {};
+        try { result = await response.json(); } catch (parseError) { console.error('Invoice response parse error:', parseError); }
+        if (!response.ok) throw new Error(result?.error || `Invoice download failed (${response.status}).`);
+        if (!result?.url) throw new Error('No secure invoice link was returned.');
+        window.location.assign(result.url);
+      } catch (error) {
+        console.error('Invoice download error:', error);
+        showToast(`Could not download the invoice: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.innerHTML = originalHtml;
+        }
+      }
     }
 
     async function cancelScheduledJob(jobId) {
