@@ -12,61 +12,31 @@
 </head>
 <body class="min-h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex items-center justify-center py-8 px-4">
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
-
-  <main class="w-full max-w-2xl">
+  <main class="w-full max-w-xl">
     <a href="apply.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#8892B0] hover:text-[#FF6B35] transition mb-5"><i class="fa-solid fa-arrow-left"></i> Back to account choice</a>
-
     <section class="bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-6 sm:p-10">
       <div class="flex items-center gap-4 mb-8">
         <img src="favicon.svg" alt="ToolTutors" class="w-12 h-12 rounded-xl shadow-lg">
         <div><p class="text-[10px] uppercase tracking-widest font-bold text-[#FF6B35]">Tutor registration</p><h1 class="text-2xl font-extrabold text-white">Share your practical skills</h1></div>
       </div>
 
-      <form id="signup-form" class="space-y-6" novalidate>
-        <section class="space-y-4">
-          <div>
-            <h2 class="text-sm font-bold text-white">Account details</h2>
-            <p class="hint">These details are used to create and secure your Tutor account.</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label for="full-name" class="label">Full name</label><input id="full-name" type="text" autocomplete="name" required maxlength="120" class="field"></div>
-            <div><label for="phone" class="label">Phone number</label><input id="phone" type="tel" autocomplete="tel" maxlength="40" class="field"></div>
-          </div>
-
-          <div><label for="email" class="label">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254" class="field"></div>
-          <div><label for="password" class="label">Password</label><input id="password" type="password" autocomplete="new-password" required minlength="8" class="field"><p class="hint">Use at least 8 characters.</p></div>
-
-          <div>
-            <label for="tutor-tier" class="label">Tutor experience level</label>
-            <select id="tutor-tier" required class="field">
-              <option value="self_taught">Self-taught enthusiast</option>
-              <option value="professional">Professional or trade-certified</option>
-            </select>
-            <p class="hint">Professional Tutors will provide relevant certification in the Tutor workspace.</p>
-          </div>
-        </section>
-
-        <section class="space-y-4 pt-5 border-t border-[#233554]">
-          <div>
-            <h2 class="text-sm font-bold text-white">Invoice address</h2>
-            <p class="hint">This address will identify you as the supplier on invoices issued on your behalf.</p>
-          </div>
-
-          <div><label for="address-line1" class="label">Address line 1</label><input id="address-line1" type="text" autocomplete="address-line1" required maxlength="150" class="field"></div>
-          <div><label for="address-line2" class="label">Address line 2 <span class="normal-case font-normal">(optional)</span></label><input id="address-line2" type="text" autocomplete="address-line2" maxlength="150" class="field"></div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label for="city" class="label">Town or city</label><input id="city" type="text" autocomplete="address-level2" required maxlength="100" class="field"></div>
-            <div><label for="postcode" class="label">Postcode</label><input id="postcode" type="text" autocomplete="postal-code" required maxlength="12" class="field uppercase"></div>
-          </div>
-        </section>
-
+      <form id="signup-form" class="space-y-5" novalidate>
+        <div><label for="full-name" class="label">Full name</label><input id="full-name" type="text" autocomplete="name" required maxlength="120" class="field"></div>
+        <div><label for="email" class="label">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254" class="field"></div>
+        <div><label for="password" class="label">Password</label><input id="password" type="password" autocomplete="new-password" required minlength="8" class="field"><p class="hint">Use at least 8 characters.</p></div>
+        <div>
+          <label for="tutor-tier" class="label">Tutor experience level</label>
+          <select id="tutor-tier" required class="field">
+            <option value="self_taught">Self-taught enthusiast</option>
+            <option value="professional">Professional or trade-certified</option>
+          </select>
+          <p class="hint">Professional Tutors will provide relevant certification in the Tutor workspace.</p>
+        </div>
         <section class="space-y-4 pt-5 border-t border-[#233554]">
           <div>
             <h2 class="text-sm font-bold text-white">VAT status</h2>
-            <p class="hint">Your offer must always be the total price payable by the Learner. If you are VAT registered, the offer must include VAT.</p>
+            <p class="hint">Your offer must always be the total price payable by the Learner. If you are VAT registered, the total must include VAT.</p>
           </div>
-
           <div>
             <label for="vat-registered" class="label">Are you VAT registered?</label>
             <select id="vat-registered" required class="field" onchange="updateVatFields()">
@@ -75,59 +45,39 @@
               <option value="yes">Yes, I am VAT registered</option>
             </select>
           </div>
-
           <div id="vat-details" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-            <div>
-              <label for="vat-number" class="label">VAT registration number</label>
-              <input id="vat-number" type="text" maxlength="30" class="field uppercase" placeholder="For example, GB123456789">
-            </div>
-            <div>
-              <label for="vat-rate" class="label">VAT rate used for offers</label>
-              <select id="vat-rate" class="field">
-                <option value="">Select VAT rate</option>
-                <option value="20">20% standard rate</option>
-                <option value="5">5% reduced rate</option>
-                <option value="0">0% zero rate</option>
-              </select>
-            </div>
-            <p class="sm:col-span-2 text-[10px] text-blue-200 leading-relaxed">You are responsible for selecting the correct VAT treatment for your services and keeping your VAT details up to date.</p>
+            <div><label for="vat-number" class="label">VAT registration number</label><input id="vat-number" type="text" maxlength="30" class="field uppercase" placeholder="For example, GB123456789"></div>
+            <div><label for="vat-rate" class="label">VAT rate used for offers</label><select id="vat-rate" class="field"><option value="">Select VAT rate</option><option value="20">20% standard rate</option><option value="5">5% reduced rate</option><option value="0">0% zero rate</option></select></div>
+            <p class="sm:col-span-2 text-[10px] text-blue-200 leading-relaxed">You are responsible for selecting the correct VAT treatment and keeping your VAT details up to date.</p>
           </div>
         </section>
-
         <div class="p-4 rounded-xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-xs text-[#E6F1FF] leading-relaxed">
           <i class="fa-solid fa-shield-halved text-[#FF6B35] mr-2"></i>Identity and payout verification will be completed securely during the Stripe onboarding stage. ToolTutors will separately request marketplace documents such as a profile picture and DBS certificate.
         </div>
-
         <label class="flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] cursor-pointer">
           <input id="invoice-authority" type="checkbox" required class="mt-0.5 h-4 w-4 accent-[#FF6B35]">
-          <span class="text-xs text-[#8892B0] leading-relaxed">I authorise Tool Tutors to issue invoices on my behalf for eligible completed jobs. I understand that I remain the supplier, must keep my identity and VAT details accurate, and must not issue a duplicate invoice for the same transaction.</span>
+          <span class="text-xs text-[#8892B0] leading-relaxed">I authorise Tool Tutors to issue invoices on my behalf for eligible completed jobs. I understand that I remain the supplier, must keep my VAT details accurate, and must not issue a duplicate invoice for the same transaction.</span>
         </label>
-
         <label class="flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] cursor-pointer">
           <input id="pricing-confirmation" type="checkbox" required class="mt-0.5 h-4 w-4 accent-[#FF6B35]">
           <span class="text-xs text-[#8892B0] leading-relaxed">I confirm that every offer I submit will be the total amount payable by the Learner and, if I am VAT registered, that total will include any VAT properly chargeable.</span>
         </label>
-
         <label class="flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] cursor-pointer">
           <input id="terms-agreement" type="checkbox" required class="mt-0.5 h-4 w-4 accent-[#FF6B35]">
           <span class="text-xs text-[#8892B0] leading-relaxed">I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>. I understand that ToolTutors deducts a 10% commission from completed job payouts.</span>
         </label>
-
         <div id="error-message" role="alert" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-400"></div>
         <button id="submit-btn" type="submit" class="w-full py-3.5 rounded-xl bg-[#FF6B35] hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm transition shadow-lg">Create Tutor Account</button>
       </form>
-
       <p class="text-center text-xs text-[#8892B0] mt-6">Already registered? <a href="login.html" class="text-[#FF6B35] font-bold hover:underline">Sign in</a></p>
     </section>
   </main>
-
   <style>.label{display:block;font-size:.75rem;font-weight:600;text-transform:uppercase;color:#8892B0;margin-bottom:.35rem}.field{width:100%;padding:.7rem 1rem;border-radius:.75rem;background:#0A192F;border:1px solid #233554;color:white;font-size:.875rem;outline:none}.field:focus{border-color:#FF6B35}.hint{font-size:.625rem;color:#8892B0;margin-top:.35rem}</style>
-
   <script>
     const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
-    const INVOICE_AUTHORITY_VERSION = '2026-10-11';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const INVOICE_AUTHORITY_VERSION = '2026-10-11';
     let submitting = false;
 
     document.getElementById('signup-form').addEventListener('submit', handleSignup);
@@ -137,21 +87,15 @@
       const details = document.getElementById('vat-details');
       const vatNumber = document.getElementById('vat-number');
       const vatRate = document.getElementById('vat-rate');
-
       details.classList.toggle('hidden', !registered);
       vatNumber.required = registered;
       vatRate.required = registered;
-
-      if (!registered) {
-        vatNumber.value = '';
-        vatRate.value = '';
-      }
+      if (!registered) { vatNumber.value = ''; vatRate.value = ''; }
     }
 
     async function handleSignup(event) {
       event.preventDefault();
       if (submitting) return;
-
       const form = event.currentTarget;
       updateVatFields();
       if (!form.reportValidity()) return;
@@ -162,7 +106,6 @@
       const vatRegistered = document.getElementById('vat-registered').value === 'yes';
       const vatNumber = document.getElementById('vat-number').value.trim().toUpperCase();
       const vatRateValue = document.getElementById('vat-rate').value;
-
       if (password.length < 8) return showError('Your password must contain at least 8 characters.');
       if (vatRegistered && !vatNumber) return showError('Enter your VAT registration number.');
       if (vatRegistered && vatRateValue === '') return showError('Select the VAT rate used for your offers.');
@@ -175,11 +118,6 @@
       try {
         const metadata = {
           full_name: document.getElementById('full-name').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
-          address_line1: document.getElementById('address-line1').value.trim(),
-          address_line2: document.getElementById('address-line2').value.trim(),
-          city: document.getElementById('city').value.trim(),
-          postcode: document.getElementById('postcode').value.trim().toUpperCase(),
           role: 'tutor',
           tutor_tier: document.getElementById('tutor-tier').value,
           vat_registered: vatRegistered,
@@ -199,7 +137,6 @@
         } else {
           showToast('Account created. Check your email to confirm your address, then sign in.');
           form.reset();
-          updateVatFields();
           setTimeout(() => { window.location.href = 'login.html'; }, 2500);
         }
       } catch (error) {
