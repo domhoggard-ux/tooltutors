@@ -139,8 +139,8 @@
     </div>
 
     <!-- JOB CARD MODAL -->
-    <div id="job-card-modal" class="absolute inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
+    <div id="job-card-modal" class="fixed inset-0 z-[100] hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl p-6 relative my-auto">
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
         <div class="flex justify-between items-center mb-4 pb-4 border-b border-[#233554]">
           <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clipboard-check text-[#FF6B35] mr-2"></i>Official Job Card</h3>
@@ -165,7 +165,7 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
         
-        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex gap-2">
+        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554]">
            <!-- Buttons dynamically injected here -->
         </div>
       </div>
@@ -516,8 +516,9 @@
               } else if (job.status === 'cancelled' && job.payment_status === 'refunded') {
                 action = `<div class="mt-4 pt-4 border-t border-[#233554]"><div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center text-xs font-bold text-blue-400"><i class="fa-solid fa-rotate-left mr-2"></i>Cancelled and refunded to the original payment method.</div></div>`;
               } else if (job.status === 'completed') {
-                action = `<div class="mt-4 pt-4 border-t border-[#233554] flex gap-2">
-                            <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
+                action = `<div class="mt-4 pt-4 border-t border-[#233554] grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button onclick="openJobCard('${job.id}')" class="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold rounded-lg transition text-xs shadow-lg border border-emerald-500/50"><i class="fa-solid fa-check-double mr-1"></i> View Completed Job</button>
+                            <button onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 font-bold rounded-lg transition text-xs shadow-lg border border-blue-500/40"><i class="fa-solid fa-file-invoice mr-1"></i> Download Invoice</button>
                           </div>`;
               }
             }
@@ -699,14 +700,19 @@
       const actionContainer = document.getElementById('card-action-buttons');
       let buttonsHtml = '';
 
-      if (job.status !== 'open' && job.status !== 'cancelled' && job.status !== 'completed') {
+      if (!['open', 'cancelled', 'completed', 'scheduled'].includes(job.status)) {
         buttonsHtml += `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedTutorsMap[job.tutor_id] || 'Tutor').replace(/'/g,"\\'")}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Open Chat</button>`;
       }
       
       if (job.status === 'scheduled') {
-         buttonsHtml += `<button onclick="cancelScheduledJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> Cancel & Refund</button>`;
-         buttonsHtml += `<button onclick="openIssueModal('${job.id}')" class="flex-1 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Raise an Issue</button>`;
-         buttonsHtml += `<button onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-check mr-2"></i> Complete Job</button>`;
+         buttonsHtml += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+           <button type="button" onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedTutorsMap[job.tutor_id] || 'Tutor').replace(/'/g,"\\'")}', '${job.tutor_id}')" class="w-full py-3 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-xl transition text-sm shadow-lg flex items-center justify-center"><i class="fa-solid fa-comments mr-2" aria-hidden="true"></i> Open Chat</button>
+           <button type="button" onclick="openReviewModal('${job.id}', '${job.tutor_id}')" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition text-sm shadow-lg flex items-center justify-center"><i class="fa-solid fa-check mr-2" aria-hidden="true"></i> Complete Job</button>
+         </div>
+         <div class="grid grid-cols-2 gap-2 mt-3">
+           <button type="button" onclick="cancelScheduledJob('${job.id}')" class="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold rounded-lg transition text-[11px] flex items-center justify-center"><i class="fa-solid fa-ban mr-1.5" aria-hidden="true"></i> Cancel & Refund</button>
+           <button type="button" onclick="openIssueModal('${job.id}')" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold rounded-lg transition text-[11px] flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i> Raise an Issue</button>
+         </div>`;
       } else if (job.status === 'payment_review') {
          buttonsHtml += `<div class="w-full p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-center text-xs font-bold text-amber-400"><i class="fa-solid fa-lock mr-2"></i>Completion and Tutor payment are paused for review.</div>`;
       } else if (job.status === 'completed') {
