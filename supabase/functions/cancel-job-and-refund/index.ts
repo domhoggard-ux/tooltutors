@@ -120,13 +120,12 @@ Deno.serve(async (req: Request) => {
     const updatePayload = role === "tutor"
       ? {
           status: "open",
-          payment_status: null,
+          payment_status: "refunded",
           tutor_id: null,
           appointment_time: null,
           required_tools: null,
           amount_paid_pence: null,
           gross_amount_pence: null,
-          payment_currency: null,
           paid_at: null,
           stripe_payment_intent_id: null,
           stripe_checkout_session_id: null,
