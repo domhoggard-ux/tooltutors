@@ -235,7 +235,7 @@
           <div><p class="text-[10px] text-[#8892B0] uppercase font-bold">Project Details</p><p id="card-desc" class="text-xs text-[#E6F1FF] leading-relaxed"></p></div>
         </div>
         
-        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex flex-wrap gap-2">
+        <div id="card-action-buttons" class="mt-6 pt-4 border-t border-[#233554] flex flex-wrap items-center justify-center gap-3">
            <!-- Dynamic Buttons go here -->
         </div>
       </div>
@@ -1041,26 +1041,27 @@
       badge.textContent = job.status.replace('_', ' ');
       
       const actionContainer = document.getElementById('card-action-buttons');
-      let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Chat</button>`;
-      
+      const iconButtonClass = 'group relative w-12 h-12 shrink-0 inline-flex items-center justify-center rounded-xl border transition duration-200 focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/60 disabled:opacity-60 disabled:cursor-not-allowed';
+      let buttonsHtml = `<button type="button" onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="${iconButtonClass} bg-[#233554] hover:bg-[#FF6B35] border-[#233554] hover:border-[#FF6B35] text-white" title="Chat" aria-label="Chat"><i class="fa-solid fa-comments text-base" aria-hidden="true"></i></button>`;
+
       if (job.status === 'completed') {
-        buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="flex-1 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> Sales Invoice</button>`;
-        buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tooltutors_commission_invoice', this)" class="flex-1 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-receipt mr-2"></i> Commission Invoice</button>`;
-        buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
+        buttonsHtml += `<button type="button" onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="${iconButtonClass} bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/40 text-emerald-400" title="Sales Invoice" aria-label="Sales Invoice"><i class="fa-solid fa-file-invoice text-base" aria-hidden="true"></i></button>`;
+        buttonsHtml += `<button type="button" onclick="downloadInvoice('${job.id}', 'tooltutors_commission_invoice', this)" class="${iconButtonClass} bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/40 text-blue-400" title="Commission Invoice" aria-label="Commission Invoice"><i class="fa-solid fa-percent text-base" aria-hidden="true"></i></button>`;
+        buttonsHtml += `<button type="button" id="card-archive-btn" onclick="archiveJob('${job.id}')" class="${iconButtonClass} bg-[#233554] hover:bg-[#FF6B35] border-[#233554] hover:border-[#FF6B35] text-white" title="Archive Job" aria-label="Archive Job"><i class="fa-solid fa-box-archive text-base" aria-hidden="true"></i></button>`;
       } else if (job.status === 'cancelled') {
-        buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
+        buttonsHtml += `<button type="button" id="card-archive-btn" onclick="archiveJob('${job.id}')" class="${iconButtonClass} bg-[#233554] hover:bg-[#FF6B35] border-[#233554] hover:border-[#FF6B35] text-white" title="Archive Job" aria-label="Archive Job"><i class="fa-solid fa-box-archive text-base" aria-hidden="true"></i></button>`;
       } else {
         const cancelLabel = job.status === 'scheduled' ? 'Cancel & Refund Learner' : 'Cancel Job';
-        buttonsHtml += `<button id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="flex-1 py-2.5 bg-rose-500/20 hover:bg-rose-500/40 text-rose-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-ban mr-2"></i> ${cancelLabel}</button>`;
+        buttonsHtml += `<button type="button" id="card-cancel-btn" onclick="cancelJob('${job.id}')" class="${iconButtonClass} bg-rose-500/20 hover:bg-rose-500/40 border-rose-500/30 text-rose-400" title="${cancelLabel}" aria-label="${cancelLabel}"><i class="fa-solid fa-ban text-base" aria-hidden="true"></i></button>`;
       }
-      
+
       actionContainer.innerHTML = buttonsHtml;
       document.getElementById('job-card-modal').classList.remove('hidden');
     }
 
     async function downloadInvoice(jobId, documentType, button) {
       const originalHtml = button?.innerHTML || '';
-      if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Preparing invoice...'; }
+      if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-base" aria-hidden="true"></i>'; }
       try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError) throw sessionError;
