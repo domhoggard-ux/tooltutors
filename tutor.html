@@ -87,11 +87,6 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Profile Picture</label><input type="file" id="tutor-profile-pic" accept="image/*" required class="text-xs text-[#8892B0]"></div>
           
-          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl">
-            <label class="block text-xs font-semibold text-white mb-2">VAT Number <span class="text-[#8892B0] font-normal">(Optional)</span></label>
-            <input type="text" id="tutor-vat-number" placeholder="e.g. GB123456789" class="w-full px-3 py-2 rounded-lg bg-[#112240] border border-[#233554] text-white text-xs focus:outline-none focus:border-[#FF6B35]">
-          </div>
-
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           
           <!-- PROFESSIONAL CERTIFICATION -->
@@ -640,7 +635,6 @@
         const picFile = document.getElementById('tutor-profile-pic').files[0];
         const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
         const proFile = document.getElementById('tutor-pro-doc')?.files[0];
-        const vatNumber = document.getElementById('tutor-vat-number').value.trim();
 
         let picUrl = currentProfile?.profile_picture_url || null;
         let dbsPath = currentProfile?.dbs_document_url || null;
@@ -674,8 +668,7 @@
           skills: skills,
           profile_picture_url: picUrl,
           dbs_document_url: dbsPath,
-          trade_certificate_url: proPath,
-          vat_number: vatNumber || null
+          trade_certificate_url: proPath
         }).eq('id', currentProfile.id);
         
         if (dbErr) throw dbErr;
