@@ -35,6 +35,7 @@ type InvoiceParty = {
 };
 
 type PdfInvoice = {
+  documentType: "tutor_learner_invoice" | "tooltutors_commission_invoice";
   title: string;
   documentNumber: string;
   invoiceDate: string;
@@ -180,15 +181,19 @@ async function createInvoicePdf(invoice: PdfInvoice): Promise<Uint8Array> {
   });
 
   page.drawLine({ start: { x: 332, y: 382 }, end: { x: 553, y: 382 }, thickness: 1, color: rgb(0.82, 0.84, 0.88) });
-  const totals = [
-    ["Net amount", formatMoney(invoice.netPence, invoice.currency)],
-    [invoice.vatRate === null ? "VAT" : `VAT (${invoice.vatRate.toFixed(2).replace(".00", "")}%)`, formatMoney(invoice.vatPence, invoice.currency)],
-    ["Total", formatMoney(invoice.grossPence, invoice.currency)],
-  ];
+  const isCommissionInvoice = invoice.documentType === "tooltutors_commission_invoice";
+  const totals = isCommissionInvoice
+    ? [["Total", formatMoney(invoice.grossPence, invoice.currency)]]
+    : [
+        ["Net amount", formatMoney(invoice.netPence, invoice.currency)],
+        [invoice.vatRate === null ? "VAT" : `VAT (${invoice.vatRate.toFixed(2).replace(".00", "")}%)`, formatMoney(invoice.vatPence, invoice.currency)],
+        ["Total", formatMoney(invoice.grossPence, invoice.currency)],
+      ];
   let totalsY = 358;
   totals.forEach(([label, amount], index) => {
-    page.drawText(label, { x: 354, y: totalsY, size: index === 2 ? 11 : 9, font: index === 2 ? bold : regular, color: index === 2 ? navy : muted });
-    page.drawText(amount, { x: 485, y: totalsY, size: index === 2 ? 11 : 9, font: bold, color: index === 2 ? orange : navy });
+    const isTotal = isCommissionInvoice || index === totals.length - 1;
+    page.drawText(label, { x: 354, y: totalsY, size: isTotal ? 11 : 9, font: isTotal ? bold : regular, color: isTotal ? navy : muted });
+    page.drawText(amount, { x: 485, y: totalsY, size: isTotal ? 11 : 9, font: bold, color: isTotal ? orange : navy });
     totalsY -= 24;
   });
 
@@ -333,6 +338,7 @@ async function ensureInvoiceDocument(
 
   try {
     const pdfBytes = await createInvoicePdf({
+      documentType: params.documentType,
       title: params.title,
       documentNumber: row.document_number,
       invoiceDate: params.completionDate,
