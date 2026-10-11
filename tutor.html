@@ -1044,7 +1044,7 @@
       let buttonsHtml = `<button onclick="openChat('${job.id}', '${job.title.replace(/'/g,"\\'")}', '${(loadedLearnersMap[job.learner_id] || 'Learner').replace(/'/g,"\\'")}', '${job.learner_id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-comments mr-2"></i> Chat</button>`;
       
       if (job.status === 'completed') {
-        buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="flex-1 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> Learner Invoice</button>`;
+        buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tutor_learner_invoice', this)" class="flex-1 py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> Sales Invoice</button>`;
         buttonsHtml += `<button onclick="downloadInvoice('${job.id}', 'tooltutors_commission_invoice', this)" class="flex-1 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/40 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-receipt mr-2"></i> Commission Invoice</button>`;
         buttonsHtml += `<button id="card-archive-btn" onclick="archiveJob('${job.id}')" class="flex-1 py-2.5 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-box-archive mr-2"></i> Archive Job</button>`;
       } else if (job.status === 'cancelled') {
@@ -1060,21 +1060,14 @@
 
     async function downloadInvoice(jobId, documentType, button) {
       const originalHtml = button?.innerHTML || '';
-      if (button) {
-        button.disabled = true;
-        button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Preparing invoice...';
-      }
+      if (button) { button.disabled = true; button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Preparing invoice...'; }
       try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
         const response = await fetch(`${SUPABASE_URL}/functions/v1/get-invoice-download-url`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': SUPABASE_ANON_KEY
-          },
+          headers: {'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`,'apikey':SUPABASE_ANON_KEY},
           body: JSON.stringify({ jobId, documentType })
         });
         let result = {};
@@ -1086,10 +1079,7 @@
         console.error('Invoice download error:', error);
         showToast(`Could not download the invoice: ${error.message || 'Unknown error'}`, 'error');
       } finally {
-        if (button) {
-          button.disabled = false;
-          button.innerHTML = originalHtml;
-        }
+        if (button) { button.disabled = false; button.innerHTML = originalHtml; }
       }
     }
 
