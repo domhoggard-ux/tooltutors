@@ -19,7 +19,6 @@
         <img src="favicon.svg" alt="ToolTutors" class="w-12 h-12 rounded-xl shadow-lg">
         <div><p class="text-[10px] uppercase tracking-widest font-bold text-[#FF6B35]">Tutor registration</p><h1 class="text-2xl font-extrabold text-white">Share your practical skills</h1></div>
       </div>
-
       <form id="signup-form" class="space-y-5" novalidate>
         <div><label for="full-name" class="label">Full name</label><input id="full-name" type="text" autocomplete="name" required maxlength="120" class="field"></div>
         <div><label for="email" class="label">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254" class="field"></div>
@@ -37,7 +36,7 @@
         </div>
         <label class="flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] cursor-pointer">
           <input id="terms-agreement" type="checkbox" required class="mt-0.5 h-4 w-4 accent-[#FF6B35]">
-          <span class="text-xs text-[#8892B0] leading-relaxed">I agree to the <a href="terms.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>. I understand that ToolTutors deducts a 10% commission from completed job payouts.</span>
+          <span class="text-xs text-[#8892B0] leading-relaxed">I agree to the <a href="terms.html" target="_blank" rel="noopener" class="text-[#FF6B35] font-bold hover:underline">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener" class="text-[#FF6B35] font-bold hover:underline">Privacy Policy</a>. I understand that ToolTutors acts as an agent, deducts a 10% commission from completed job payouts, and may create invoices on my behalf in accordance with the Terms of Service.</span>
         </label>
         <div id="error-message" role="alert" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-400"></div>
         <button id="submit-btn" type="submit" class="w-full py-3.5 rounded-xl bg-[#FF6B35] hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm transition shadow-lg">Create Tutor Account</button>
@@ -51,36 +50,30 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let submitting = false;
-
     document.getElementById('signup-form').addEventListener('submit', handleSignup);
-
     async function handleSignup(event) {
       event.preventDefault();
       if (submitting) return;
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
-
       const button = document.getElementById('submit-btn');
       const email = document.getElementById('email').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
       if (password.length < 8) return showError('Your password must contain at least 8 characters.');
-
       submitting = true;
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Creating account...';
       hideError();
-
       try {
         const metadata = {
           full_name: document.getElementById('full-name').value.trim(),
           role: 'tutor',
           tutor_tier: document.getElementById('tutor-tier').value,
-          terms_accepted: document.getElementById('terms-agreement').checked
+          terms_accepted: document.getElementById('terms-agreement').checked,
+          invoicing_authority_accepted: document.getElementById('terms-agreement').checked
         };
-
         const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: metadata } });
         if (error) throw error;
-
         if (data.session) {
           window.location.href = 'tutor.html';
         } else {
@@ -95,7 +88,6 @@
         button.textContent = 'Create Tutor Account';
       }
     }
-
     function showError(message) { const box = document.getElementById('error-message'); box.textContent = message; box.classList.remove('hidden'); }
     function hideError() { document.getElementById('error-message').classList.add('hidden'); }
     function showToast(message) { const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className='p-4 rounded-xl bg-[#112240] border border-emerald-500/40 text-emerald-400 text-sm font-bold shadow-2xl'; t.textContent=message; c.appendChild(t); }
