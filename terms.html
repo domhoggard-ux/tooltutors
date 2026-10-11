@@ -10,7 +10,6 @@
   <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
 </head>
 <body class="bg-[#0A192F] text-[#E6F1FF] font-sans antialiased min-h-screen flex flex-col">
-
   <header class="bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-4 sm:px-6 sticky top-0 z-40">
     <div class="max-w-4xl mx-auto flex items-center justify-between">
       <div class="flex items-center space-x-2">
@@ -20,21 +19,17 @@
       <button onclick="window.close()" class="text-xs text-[#8892B0] hover:text-white transition"><i class="fa-solid fa-xmark mr-1"></i> Close</button>
     </div>
   </header>
-
   <main class="flex-1 max-w-4xl mx-auto p-6 sm:p-8 space-y-8">
     <div class="border-b border-[#233554] pb-6">
       <h1 class="text-3xl font-extrabold text-white mb-2">Terms and Conditions</h1>
-      <p class="text-sm text-[#8892B0]">Last Updated: October 2026</p>
+      <p class="text-sm text-[#8892B0]">Last Updated: 11 October 2026</p>
     </div>
-
     <div class="space-y-8 text-sm leading-relaxed text-[#8892B0]">
-      
       <section class="space-y-3">
         <h2 class="text-lg font-bold text-white">1. Introduction and Platform Role</h2>
         <p>Welcome to ToolTutors. ToolTutors operates strictly as an introductory platform connecting individuals seeking DIY assistance ("Learners") with individuals offering guidance or contracting services ("Tutors").</p>
         <p>ToolTutors is not a contracting agency, an employer, or a trades service provider. We do not employ Tutors, nor do we guarantee the outcome, safety, or quality of the engagements formed through the platform. By using ToolTutors, you acknowledge that any agreement formed is solely between the Learner and the Tutor.</p>
       </section>
-
       <section class="space-y-3 p-6 bg-[#112240] rounded-xl border border-[#FF6B35]/30">
         <h2 class="text-lg font-bold text-[#FF6B35]"><i class="fa-solid fa-chalkboard-user mr-2"></i>2. "Teach Me" Engagements (Peer Mentorship)</h2>
         <p>If a Learner selects a "Teach Me" engagement, the service provided by the Tutor is strictly educational and advisory (peer mentorship).</p>
@@ -44,17 +39,15 @@
           <li><strong>Waiver of Claims:</strong> The Learner agrees to hold both ToolTutors and the attending Tutor entirely harmless from any property damage, physical injury, or code compliance failures resulting from a "Teach Me" session.</li>
         </ul>
       </section>
-
       <section class="space-y-3 p-6 bg-[#112240] rounded-xl border border-emerald-500/30">
         <h2 class="text-lg font-bold text-emerald-400"><i class="fa-solid fa-toolbox mr-2"></i>3. "Complete For Me" Engagements (Contracted Services)</h2>
         <p>If a Learner selects a "Complete For Me" engagement, the service is limited exclusively to Tutors verified as "Professionals" by the platform.</p>
         <ul class="list-disc pl-5 space-y-2 text-[#E6F1FF]">
           <li><strong>Independent Contractor Status:</strong> The Professional Tutor operates as an independent contractor, not an employee of ToolTutors.</li>
           <li><strong>Insurance and Liability:</strong> The Professional Tutor is solely responsible for maintaining appropriate public liability insurance. Any claims regarding defective workmanship, property damage, or injury must be directed entirely to the Professional Tutor, not ToolTutors.</li>
-          <li><strong>Regulatory Compliance:</strong> The Professional Tutor warrants that they hold the necessary licenses or certifications required by UK law to perform the requested tradeswork (e.g., Part P for electrical, Gas Safe for plumbing/heating).</li>
+          <li><strong>Regulatory Compliance:</strong> The Professional Tutor warrants that they hold the necessary licences or certifications required by UK law to perform the requested tradeswork (for example, Part P for electrical work or Gas Safe registration where legally required).</li>
         </ul>
       </section>
-
       <section class="space-y-4 p-6 bg-[#112240] rounded-xl border border-blue-500/30">
         <h2 class="text-lg font-bold text-blue-400"><i class="fa-brands fa-stripe mr-2"></i>4. Payments, Tutor Payments and Platform Commission</h2>
         <p>Payments made through ToolTutors are processed securely by Stripe. ToolTutors does not receive or store full payment-card details.</p>
@@ -67,39 +60,50 @@
           <li><strong>Payment records:</strong> ToolTutors may retain payment references, amounts, payment status, transfer references and timestamps for reconciliation, fraud prevention, support and legal compliance.</li>
         </ul>
       </section>
-
+      <section class="space-y-4 p-6 bg-[#112240] rounded-xl border border-purple-500/30">
+        <h2 class="text-lg font-bold text-purple-400"><i class="fa-solid fa-file-invoice mr-2"></i>5. Tutor Pricing, VAT and Invoices</h2>
+        <p>The Tutor is the supplier of the mentoring session or contracted service provided to the Learner. ToolTutors acts as an agent and may prepare and provide transaction documents on the Tutor's behalf.</p>
+        <ul class="list-disc pl-5 space-y-2 text-[#E6F1FF]">
+          <li><strong>Consumer-facing offer price:</strong> Every offer submitted by a Tutor must state the total amount payable by the Learner for the agreed service.</li>
+          <li><strong>VAT-inclusive pricing:</strong> If a Tutor is registered for VAT, the offer price submitted to the Learner must include any VAT properly chargeable by that Tutor.</li>
+          <li><strong>VAT responsibility:</strong> The Tutor is solely responsible for declaring their correct VAT-registration status, supplying an accurate VAT-registration number, selecting the applicable VAT rate and meeting their own tax and accounting obligations.</li>
+          <li><strong>Changes to VAT status:</strong> A Tutor must promptly update ToolTutors if they become VAT registered, cease to be VAT registered, change their VAT-registration number or need to change the VAT treatment applied to their services.</li>
+          <li><strong>Invoice authority:</strong> The Tutor authorises ToolTutors to generate and make available an invoice issued on the Tutor's behalf when an eligible job is completed. The Tutor remains the supplier identified on that invoice.</li>
+          <li><strong>No duplicate invoice:</strong> A Tutor must not issue a separate duplicate invoice for a transaction where ToolTutors has already issued an invoice on the Tutor's behalf. If a correction is required, the Tutor must contact ToolTutors.</li>
+          <li><strong>VAT-registered Tutors:</strong> Where the Tutor has declared that they are VAT registered, the invoice may display the Tutor's VAT-registration number and a breakdown of the net amount, applicable VAT rate, VAT amount and total amount paid.</li>
+          <li><strong>Non-VAT-registered Tutors:</strong> Where the Tutor has declared that they are not VAT registered, the invoice will state that the Tutor is not VAT registered and that no VAT has been charged.</li>
+          <li><strong>Platform commission invoice:</strong> ToolTutors may issue the Tutor with a separate invoice or commission document recording the 10% platform commission retained from the Learner payment.</li>
+          <li><strong>ToolTutors VAT status:</strong> Tool Tutors is not currently registered for VAT. No VAT is therefore added to the Tool Tutors platform commission while this remains the case.</li>
+          <li><strong>Accuracy of documents:</strong> Tutors must check invoices and commission documents made available through the platform and promptly report any incorrect identity, address, VAT or financial information.</li>
+          <li><strong>Electronic records:</strong> Invoices and commission documents may be created, retained and supplied electronically through the platform.</li>
+        </ul>
+      </section>
       <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">5. Cancellations, Refunds and Payment Reversals</h2>
+        <h2 class="text-lg font-bold text-white">6. Cancellations, Refunds and Payment Reversals</h2>
         <p>If a Tutor cancels before the scheduled appointment, ToolTutors may return the job to the marketplace, offer the Learner an alternative Tutor, or arrange an appropriate refund.</p>
         <p>If a Learner requests cancellation, any refund or cancellation charge will depend on the circumstances, the stage of the engagement, work already performed, costs already incurred, these Terms and any statutory rights that apply. No cancellation fee will be imposed where doing so would conflict with applicable law.</p>
         <p>ToolTutors may pause a Tutor payment while investigating a cancellation, suspected fraud, duplicate payment, chargeback, refund request, safety issue or dispute. If a Tutor payment has already been made, ToolTutors may seek recovery or reversal where permitted by Stripe, these Terms and applicable law.</p>
       </section>
-
       <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">6. Completion and Tutor Payment Release</h2>
+        <h2 class="text-lg font-bold text-white">7. Completion and Tutor Payment Release</h2>
         <p>The Learner should mark a job as completed only when the agreed session or service has taken place and the Learner is ready for the Tutor payment to be released.</p>
         <p>Submitting completion and a review may trigger the Tutor payment process. Once a transfer has been initiated, reversal might not be immediate or available. Learners should contact ToolTutors promptly before marking completion if there is an unresolved issue.</p>
         <p>ToolTutors may delay or withhold release where reasonably necessary to investigate a dispute, suspected misuse, legal or regulatory requirement, payment-provider restriction, negative balance, refund or chargeback.</p>
       </section>
-
       <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">7. Refunds, Chargebacks and Disputes</h2>
+        <h2 class="text-lg font-bold text-white">8. Refunds, Chargebacks and Disputes</h2>
         <p>In the event of a concern regarding payment, attendance, quality, safety, work or advice, the Learner and Tutor should first attempt to resolve the matter directly and should preserve relevant messages, photographs and job details.</p>
         <p>ToolTutors may review platform records, pause a payment, facilitate communication, request further information, arrange a refund or transfer reversal where available, or take account action. ToolTutors does not guarantee a particular outcome and does not replace any statutory remedy or right available to a user.</p>
         <p>A user must not knowingly submit a false, duplicate or misleading refund request, payment dispute or chargeback. ToolTutors may suspend accounts or recover resulting costs where permitted by law.</p>
       </section>
-
       <section class="space-y-3">
-        <h2 class="text-lg font-bold text-white">8. Statutory Rights</h2>
+        <h2 class="text-lg font-bold text-white">9. Statutory Rights</h2>
         <p>Nothing in these Terms excludes or restricts rights or remedies that cannot lawfully be excluded or restricted. Where applicable consumer law provides cancellation, refund, service-quality or other protections, those protections take priority over any conflicting wording in these Terms.</p>
       </section>
-      
     </div>
-    
     <div class="pt-8 pb-12 text-center">
       <button onclick="window.close()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg">I Understand, Close Window</button>
     </div>
   </main>
-
 </body>
 </html>
