@@ -27,34 +27,44 @@
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-4 sm:px-8">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-
-      <div class="flex items-center space-x-3">
-  <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto">
-</div>
-
-      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
-        <a href="index.html" class="text-[#8892B0] hover:text-white transition">Home</a>
-        <a href="about.html" class="px-4 py-2 rounded-xl text-sm font-semibold text-[#FF6B35] bg-[#FF6B35]/10">About</a>
-        <a href="apply.html" class="text-[#8892B0] hover:text-white transition">Join as Tutor</a>
-      </nav>
-
-      <div class="flex items-center space-x-3">
-        <a href="login.html"
-          class="px-4 py-2 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35] transition flex items-center space-x-2">
-          <i class="fa-solid fa-user text-[#FF6B35]"></i>
-          <span>Sign In</span>
+  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-20 flex items-center justify-between">
+        <a href="index.html" class="flex items-center flex-shrink-0" aria-label="ToolTutors homepage">
+          <img src="logo.svg" alt="ToolTutors" class="h-14 sm:h-16 w-auto">
         </a>
 
-        <a href="apply.html"
-          class="hidden sm:inline-block px-4 py-2 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">
-          Get Started
-        </a>
+        <nav class="hidden md:flex items-center gap-2" aria-label="Main navigation">
+          <a href="index.html" class="px-4 py-2 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition">Home</a>
+          <a href="about.html" class="px-4 py-2 rounded-xl text-sm font-semibold text-[#FF6B35] bg-[#FF6B35]/10">About</a>
+          <a href="apply.html" class="px-4 py-2 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition">Join as Tutor</a>
+        </nav>
+
+        <div class="hidden md:flex items-center gap-3">
+          <a href="login.html" class="px-4 py-2.5 rounded-xl text-xs font-bold border border-[#233554] bg-[#112240] text-white hover:border-[#FF6B35]/70 hover:bg-[#172A45] transition">
+            <i class="fa-solid fa-arrow-right-to-bracket text-[#FF6B35] mr-2"></i>Sign In
+          </a>
+          <a href="apply.html" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#FF6B35] hover:bg-[#E05A2B] text-white transition shadow-lg">Get Started</a>
+        </div>
+
+        <button type="button" id="mobile-menu-button" class="md:hidden w-11 h-11 rounded-xl bg-[#112240] border border-[#233554] text-white hover:border-[#FF6B35] transition" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+          <i id="mobile-menu-icon" class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+      <div id="mobile-menu" class="hidden md:hidden pb-5 border-t border-[#233554]">
+        <nav class="pt-4 flex flex-col gap-2" aria-label="Mobile navigation">
+          <a href="index.html" class="mobile-menu-link px-4 py-3 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"><i class="fa-solid fa-house w-6"></i>Home</a>
+          <a href="about.html" class="mobile-menu-link px-4 py-3 rounded-xl text-sm font-bold text-[#FF6B35] bg-[#FF6B35]/10"><i class="fa-solid fa-circle-info w-6"></i>About</a>
+          <a href="apply.html" class="mobile-menu-link px-4 py-3 rounded-xl text-sm font-semibold text-[#8892B0] hover:text-white hover:bg-[#112240] transition"><i class="fa-solid fa-screwdriver-wrench w-6"></i>Join as Tutor</a>
+          <div class="grid grid-cols-2 gap-3 pt-3">
+            <a href="login.html" class="px-4 py-3 rounded-xl text-xs font-bold text-center border border-[#233554] bg-[#112240] text-white">Sign In</a>
+            <a href="apply.html" class="px-4 py-3 rounded-xl text-xs font-bold text-center bg-[#FF6B35] text-white">Get Started</a>
+          </div>
+        </nav>
       </div>
     </div>
   </header>
-
   <!-- MAIN -->
   <main class="flex-1">
 
@@ -490,6 +500,27 @@
 
   <script>
     document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+    if (mobileMenuButton && mobileMenu && mobileMenuIcon) {
+      mobileMenuButton.addEventListener('click', () => {
+        const isOpening = mobileMenu.classList.contains('hidden');
+        mobileMenu.classList.toggle('hidden');
+        mobileMenuButton.setAttribute('aria-expanded', String(isOpening));
+        mobileMenuIcon.classList.toggle('fa-bars', !isOpening);
+        mobileMenuIcon.classList.toggle('fa-xmark', isOpening);
+      });
+      document.querySelectorAll('.mobile-menu-link').forEach((link) => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+          mobileMenuButton.setAttribute('aria-expanded', 'false');
+          mobileMenuIcon.classList.add('fa-bars');
+          mobileMenuIcon.classList.remove('fa-xmark');
+        });
+      });
+    }
   </script>
   
 
