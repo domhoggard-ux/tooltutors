@@ -25,34 +25,54 @@
           <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
           <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Learner Portal</span>
         </div>
-
-        <div class="flex items-center gap-3 sm:gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
           <div class="flex items-center gap-3">
             <div class="relative group cursor-pointer flex-shrink-0" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
               <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
                 <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-sm text-white overflow-hidden">--</div>
               </div>
-              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
-                <i class="fa-solid fa-camera text-white text-xs"></i>
-              </div>
+              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200"><i class="fa-solid fa-camera text-white text-xs"></i></div>
             </div>
             <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
-
             <div class="hidden sm:block text-left">
               <div id="header-user-name" class="text-sm font-semibold text-white leading-tight">Loading...</div>
               <div class="text-xs text-[#FF6B35] uppercase font-semibold mt-0.5">My Workspace</div>
             </div>
           </div>
-
-          <button onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200" aria-label="Sign out">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span>
-          </button>
+          <button type="button" onclick="openAccountSettings()" class="w-11 h-11 rounded-xl text-sm border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Account settings" title="Account settings"><i class="fa-solid fa-gear"></i></button>
+          <button type="button" onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition" aria-label="Sign out"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span></button>
         </div>
       </div>
     </div>
   </header>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- ACCOUNT SETTINGS MODAL -->
+  <div id="account-settings-modal" class="fixed inset-0 z-[300] hidden bg-[#0A192F]/95 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative my-auto">
+      <button type="button" onclick="closeAccountSettings()" class="absolute top-4 right-4 w-10 h-10 rounded-xl text-[#8892B0] hover:text-[#FF6B35] hover:bg-[#0A192F] transition" aria-label="Close account settings"><i class="fa-solid fa-xmark"></i></button>
+      <div class="pr-12 mb-6 pb-4 border-b border-[#233554]">
+        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-user-gear text-[#FF6B35] mr-2"></i>Account Settings</h2>
+        <p class="text-xs text-[#8892B0] mt-1">Update your ToolTutors contact details and default address.</p>
+      </div>
+      <form id="account-settings-form" onsubmit="saveAccountSettings(event)" class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label for="settings-full-name" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Full Name</label><input id="settings-full-name" type="text" required maxlength="120" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+          <div><label for="settings-phone" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Phone Number</label><input id="settings-phone" type="tel" maxlength="30" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+        </div>
+        <div><label for="settings-email" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email Address</label><input id="settings-email" type="email" required maxlength="254" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"><p class="text-[11px] text-[#8892B0] mt-2">Changing your sign-in email requires confirmation before the new address becomes active.</p></div>
+        <div><label for="settings-address-line1" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Street Address</label><input id="settings-address-line1" type="text" maxlength="200" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+        <div><label for="settings-address-line2" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Address Line 2 <span class="normal-case font-normal">(optional)</span></label><input id="settings-address-line2" type="text" maxlength="200" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label for="settings-city" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">City / Town</label><input id="settings-city" type="text" maxlength="100" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+          <div><label for="settings-postcode" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Postcode</label><input id="settings-postcode" type="text" maxlength="10" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm uppercase focus:outline-none focus:border-[#FF6B35]"></div>
+        </div>
+        <div class="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-300 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>The updated address becomes the default for future projects. Existing job addresses are not changed.</div>
+        <button id="save-account-settings-btn" type="submit" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition shadow-lg">Save Account Settings</button>
+      </form>
+    </div>
+  </div>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative">
     <div class="bg-[#112240] p-6 rounded-2xl border border-[#233554] flex justify-between items-center shadow-xl">
@@ -281,6 +301,7 @@
       if (!session) return window.location.href = 'login.html';
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
+      await syncConfirmedAuthEmail(session.user);
       updateHeaderUI(); 
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       const paymentParams = new URLSearchParams(window.location.search);
@@ -982,6 +1003,101 @@
       }
     } 
     
+    async function syncConfirmedAuthEmail(authUser) {
+      const confirmedEmail = String(authUser?.email || '').trim().toLowerCase();
+      const profileEmail = String(currentProfile?.email || '').trim().toLowerCase();
+      if (!confirmedEmail || confirmedEmail === profileEmail) return;
+      const { error } = await supabaseClient.from('profiles').update({ email: confirmedEmail }).eq('id', currentProfile.id);
+      if (!error) currentProfile.email = confirmedEmail;
+    }
+
+    function openAccountSettings() {
+      if (!currentProfile) return;
+      document.getElementById('settings-full-name').value = currentProfile.full_name || '';
+      document.getElementById('settings-phone').value = currentProfile.phone || '';
+      document.getElementById('settings-email').value = currentProfile.email || '';
+      document.getElementById('settings-address-line1').value = currentProfile.address_line1 || '';
+      document.getElementById('settings-address-line2').value = currentProfile.address_line2 || '';
+      document.getElementById('settings-city').value = currentProfile.city || '';
+      document.getElementById('settings-postcode').value = currentProfile.postcode || '';
+      const modal = document.getElementById('account-settings-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAccountSettings() {
+      const modal = document.getElementById('account-settings-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function lookupPostcode(postcode) {
+      const normalisedPostcode = String(postcode || '').trim().toUpperCase();
+      if (!normalisedPostcode) return { postcode: null, latitude: null, longitude: null, country: null };
+      const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(normalisedPostcode)}`);
+      if (!response.ok) throw new Error('Enter a valid UK postcode.');
+      const payload = await response.json();
+      const latitude = Number(payload?.result?.latitude);
+      const longitude = Number(payload?.result?.longitude);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new Error('The postcode location could not be confirmed.');
+      return { postcode: payload.result.postcode || normalisedPostcode, latitude, longitude, country: payload.result.country || 'United Kingdom' };
+    }
+
+    async function saveAccountSettings(event) {
+      event.preventDefault();
+      const button = document.getElementById('save-account-settings-btn');
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving settings...';
+      try {
+        const fullName = document.getElementById('settings-full-name').value.trim();
+        const phone = document.getElementById('settings-phone').value.trim();
+        const requestedEmail = document.getElementById('settings-email').value.trim().toLowerCase();
+        const addressLine1 = document.getElementById('settings-address-line1').value.trim();
+        const addressLine2 = document.getElementById('settings-address-line2').value.trim();
+        const city = document.getElementById('settings-city').value.trim();
+        if (!fullName || !requestedEmail) throw new Error('Full name and email address are required.');
+        const location = await lookupPostcode(document.getElementById('settings-postcode').value);
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError) throw userError;
+        if (!user) throw new Error('Your session has expired. Please sign in again.');
+
+        const { data: updatedProfile, error: profileError } = await supabaseClient.from('profiles').update({
+          full_name: fullName,
+          phone: phone || null,
+          address_line1: addressLine1 || null,
+          address_line2: addressLine2 || null,
+          city: city || null,
+          postcode: location.postcode,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          country: location.country,
+          updated_at: new Date().toISOString()
+        }).eq('id', currentProfile.id).select('*').single();
+        if (profileError) throw profileError;
+        currentProfile = updatedProfile;
+
+        const currentAuthEmail = String(user.email || '').trim().toLowerCase();
+        let emailConfirmationRequired = false;
+        if (requestedEmail !== currentAuthEmail) {
+          const { error: emailError } = await supabaseClient.auth.updateUser({ email: requestedEmail }, { emailRedirectTo: `${window.location.origin}${window.location.pathname}` });
+          if (emailError) throw emailError;
+          emailConfirmationRequired = true;
+        }
+
+        updateHeaderUI();
+        document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName.split(' ')[0]}`;
+        closeAccountSettings();
+        showToast(emailConfirmationRequired ? 'Profile saved. Confirm the email-change messages before using the new sign-in address.' : 'Account settings updated successfully.', 'success');
+      } catch (error) {
+        console.error('Account settings error:', error);
+        showToast(`Could not update account settings: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+      }
+    }
+
     async function handleLogout() { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
     
     function showToast(msg, type='info') {
