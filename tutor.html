@@ -25,32 +25,36 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
-      <div class="flex items-center space-x-3">
-        <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
-        <span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>      
-      </div>
-      
-      <div class="flex items-center space-x-3">
-        <div class="flex items-center space-x-3 pr-2">
-          <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
-              <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
+  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-20 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
+          <span id="header-tier-tag" class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Tutor Workspace</span>
+        </div>
+
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div class="flex items-center gap-3">
+            <div class="relative group cursor-pointer flex-shrink-0" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
+                <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-sm text-white overflow-hidden">--</div>
+              </div>
+              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
+                <i class="fa-solid fa-camera text-white text-xs"></i>
+              </div>
             </div>
-            <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
-              <i class="fa-solid fa-camera text-white text-[10px]"></i>
+            <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
+
+            <div class="hidden sm:block text-left">
+              <div id="header-user-name" class="text-sm font-semibold text-white leading-tight">Loading...</div>
+              <div id="header-status-badge" class="text-xs text-[#8892B0] uppercase font-bold mt-0.5">Loading...</div>
             </div>
           </div>
-          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
-          
-          <div class="hidden sm:block text-left">
-            <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
-            <div id="header-status-badge" class="text-[10px] text-[#8892B0] uppercase font-bold">Loading...</div>        
+
+          <button onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200" aria-label="Sign out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span>
+          </button>
         </div>
-        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
-        </button>
       </div>
     </div>
   </header>
@@ -1246,13 +1250,13 @@
       if (statusBadge) {
         if (currentProfile.validation_status === 'approved') {
           statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Verified Tutor';
-          statusBadge.className = 'text-[10px] text-emerald-400 uppercase font-bold';
+          statusBadge.className = 'text-xs text-emerald-400 uppercase font-bold mt-0.5';
         } else if (currentProfile.validation_status === 'submitted') {
           statusBadge.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-1"></i> Under Review';
-          statusBadge.className = 'text-[10px] text-amber-500 uppercase font-bold';
+          statusBadge.className = 'text-xs text-amber-500 uppercase font-bold mt-0.5';
         } else {
           statusBadge.innerHTML = 'Unverified Profile';
-          statusBadge.className = 'text-[10px] text-[#8892B0] uppercase font-bold';
+          statusBadge.className = 'text-xs text-[#8892B0] uppercase font-bold mt-0.5';
         }
       }
     }
