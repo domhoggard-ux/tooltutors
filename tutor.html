@@ -427,62 +427,58 @@
         updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier || 'self_taught').replaceAll('_', ' ')} tier`;
 
-        // Handle return from Stripe onboarding
+        // Handle return from Stripe onboarding.
         const urlParams = new URLSearchParams(window.location.search);
         const returnedFromStripe = urlParams.get('stripe_return') === 'true';
         const refreshedFromStripe = urlParams.get('stripe_refresh') === 'true';
 
+        if (returnedFromStripe || refreshedFromStripe) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        const stripeSection = document.getElementById('tutor-stripe-section');
+        const evidenceSection = document.getElementById('tutor-onboarding-section');
+        const pendingSection = document.getElementById('tutor-pending-review');
+        const activeDashboard = document.getElementById('tutor-active-dashboard');
+
+        stripeSection.classList.add('hidden');
+        evidenceSection.classList.add('hidden');
+        pendingSection.classList.add('hidden');
+        activeDashboard.classList.add('hidden');
+
+        const status = currentProfile.validation_status || 'pending';
+        const hasStripeAccount = Boolean(currentProfile.stripe_account_id);
+
         if (returnedFromStripe) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-
-          await checkStripeOnboardingStatus({
-            showSuccessMessage: true,
-            showLoadingMessage: true
-          });
-
-          const { data: refreshedProfile, error: refreshedProfileError } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (!refreshedProfileError && refreshedProfile) {
-            currentProfile = refreshedProfile;
-            profile.stripe_onboarding_complete = refreshedProfile.stripe_onboarding_complete;
-          }
+          evidenceSection.classList.remove('hidden');
+          showToast('Stripe details received. Please submit your ToolTutors evidence next.', 'success');
         } else if (refreshedFromStripe) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-          showToast('Your Stripe link expired or was interrupted. A new secure link can be created below.', 'error');
-        }
-
-        // New sequence: Stripe onboarding first, then ToolTutors evidence, then admin approval.
-        let stripeComplete = currentProfile.stripe_onboarding_complete === true;
-
-        if (!stripeComplete || returnedFromStripe) {
-          stripeComplete = await checkStripeOnboardingStatus({
-            showSuccessMessage: returnedFromStripe,
-            showLoadingMessage: returnedFromStripe
-          });
-        }
-
-        if (!stripeComplete) {
-          document.getElementById('tutor-stripe-section').classList.remove('hidden');
-          document.getElementById('tutor-onboarding-section').classList.add('hidden');
-          document.getElementById('tutor-pending-review').classList.add('hidden');
-          document.getElementById('tutor-active-dashboard').classList.add('hidden');
+          stripeSection.classList.remove('hidden');
+          showToast('Your Stripe link expired or was interrupted. Select Continue to Stripe Setup to try again.', 'error');
           return;
         }
 
-        document.getElementById('tutor-stripe-section').classList.add('hidden');
-        const status = currentProfile.validation_status || 'pending';
+        // ToolTutors evidence can be submitted as soon as Stripe has created the connected account.
+        // Stripe capability verification is only required when Admin approval grants marketplace access.
+        if (status === 'submitted') {
+          evidenceSection.classList.add('hidden');
+          pendingSection.classList.remove('hidden');
+        } else if (status === 'approved') {
+          const stripeComplete = currentProfile.stripe_onboarding_complete === true
+            ? true
+            : await checkStripeOnboardingStatus({
+                showSuccessMessage: false,
+                showLoadingMessage: false
+              });
 
-        if (status === 'approved') {
-          document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-          await loadTutorWorkspace();
-        } else if (status === 'submitted') {
-          document.getElementById('tutor-pending-review').classList.remove('hidden');
-        } else {
-          document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+          if (stripeComplete) {
+            activeDashboard.classList.remove('hidden');
+            await loadTutorWorkspace();
+          } else {
+            stripeSection.classList.remove('hidden');
+          }
+        } else if (returnedFromStripe || hasStripeAccount) {
+          evidenceSection.classList.remove('hidden');
 
           if (currentProfile.tutor_tier === 'professional') {
             const proContainer = document.getElementById('pro-cert-container');
@@ -498,6 +494,8 @@
             noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
             noteDiv.classList.remove('hidden');
           }
+        } else {
+          stripeSection.classList.remove('hidden');
         }
       } catch (err) {
         console.error('Tutor initialisation error:', err);
