@@ -164,9 +164,6 @@ Deno.serve(async (request: Request): Promise<Response> => {
       return jsonResponse({ error: "Only Tutor accounts can connect to Stripe." }, 403);
     }
 
-    if (profile.validation_status !== "approved") {
-      return jsonResponse({ error: "Tutor verification must be approved first." }, 403);
-    }
 
     const accountEmail = profile.email || user.email;
     if (!accountEmail) {
