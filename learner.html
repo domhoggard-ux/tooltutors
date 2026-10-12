@@ -61,7 +61,6 @@
           <div><label for="settings-full-name" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Full Name</label><input id="settings-full-name" type="text" required maxlength="120" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
           <div><label for="settings-phone" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Phone Number</label><input id="settings-phone" type="tel" maxlength="30" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
         </div>
-        <div><label for="settings-email" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email Address</label><input id="settings-email" type="email" required maxlength="254" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"><p class="text-[11px] text-[#8892B0] mt-2">Changing your sign-in email requires confirmation before the new address becomes active.</p></div>
         <div><label for="settings-address-line1" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Street Address</label><input id="settings-address-line1" type="text" maxlength="200" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
         <div><label for="settings-address-line2" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Address Line 2 <span class="normal-case font-normal">(optional)</span></label><input id="settings-address-line2" type="text" maxlength="200" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -301,7 +300,6 @@
       if (!session) return window.location.href = 'login.html';
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
-      await syncConfirmedAuthEmail(session.user);
       updateHeaderUI(); 
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       const paymentParams = new URLSearchParams(window.location.search);
@@ -1003,19 +1001,10 @@
       }
     } 
     
-    async function syncConfirmedAuthEmail(authUser) {
-      const confirmedEmail = String(authUser?.email || '').trim().toLowerCase();
-      const profileEmail = String(currentProfile?.email || '').trim().toLowerCase();
-      if (!confirmedEmail || confirmedEmail === profileEmail) return;
-      const { error } = await supabaseClient.from('profiles').update({ email: confirmedEmail }).eq('id', currentProfile.id);
-      if (!error) currentProfile.email = confirmedEmail;
-    }
-
     function openAccountSettings() {
       if (!currentProfile) return;
       document.getElementById('settings-full-name').value = currentProfile.full_name || '';
       document.getElementById('settings-phone').value = currentProfile.phone || '';
-      document.getElementById('settings-email').value = currentProfile.email || '';
       document.getElementById('settings-address-line1').value = currentProfile.address_line1 || '';
       document.getElementById('settings-address-line2').value = currentProfile.address_line2 || '';
       document.getElementById('settings-city').value = currentProfile.city || '';
@@ -1052,16 +1041,11 @@
       try {
         const fullName = document.getElementById('settings-full-name').value.trim();
         const phone = document.getElementById('settings-phone').value.trim();
-        const requestedEmail = document.getElementById('settings-email').value.trim().toLowerCase();
         const addressLine1 = document.getElementById('settings-address-line1').value.trim();
         const addressLine2 = document.getElementById('settings-address-line2').value.trim();
         const city = document.getElementById('settings-city').value.trim();
-        if (!fullName || !requestedEmail) throw new Error('Full name and email address are required.');
+        if (!fullName) throw new Error('Full name is required.');
         const location = await lookupPostcode(document.getElementById('settings-postcode').value);
-        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-        if (userError) throw userError;
-        if (!user) throw new Error('Your session has expired. Please sign in again.');
-
         const { data: updatedProfile, error: profileError } = await supabaseClient.from('profiles').update({
           full_name: fullName,
           phone: phone || null,
@@ -1077,18 +1061,10 @@
         if (profileError) throw profileError;
         currentProfile = updatedProfile;
 
-        const currentAuthEmail = String(user.email || '').trim().toLowerCase();
-        let emailConfirmationRequired = false;
-        if (requestedEmail !== currentAuthEmail) {
-          const { error: emailError } = await supabaseClient.auth.updateUser({ email: requestedEmail }, { emailRedirectTo: `${window.location.origin}${window.location.pathname}` });
-          if (emailError) throw emailError;
-          emailConfirmationRequired = true;
-        }
-
         updateHeaderUI();
         document.getElementById('learner-welcome-name').textContent = `Welcome, ${fullName.split(' ')[0]}`;
         closeAccountSettings();
-        showToast(emailConfirmationRequired ? 'Profile saved. Confirm the email-change messages before using the new sign-in address.' : 'Account settings updated successfully.', 'success');
+        showToast('Account settings updated successfully.', 'success');
       } catch (error) {
         console.error('Account settings error:', error);
         showToast(`Could not update account settings: ${error.message || 'Unknown error'}`, 'error');
