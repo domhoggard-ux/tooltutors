@@ -8,43 +8,133 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif']}}}}</script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+    };
+  </script>
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col justify-center items-center p-4">
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
   <div class="w-full max-w-md bg-[#112240] border border-[#233554] rounded-3xl shadow-2xl p-8 space-y-8">
     <div class="text-center space-y-2">
       <a href="index.html" class="inline-block group focus:outline-none">
-        <div class="w-12 h-12 mx-auto rounded-2xl bg-[#0A192F] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-2xl shadow-lg group-hover:border-[#FF6B35] transition"><i class="fa-solid fa-wrench"></i></div>
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-[#0A192F] border border-[#FF6B35]/40 flex items-center justify-center text-[#FF6B35] font-extrabold text-2xl shadow-lg group-hover:border-[#FF6B35] transition">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
       </a>
-      <div><a href="index.html" class="text-2xl font-extrabold tracking-tight text-white hover:text-[#FF6B35] transition">Tool<span class="text-[#FF6B35]">Tutors</span></a><p class="text-xs text-[#8892B0]">Peer DIY Mentorship & Marketplace Hub</p></div>
-    </div>
-    <div class="flex bg-[#0A192F] p-1 rounded-xl border border-[#233554]">
-      <button onclick="switchMode('signin')" id="tab-signin" class="flex-1 py-2 text-xs font-bold rounded-lg bg-[#233554] text-white transition">Sign In</button>
-      <button onclick="switchMode('signup')" id="tab-signup" class="flex-1 py-2 text-xs font-bold rounded-lg text-[#8892B0] hover:text-white transition">Register</button>
-    </div>
-    <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-      <div id="signup-fields" class="space-y-4 hidden">
-        <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Full Name</label><input type="text" id="full-name" placeholder="John Doe" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
-        <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Select Role</label><select id="user-role" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"><option value="learner">Learner (Homeowner)</option><option value="tutor">Tutor (DIY Mentor)</option></select></div>
-        <div id="tutor-tier-group" class="hidden"><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Tutor Experience Level</label><select id="tutor-tier" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"><option value="self_taught">Self-Taught Enthusiast</option><option value="professional">Professional / Trade Certified</option></select></div>
+      <div>
+        <a href="index.html" class="text-2xl font-extrabold tracking-tight text-white hover:text-[#FF6B35] transition">
+          Tool<span class="text-[#FF6B35]">Tutors</span>
+        </a>
+        <p class="text-xs text-[#8892B0]">Peer DIY Mentorship & Marketplace Hub</p>
       </div>
-      <div><label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email Address</label><input type="email" id="email" required placeholder="name@example.com" autocomplete="email" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
-      <div><div class="flex items-center justify-between mb-1"><label class="block text-xs font-semibold text-[#8892B0] uppercase">Password</label><button id="forgot-password-btn" type="button" onclick="requestPasswordReset()" class="text-xs font-semibold text-[#FF6B35] hover:text-[#ff8a61] transition">Forgot password?</button></div><input type="password" id="password" required placeholder="••••••••" autocomplete="current-password" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]"></div>
+    </div>
+
+    <div class="text-center">
+      <h1 class="text-xl font-bold text-white">Sign in to your account</h1>
+      <p class="text-xs text-[#8892B0] mt-1">Access your Learner, Tutor or Admin workspace.</p>
+    </div>
+
+    <form id="auth-form" onsubmit="handleSignIn(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Email Address</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="name@example.com" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase">Password</label>
+          <button type="button" onclick="sendPasswordReset()" class="text-xs text-[#FF6B35] hover:text-[#ff8b61] font-semibold transition">Forgot password?</button>
+        </div>
+        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:outline-none focus:border-[#FF6B35]">
+      </div>
       <button type="submit" id="submit-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg mt-2">Sign In</button>
     </form>
+
+    <div class="pt-5 border-t border-[#233554] text-center space-y-3">
+      <p class="text-sm text-[#8892B0]">New to ToolTutors?</p>
+      <a href="apply.html" class="w-full py-3 bg-[#233554] hover:bg-[#2d4265] border border-[#365175] text-white font-bold text-sm rounded-xl transition inline-flex items-center justify-center gap-2">
+        <i class="fa-solid fa-user-plus"></i>
+        Create an Account
+      </a>
+    </div>
   </div>
-<script>
-const SUPABASE_URL='https://gfygaqbxhcggnkqimzrg.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-let isSignUp=false;
-document.getElementById('user-role').addEventListener('change',e=>document.getElementById('tutor-tier-group').classList.toggle('hidden',e.target.value!=='tutor'));
-function switchMode(mode){isSignUp=mode==='signup';const btn=document.getElementById('submit-btn'),fields=document.getElementById('signup-fields'),tabIn=document.getElementById('tab-signin'),tabUp=document.getElementById('tab-signup'),forgot=document.getElementById('forgot-password-btn'),password=document.getElementById('password');fields.classList.toggle('hidden',!isSignUp);forgot.classList.toggle('hidden',isSignUp);btn.textContent=isSignUp?'Create Account':'Sign In';password.autocomplete=isSignUp?'new-password':'current-password';tabUp.className=`flex-1 py-2 text-xs font-bold rounded-lg ${isSignUp?'bg-[#233554] text-white':'text-[#8892B0] hover:text-white'} transition`;tabIn.className=`flex-1 py-2 text-xs font-bold rounded-lg ${!isSignUp?'bg-[#233554] text-white':'text-[#8892B0] hover:text-white'} transition`;}
-async function requestPasswordReset(){const email=document.getElementById('email').value.trim().toLowerCase();if(!email){showToast('Enter your email address first.','error');document.getElementById('email').focus();return;}const button=document.getElementById('forgot-password-btn'),original=button.textContent;button.disabled=true;button.textContent='Sending…';try{const redirectTo=`${window.location.origin}${window.location.pathname.replace(/login\.html$/,'reset-password.html')}`;const{error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;showToast('If an account exists for that email, a password-reset link has been sent.','success');}catch(error){console.error('Password reset request error:',error);showToast('The reset email could not be sent. Please try again.','error');}finally{button.disabled=false;button.textContent=original;}}
-async function handleAuth(e){e.preventDefault();const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value,btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...';try{if(isSignUp){const fullName=document.getElementById('full-name').value.trim()||email.split('@')[0],role=document.getElementById('user-role').value,tutorTier=document.getElementById('tutor-tier').value;const{data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName,role,tutor_tier:tutorTier}}});if(error)throw error;if(data.user)await supabaseClient.from('profiles').upsert({id:data.user.id,email:data.user.email,full_name:fullName,role,tutor_tier:role==='tutor'?tutorTier:'self_taught',validation_status:role==='tutor'?'pending':'approved'});showToast('Account created successfully!','success');setTimeout(()=>routeUser(data.user.id),1000);}else{const{data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;showToast('Signed in successfully!','success');setTimeout(()=>routeUser(data.user.id),800);}}catch(err){showToast(err.message||'Authentication failed','error');btn.disabled=false;btn.textContent=isSignUp?'Create Account':'Sign In';}}
-async function routeUser(userId){const{data:profile}=await supabaseClient.from('profiles').select('role').eq('id',userId).maybeSingle();const role=profile?.role||'learner';window.location.href=role==='admin'?'admin.html':role==='tutor'?'tutor.html':'learner.html';}
-function showToast(message,type='info'){const container=document.getElementById('toast-container');if(!container)return;const toast=document.createElement('div');toast.className=`p-4 rounded-xl bg-[#112240] border ${type==='success'?'border-emerald-500/30 text-emerald-400':type==='error'?'border-rose-500/30 text-rose-400':'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl`;const span=document.createElement('span');span.textContent=message;toast.appendChild(span);container.appendChild(toast);setTimeout(()=>toast.remove(),5000);}
-</script>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function handleSignIn(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const button = document.getElementById('submit-btn');
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Signing in...';
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (!data?.user?.id) throw new Error('No user account was returned.');
+        showToast('Signed in successfully!', 'success');
+        setTimeout(() => routeUser(data.user.id), 500);
+      } catch (error) {
+        showToast(error.message || 'Sign in failed.', 'error');
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    async function sendPasswordReset() {
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showToast('Enter your email address first.', 'error');
+        document.getElementById('email').focus();
+        return;
+      }
+
+      try {
+        const redirectTo = new URL('reset-password.html', window.location.href).href;
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        showToast('Password reset instructions have been sent if an account exists for that email.', 'success');
+      } catch (error) {
+        showToast(error.message || 'Could not send password reset instructions.', 'error');
+      }
+    }
+
+    async function routeUser(userId) {
+      const { data: profile, error } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        showToast(`Could not load your account: ${error.message}`, 'error');
+        return;
+      }
+
+      const role = profile?.role || 'learner';
+      if (role === 'admin') window.location.href = 'admin.html';
+      else if (role === 'tutor') window.location.href = 'tutor.html';
+      else window.location.href = 'learner.html';
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto p-4 rounded-xl bg-[#112240] border ${type === 'success' ? 'border-emerald-500/30 text-emerald-400' : type === 'error' ? 'border-rose-500/30 text-rose-400' : 'border-blue-500/30 text-blue-400'} text-xs font-medium shadow-2xl`;
+      const text = document.createElement('span');
+      text.textContent = String(message || '');
+      toast.appendChild(text);
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+  </script>
 </body>
 </html>
