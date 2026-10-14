@@ -25,65 +25,37 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
 
-  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-20 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3 min-w-0">
-          <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
-          <span id="header-tier-tag" class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Tutor Workspace</span>
-        </div>
-
-        <div class="flex items-center gap-3 sm:gap-4">
-          <div class="flex items-center gap-3">
-            <div class="relative group cursor-pointer flex-shrink-0" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
-              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
-                <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-sm text-white overflow-hidden">--</div>
-              </div>
-              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
-                <i class="fa-solid fa-camera text-white text-xs"></i>
-              </div>
+  <header class="sticky top-0 z-40 bg-[#0A192F]/95 backdrop-blur border-b border-[#233554] px-4 py-3 sm:px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-3">
+        <img src="logo.svg" alt="ToolTutors Logo" class="h-10 w-auto">
+        <span id="header-tier-tag" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#FF6B35]/20 text-[#FF6B35] border border-[#FF6B35]/30 uppercase tracking-wider hidden sm:inline-block">Tutor Workspace</span>      
+      </div>
+      
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-3 pr-2">
+          <div class="relative group cursor-pointer" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
+              <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</div>
             </div>
-            <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
-
-            <div class="hidden sm:block text-left">
-              <div id="header-user-name" class="text-sm font-semibold text-white leading-tight">Loading...</div>
-              <div id="header-status-badge" class="text-xs text-[#8892B0] uppercase font-bold mt-0.5">Loading...</div>
+            <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200">
+              <i class="fa-solid fa-camera text-white text-[10px]"></i>
             </div>
           </div>
-
-          <button type="button" onclick="openTutorAccountDetails()" class="w-11 h-11 rounded-xl text-sm border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Account details" title="Account details"><i class="fa-solid fa-gear"></i></button>
-          <button onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200" aria-label="Sign out">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span>
-          </button>
+          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
+          
+          <div class="hidden sm:block text-left">
+            <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
+            <div id="header-status-badge" class="text-[10px] text-[#8892B0] uppercase font-bold">Loading...</div>        
         </div>
+        <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
+        </button>
       </div>
     </div>
   </header>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
-
-  <!-- TUTOR ACCOUNT DETAILS MODAL -->
-  <div id="tutor-account-modal" class="fixed inset-0 z-[300] hidden bg-[#0A192F]/95 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative my-auto">
-      <button type="button" onclick="closeTutorAccountDetails()" class="absolute top-4 right-4 w-10 h-10 rounded-xl text-[#8892B0] hover:text-[#FF6B35] hover:bg-[#0A192F] transition" aria-label="Close account details"><i class="fa-solid fa-xmark"></i></button>
-      <div class="pr-12 mb-6 pb-4 border-b border-[#233554]">
-        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-user-gear text-[#FF6B35] mr-2"></i>Account Details</h2>
-        <p class="text-xs text-[#8892B0] mt-1">Tutor identity, address and payout details are managed through Stripe.</p>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Full Name</p><p id="account-full-name" class="text-sm text-white font-semibold">Not provided</p></div>
-        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">ToolTutors Email</p><p id="account-email" class="text-sm text-white break-all">Not provided</p></div>
-        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Phone</p><p id="account-phone" class="text-sm text-white">Not provided</p></div>
-        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Stripe Status</p><p id="account-stripe-status" class="text-sm font-semibold">Not connected</p></div>
-        <div class="sm:col-span-2 p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Stripe-synchronised Address</p><p id="account-address" class="text-sm text-white leading-relaxed">Not provided</p></div>
-        <div class="sm:col-span-2 p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Last Stripe Address Sync</p><p id="account-stripe-synced" class="text-sm text-[#8892B0]">Not yet synchronised</p></div>
-      </div>
-      <div class="mt-5 p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-300 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>Use Stripe to update identity, address, bank and payout information. ToolTutors displays the latest information synchronised from Stripe.</div>
-      <button id="manage-stripe-account-btn" type="button" onclick="openStripeExpressDashboard()" class="w-full mt-5 py-3 bg-[#635BFF] hover:bg-[#5149e5] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition shadow-lg"><i class="fa-brands fa-stripe mr-2"></i>Manage Details & Payouts in Stripe</button>
-      <button id="refresh-stripe-details-btn" type="button" onclick="refreshStripeAccountDetails()" class="w-full mt-3 py-3 bg-[#233554] hover:bg-[#2d4265] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition"><i class="fa-solid fa-rotate mr-2"></i>Refresh Details from Stripe</button>
-      <p id="manage-stripe-unavailable" class="hidden mt-3 text-xs text-amber-400 text-center">Complete Stripe onboarding before managing payout details.</p>
-    </div>
-  </div>
 
   <!-- FULL SCREEN IMAGE MODAL -->
   <div id="image-modal" class="fixed inset-0 z-[10000] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
@@ -108,12 +80,14 @@
     <section id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden space-y-6">
       <div id="tutor-rejected-note" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
       <div>
-        <h2 class="text-lg font-bold text-white mb-1">Complete Your ToolTutors Profile</h2>
-        <p class="text-xs text-[#8892B0]">Stripe setup is complete. Add a profile picture, select your DIY categories and, if you are a professional-tier Tutor, upload the relevant trade certification.</p>
+        <h2 class="text-lg font-bold text-white mb-1">Complete Identity & Evidence Review</h2>
+        <p class="text-xs text-[#8892B0]">Submit your identity and supporting evidence, then select the DIY categories you are qualified to mentor in.</p>
       </div>
       <form id="tutor-docs-form" onsubmit="submitTutorDocuments(event)" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Profile Picture</label><input type="file" id="tutor-profile-pic" accept="image/*" required class="text-xs text-[#8892B0]"></div>
+          
+          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
           
           <!-- PROFESSIONAL CERTIFICATION -->
           <div id="pro-cert-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl relative overflow-hidden">
@@ -135,25 +109,25 @@
             </div>
           </div>
         </div>
-        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit Profile For Review</button>
+        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit Identity & Evidence</button>
       </form>
     </section>
 
     <!-- PENDING REVIEW -->
     <section id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-12 text-center hidden space-y-4">
       <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500"></i>
-      <h3 class="text-xl font-bold text-amber-500">Profile Under Admin Review</h3>
-      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your profile has been submitted. Once approved by an admin, your marketplace dashboard will unlock.</p>
+      <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
+      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your identity and evidence have been submitted. Once reviewed and approved by an admin, your marketplace dashboard will unlock.</p>
     </section>
     <!-- STRIPE ONBOARDING SECTION -->
     <section id="tutor-stripe-section" class="bg-[#112240] border-2 border-[#FF6B35] rounded-2xl p-8 text-center hidden space-y-4 max-w-2xl mx-auto shadow-2xl shadow-[#FF6B35]/10">
       <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
         <i class="fa-brands fa-stripe text-3xl text-[#FF6B35]"></i>
       </div>
-      <h3 class="text-2xl font-extrabold text-white">Set Up Your Tutor Account</h3>
-      <p class="text-sm text-[#8892B0] max-w-md mx-auto">Start with Stripe Connect to securely provide identity, address and payout information. After Stripe setup, return to ToolTutors to complete your marketplace profile.</p>
+      <h3 class="text-2xl font-extrabold text-white">Set Up Payouts</h3>
+      <p class="text-sm text-[#8892B0] max-w-md mx-auto">You have been approved! To start accepting jobs and receiving automated payouts, you must connect your bank account securely via Stripe Connect.</p>
       <button id="connect-stripe-btn" onclick="startStripeOnboarding()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg mt-4 inline-flex items-center gap-2">
-        <i class="fa-brands fa-stripe"></i> Continue to Stripe Setup
+        <i class="fa-solid fa-building-columns"></i> Connect Bank Account
       </button>
     </section>
 
@@ -362,13 +336,14 @@
           }
 
           if (stripeSection) stripeSection.classList.add('hidden');
-          if (activeDashboard) activeDashboard.classList.add('hidden');
+          if (activeDashboard) activeDashboard.classList.remove('hidden');
 
+          await loadTutorWorkspace();
 
           if (showSuccessMessage) {
             showToast(
               responseData?.message ||
-              'Stripe setup is complete. Please complete your ToolTutors profile next.',
+              'Stripe setup is complete. Your Tutor dashboard is now active!',
               'success'
             );
           }
@@ -425,59 +400,69 @@
         updateHeaderUI();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier || 'self_taught').replaceAll('_', ' ')} tier`;
 
-        // Handle return from Stripe onboarding.
+        // Handle return from Stripe onboarding
         const urlParams = new URLSearchParams(window.location.search);
         const returnedFromStripe = urlParams.get('stripe_return') === 'true';
         const refreshedFromStripe = urlParams.get('stripe_refresh') === 'true';
 
-        if (returnedFromStripe || refreshedFromStripe) {
+        if (returnedFromStripe) {
           window.history.replaceState({}, document.title, window.location.pathname);
+
+          await checkStripeOnboardingStatus({
+            showSuccessMessage: true,
+            showLoadingMessage: true
+          });
+
+          const { data: refreshedProfile, error: refreshedProfileError } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (!refreshedProfileError && refreshedProfile) {
+            currentProfile = refreshedProfile;
+            profile.stripe_onboarding_complete = refreshedProfile.stripe_onboarding_complete;
+          }
+        } else if (refreshedFromStripe) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showToast('Your Stripe link expired or was interrupted. A new secure link can be created below.', 'error');
         }
-
-        const stripeSection = document.getElementById('tutor-stripe-section');
-        const evidenceSection = document.getElementById('tutor-onboarding-section');
-        const pendingSection = document.getElementById('tutor-pending-review');
-        const activeDashboard = document.getElementById('tutor-active-dashboard');
-
-        stripeSection.classList.add('hidden');
-        evidenceSection.classList.add('hidden');
-        pendingSection.classList.add('hidden');
-        activeDashboard.classList.add('hidden');
 
         const status = currentProfile.validation_status || 'pending';
-        const hasStripeAccount = Boolean(currentProfile.stripe_account_id);
+        
+        if (status === 'approved') {
+          if (profile.stripe_onboarding_complete) {
+            const missingMarketplaceLocation =
+              profile.latitude === null ||
+              profile.latitude === undefined ||
+              profile.longitude === null ||
+              profile.longitude === undefined ||
+              (Number(profile.latitude) === 0 && Number(profile.longitude) === 0);
 
-        if (returnedFromStripe) {
-          evidenceSection.classList.remove('hidden');
-          showToast('Stripe details received. Please complete your ToolTutors profile next.', 'success');
-        } else if (refreshedFromStripe) {
-          stripeSection.classList.remove('hidden');
-          showToast('Your Stripe link expired or was interrupted. Select Continue to Stripe Setup to try again.', 'error');
-          return;
-        }
-
-        // The ToolTutors profile can be submitted as soon as Stripe has created the connected account.
-        // Stripe capability verification is only required when Admin approval grants marketplace access.
-        if (status === 'submitted') {
-          evidenceSection.classList.add('hidden');
-          pendingSection.classList.remove('hidden');
-        } else if (status === 'approved') {
-          const stripeComplete = currentProfile.stripe_onboarding_complete === true
-            ? true
-            : await checkStripeOnboardingStatus({
+            if (missingMarketplaceLocation && !returnedFromStripe) {
+              await checkStripeOnboardingStatus({
                 showSuccessMessage: false,
                 showLoadingMessage: false
               });
+            } else {
+              document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+              await loadTutorWorkspace();
+            }
+          } else if (!returnedFromStripe) {
+            const stripeComplete = await checkStripeOnboardingStatus({
+              showSuccessMessage: false,
+              showLoadingMessage: false
+            });
 
-          if (stripeComplete) {
-            activeDashboard.classList.remove('hidden');
-            await loadTutorWorkspace();
-          } else {
-            stripeSection.classList.remove('hidden');
+            if (!stripeComplete) {
+              document.getElementById('tutor-stripe-section').classList.remove('hidden');
+            }
           }
-        } else if (returnedFromStripe || hasStripeAccount) {
-          evidenceSection.classList.remove('hidden');
-
+        } else if (status === 'submitted') {
+          document.getElementById('tutor-pending-review').classList.remove('hidden');
+        } else {
+          document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+          
           if (currentProfile.tutor_tier === 'professional') {
             const proContainer = document.getElementById('pro-cert-container');
             const proInput = document.getElementById('tutor-pro-doc');
@@ -492,8 +477,6 @@
             noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
             noteDiv.classList.remove('hidden');
           }
-        } else {
-          stripeSection.classList.remove('hidden');
         }
       } catch (err) {
         console.error('Tutor initialisation error:', err);
@@ -644,15 +627,17 @@
       if (!skills.length) {
         showToast('Select at least one skill', 'error');
         btn.disabled = false;
-        btn.innerHTML = 'Submit Profile For Review';
+        btn.innerHTML = 'Submit Identity & Evidence';
         return;
       }
 
       try {
         const picFile = document.getElementById('tutor-profile-pic').files[0];
+        const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
         const proFile = document.getElementById('tutor-pro-doc')?.files[0];
 
         let picUrl = currentProfile?.profile_picture_url || null;
+        let dbsPath = currentProfile?.dbs_document_url || null;
         let proPath = currentProfile?.trade_certificate_url || null;
 
         if (picFile) {
@@ -662,6 +647,13 @@
           if (picErr) throw picErr;
           const { data } = supabaseClient.storage.from('profile_pictures').getPublicUrl(fileName);
           picUrl = data.publicUrl;
+        }
+
+        if (dbsFile) {
+          const ext = dbsFile.name.split('.').pop();
+          dbsPath = `dbs_${currentProfile.id}_${Date.now()}.${ext}`;
+          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile, { upsert: true });
+          if (dbsErr) throw dbsErr;
         }
 
         if (proFile && currentProfile.tutor_tier === 'professional') {
@@ -675,6 +667,7 @@
           validation_status: 'submitted', 
           skills: skills,
           profile_picture_url: picUrl,
+          dbs_document_url: dbsPath,
           trade_certificate_url: proPath
         }).eq('id', currentProfile.id);
         
@@ -690,7 +683,7 @@
           });
         } catch (emailErr) { console.error("Email notification failed:", emailErr); }
 
-        showToast('Submitted for review!', 'success');
+        showToast('Identity and evidence submitted for review!', 'success');
         
         if (picUrl) {
           currentProfile.profile_picture_url = picUrl;
@@ -702,7 +695,7 @@
       } catch (err) {
         showToast(`Upload Error: ${err.message}`, 'error');
         btn.disabled = false;
-        btn.innerHTML = 'Submit Profile For Review';
+        btn.innerHTML = 'Submit Identity & Evidence';
       }
     }
 
@@ -1252,14 +1245,14 @@
       const statusBadge = document.getElementById('header-status-badge');
       if (statusBadge) {
         if (currentProfile.validation_status === 'approved') {
-          statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Verified Tutor';
-          statusBadge.className = 'text-xs text-emerald-400 uppercase font-bold mt-0.5';
+          statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Identity & Evidence Reviewed';
+          statusBadge.className = 'text-[10px] text-emerald-400 uppercase font-bold';
         } else if (currentProfile.validation_status === 'submitted') {
           statusBadge.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-1"></i> Under Review';
-          statusBadge.className = 'text-xs text-amber-500 uppercase font-bold mt-0.5';
+          statusBadge.className = 'text-[10px] text-amber-500 uppercase font-bold';
         } else {
-          statusBadge.innerHTML = 'Unverified Profile';
-          statusBadge.className = 'text-xs text-[#8892B0] uppercase font-bold mt-0.5';
+          statusBadge.innerHTML = 'Identity & Evidence Not Reviewed';
+          statusBadge.className = 'text-[10px] text-[#8892B0] uppercase font-bold';
         }
       }
     }
@@ -1312,111 +1305,6 @@
         showToast(`Failed to update picture: ${error.message || 'Unknown error'}`, 'error');
       } finally {
         e.target.value = '';
-      }
-    }
-
-    function formatTutorAddress(profile) {
-      const lines = [profile?.address_line1, profile?.address_line2, profile?.city, profile?.postcode, profile?.country]
-        .map(value => String(value || '').trim())
-        .filter(Boolean);
-      return lines.length ? lines.join(', ') : 'No Stripe address has been synchronised yet.';
-    }
-
-    function openTutorAccountDetails() {
-      if (!currentProfile) return;
-      document.getElementById('account-full-name').textContent = currentProfile.full_name || 'Not provided';
-      document.getElementById('account-email').textContent = currentProfile.email || 'Not provided';
-      document.getElementById('account-phone').textContent = currentProfile.phone || 'Not provided';
-      document.getElementById('account-address').textContent = formatTutorAddress(currentProfile);
-      const syncedAt = currentProfile.stripe_address_synced_at;
-      document.getElementById('account-stripe-synced').textContent = syncedAt
-        ? new Date(syncedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
-        : 'Not yet synchronised';
-      const isConnected = Boolean(currentProfile.stripe_account_id && currentProfile.stripe_onboarding_complete);
-      const statusEl = document.getElementById('account-stripe-status');
-      statusEl.textContent = isConnected ? 'Connected' : 'Setup incomplete';
-      statusEl.className = isConnected ? 'text-sm font-semibold text-emerald-400' : 'text-sm font-semibold text-amber-400';
-      document.getElementById('manage-stripe-account-btn').classList.toggle('hidden', !isConnected);
-      document.getElementById('refresh-stripe-details-btn').classList.toggle('hidden', !isConnected);
-      document.getElementById('manage-stripe-unavailable').classList.toggle('hidden', isConnected);
-      const modal = document.getElementById('tutor-account-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeTutorAccountDetails() {
-      const modal = document.getElementById('tutor-account-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-
-    async function openStripeExpressDashboard() {
-      const button = document.getElementById('manage-stripe-account-btn');
-      const originalHtml = button.innerHTML;
-      button.disabled = true;
-      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Opening Stripe...';
-      try {
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-stripe-login-link`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({})
-        });
-        let result = {};
-        try { result = await response.json(); } catch (parseError) { console.error('Stripe login-link response parse error:', parseError); }
-        if (!response.ok) throw new Error(result?.error || `Stripe link could not be created (${response.status}).`);
-        if (!result?.url) throw new Error('Stripe did not return a dashboard link.');
-        const stripeWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
-        if (!stripeWindow) throw new Error('Your browser blocked the Stripe tab. Allow pop-ups for ToolTutors and try again.');
-        showToast('Stripe opened in a new tab. Return here and select Refresh Details from Stripe when finished.', 'info');
-        button.disabled = false;
-        button.innerHTML = originalHtml;
-      } catch (error) {
-        console.error('Stripe dashboard error:', error);
-        showToast(`Could not open Stripe: ${error.message || 'Unknown error'}`, 'error');
-        button.disabled = false;
-        button.innerHTML = originalHtml;
-      }
-    }
-
-    async function refreshStripeAccountDetails() {
-      const button = document.getElementById('refresh-stripe-details-btn');
-      const originalHtml = button.innerHTML;
-      button.disabled = true;
-      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Refreshing from Stripe...';
-      try {
-        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-stripe-account-details`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            'apikey': SUPABASE_ANON_KEY
-          },
-          body: JSON.stringify({})
-        });
-        let result = {};
-        try { result = await response.json(); } catch (parseError) { console.error('Stripe sync response parse error:', parseError); }
-        if (!response.ok) throw new Error(result?.error || `Stripe details could not be synchronised (${response.status}).`);
-        if (!result?.profile) throw new Error('Stripe synchronisation did not return an updated profile.');
-        currentProfile = result.profile;
-        updateHeaderUI();
-        openTutorAccountDetails();
-        showToast(result?.message || 'Stripe account details synchronised.', 'success');
-      } catch (error) {
-        console.error('Stripe details sync error:', error);
-        showToast(`Could not refresh Stripe details: ${error.message || 'Unknown error'}`, 'error');
-      } finally {
-        button.disabled = false;
-        button.innerHTML = originalHtml;
       }
     }
 
