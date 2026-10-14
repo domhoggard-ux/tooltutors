@@ -80,16 +80,13 @@
     <section id="tutor-onboarding-section" class="bg-[#112240] rounded-2xl border border-[#233554] p-6 shadow-xl hidden space-y-6">
       <div id="tutor-rejected-note" class="hidden p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-sm text-rose-400"></div>
       <div>
-        <h2 class="text-lg font-bold text-white mb-1">Complete Identity & Evidence Review</h2>
-        <p class="text-xs text-[#8892B0]">Submit your identity and supporting evidence, then select the DIY categories you are qualified to mentor in.</p>
+        <h2 class="text-lg font-bold text-white mb-1">Complete Your Tutor Profile</h2>
+        <p class="text-xs text-[#8892B0]">Add a profile picture, select the DIY categories you can mentor in and, if applying for professional-tier access, provide relevant trade or professional certification.</p>
       </div>
       <form id="tutor-docs-form" onsubmit="submitTutorDocuments(event)" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">Profile Picture</label><input type="file" id="tutor-profile-pic" accept="image/*" required class="text-xs text-[#8892B0]"></div>
-          
-          <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><label class="block text-xs font-semibold text-white mb-2">DBS Certificate</label><input type="file" id="tutor-dbs-doc" accept="image/*,.pdf" required class="text-xs text-[#8892B0]"></div>
-          
-          <!-- PROFESSIONAL CERTIFICATION -->
+<!-- PROFESSIONAL CERTIFICATION -->
           <div id="pro-cert-container" class="hidden p-4 bg-[#0A192F] border border-[#FF6B35]/50 rounded-xl relative overflow-hidden">
             <div class="absolute top-0 right-0 bg-[#FF6B35] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase shadow-lg">Pro Tier</div>
             <label class="block text-xs font-semibold text-white mb-2">Trade / Professional Certification</label>
@@ -109,15 +106,15 @@
             </div>
           </div>
         </div>
-        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit Identity & Evidence</button>
+        <button type="submit" id="submit-docs-btn" class="w-full py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold text-sm rounded-xl transition shadow-lg">Submit Tutor Profile</button>
       </form>
     </section>
 
     <!-- PENDING REVIEW -->
     <section id="tutor-pending-review" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-12 text-center hidden space-y-4">
       <i class="fa-solid fa-clock-rotate-left text-4xl text-amber-500"></i>
-      <h3 class="text-xl font-bold text-amber-500">Documents Under Admin Review</h3>
-      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your identity and evidence have been submitted. Once reviewed and approved by an admin, your marketplace dashboard will unlock.</p>
+      <h3 class="text-xl font-bold text-amber-500">Tutor Profile Under Admin Review</h3>
+      <p class="text-xs text-amber-400/80 max-w-md mx-auto">Your Tutor profile has been submitted. Once reviewed and approved by an admin, your marketplace dashboard will unlock.</p>
     </section>
     <!-- STRIPE ONBOARDING SECTION -->
     <section id="tutor-stripe-section" class="bg-[#112240] border-2 border-[#FF6B35] rounded-2xl p-8 text-center hidden space-y-4 max-w-2xl mx-auto shadow-2xl shadow-[#FF6B35]/10">
@@ -627,17 +624,15 @@
       if (!skills.length) {
         showToast('Select at least one skill', 'error');
         btn.disabled = false;
-        btn.innerHTML = 'Submit Identity & Evidence';
+        btn.innerHTML = 'Submit Tutor Profile';
         return;
       }
 
       try {
         const picFile = document.getElementById('tutor-profile-pic').files[0];
-        const dbsFile = document.getElementById('tutor-dbs-doc').files[0];
         const proFile = document.getElementById('tutor-pro-doc')?.files[0];
 
         let picUrl = currentProfile?.profile_picture_url || null;
-        let dbsPath = currentProfile?.dbs_document_url || null;
         let proPath = currentProfile?.trade_certificate_url || null;
 
         if (picFile) {
@@ -649,12 +644,6 @@
           picUrl = data.publicUrl;
         }
 
-        if (dbsFile) {
-          const ext = dbsFile.name.split('.').pop();
-          dbsPath = `dbs_${currentProfile.id}_${Date.now()}.${ext}`;
-          const { error: dbsErr } = await supabaseClient.storage.from('tutor_documents').upload(dbsPath, dbsFile, { upsert: true });
-          if (dbsErr) throw dbsErr;
-        }
 
         if (proFile && currentProfile.tutor_tier === 'professional') {
           const ext = proFile.name.split('.').pop();
@@ -667,7 +656,6 @@
           validation_status: 'submitted', 
           skills: skills,
           profile_picture_url: picUrl,
-          dbs_document_url: dbsPath,
           trade_certificate_url: proPath
         }).eq('id', currentProfile.id);
         
@@ -683,7 +671,7 @@
           });
         } catch (emailErr) { console.error("Email notification failed:", emailErr); }
 
-        showToast('Identity and evidence submitted for review!', 'success');
+        showToast('Tutor profile submitted for review!', 'success');
         
         if (picUrl) {
           currentProfile.profile_picture_url = picUrl;
@@ -695,7 +683,7 @@
       } catch (err) {
         showToast(`Upload Error: ${err.message}`, 'error');
         btn.disabled = false;
-        btn.innerHTML = 'Submit Identity & Evidence';
+        btn.innerHTML = 'Submit Tutor Profile';
       }
     }
 
@@ -1245,13 +1233,13 @@
       const statusBadge = document.getElementById('header-status-badge');
       if (statusBadge) {
         if (currentProfile.validation_status === 'approved') {
-          statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Identity & Evidence Reviewed';
+          statusBadge.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Tutor Profile Approved';
           statusBadge.className = 'text-[10px] text-emerald-400 uppercase font-bold';
         } else if (currentProfile.validation_status === 'submitted') {
           statusBadge.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-1"></i> Under Review';
           statusBadge.className = 'text-[10px] text-amber-500 uppercase font-bold';
         } else {
-          statusBadge.innerHTML = 'Identity & Evidence Not Reviewed';
+          statusBadge.innerHTML = 'Tutor Profile Not Approved';
           statusBadge.className = 'text-[10px] text-[#8892B0] uppercase font-bold';
         }
       }
