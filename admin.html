@@ -48,14 +48,14 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
-  <!-- TUTOR PROFILE REVIEW MODAL -->
+  <!-- TUTOR DOCUMENT REVIEW MODAL -->
   <div id="user-docs-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
       <button onclick="document.getElementById('user-docs-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
-      <h3 class="text-lg font-bold text-white mb-1">Tutor Profile Review</h3>
+      <h3 class="text-lg font-bold text-white mb-1">Tutor Profile & Documents</h3>
       <p class="text-xs text-[#8892B0] mb-6">Reviewing profile information for <span id="docs-modal-name" class="font-bold text-white"></span></p>
       <div id="docs-modal-content" class="space-y-3">
-        <!-- Profile details and professional certification links are injected here -->
+        <!-- Buttons injected here -->
       </div>
     </div>
   </div>
@@ -208,34 +208,60 @@
     // --- TAB 1: PENDING TUTORS ---
     async function loadPendingTutors() {
       const container = document.getElementById('admin-review-list');
-      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Fetching Tutor profile information...</p>';
+      container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Fetching Tutor profile and Stripe status...</p>';
 
-      const { data: tutors, error } = await supabaseClient.from('profiles').select('*').eq('role', 'tutor').eq('validation_status', 'submitted');
-      
-      if (error) { container.innerHTML = `<p class="text-xs text-rose-400">Error: ${error.message}</p>`; return; }
-      if (!tutors || tutors.length === 0) { container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8 italic">Inbox zero! No pending Tutor profile reviews.</p>'; return; }
+      const { data: tutors, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('role', 'tutor')
+        .eq('validation_status', 'submitted');
 
-      container.innerHTML = tutors.map(t => `
-        <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-5 flex flex-col md:flex-row gap-6 items-center justify-between">
-          <div class="flex items-center space-x-4 min-w-[200px]">
-            <img src="${t.profile_picture_url || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full object-cover border border-[#233554]">
-            <div>
-              <div class="font-bold text-white text-sm">${t.full_name || 'Tutor'}</div>
-              <div class="text-[10px] text-[#8892B0] uppercase">${(t.tutor_tier||'').replace('_',' ')}</div>
+      if (error) {
+        container.innerHTML = `<p class="text-xs text-rose-400">Error: ${escapeHTML(error.message)}</p>`;
+        return;
+      }
+
+      if (!tutors || tutors.length === 0) {
+        container.innerHTML = '<p class="text-xs text-[#8892B0] text-center py-8 italic">Inbox zero! No pending Tutor profile reviews.</p>';
+        return;
+      }
+
+      container.innerHTML = tutors.map(t => {
+        const stripeAccepted = t.stripe_onboarding_complete === true;
+        const stripeStatus = stripeAccepted
+          ? `<div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase">
+               <i class="fa-brands fa-stripe"></i> Stripe accepted
+             </div>`
+          : `<div class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase">
+               <i class="fa-solid fa-clock"></i> Stripe verification pending
+             </div>`;
+
+        const approvalControl = stripeAccepted
+          ? `<button onclick="processTutor('${t.id}', 'approved')" class="flex-1 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/40 transition text-emerald-400 text-xs font-bold rounded">Approve</button>`
+          : `<button type="button" disabled title="Stripe must accept the Tutor before ToolTutors approval" class="flex-1 py-1.5 bg-[#233554] text-[#8892B0] text-xs font-bold rounded cursor-not-allowed opacity-70"><i class="fa-solid fa-lock mr-1"></i>Await Stripe</button>`;
+
+        return `
+          <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-5 flex flex-col md:flex-row gap-6 items-center justify-between">
+            <div class="flex items-center space-x-4 min-w-[240px]">
+              <img src="${t.profile_picture_url || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full object-cover border border-[#233554]" alt="Tutor profile picture">
+              <div>
+                <div class="font-bold text-white text-sm">${escapeHTML(t.full_name || 'Tutor')}</div>
+                <div class="text-[10px] text-[#8892B0] uppercase">${escapeHTML((t.tutor_tier || '').replace('_', ' '))}</div>
+                ${stripeStatus}
+              </div>
             </div>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            ${t.trade_certificate_url ? `<button onclick="viewSecureDocument('${t.trade_certificate_url}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition rounded text-xs font-bold border border-amber-500/30" title="Trade Certification">PRO</button>` : ''}
-          </div>
-          <div class="flex flex-col space-y-2 w-full md:w-64">
-            <input type="text" id="notes-${t.id}" placeholder="Rejection notes..." class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
-            <div class="flex gap-2">
-              <button onclick="processTutor('${t.id}', 'approved')" class="flex-1 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/40 transition text-emerald-400 text-xs font-bold rounded">Approve</button>
-              <button onclick="processTutor('${t.id}', 'rejected')" class="flex-1 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 transition text-rose-400 text-xs font-bold rounded">Reject</button>
+            <div class="flex flex-wrap gap-2">
+              ${t.trade_certificate_url ? `<button onclick="viewSecureDocument('${t.trade_certificate_url}')" class="px-3 py-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/40 transition rounded text-xs font-bold border border-amber-500/30" title="Trade Certification">PRO</button>` : ''}
             </div>
-          </div>
-        </div>
-      `).join('');
+            <div class="flex flex-col space-y-2 w-full md:w-64">
+              <input type="text" id="notes-${t.id}" placeholder="Rejection notes..." class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
+              <div class="flex gap-2">
+                ${approvalControl}
+                <button onclick="processTutor('${t.id}', 'rejected')" class="flex-1 py-1.5 bg-rose-500/20 hover:bg-rose-500/40 transition text-rose-400 text-xs font-bold rounded">Reject</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
     }
 
     async function viewSecureDocument(path) {
@@ -250,10 +276,47 @@
 
     async function processTutor(id, status) {
       const notes = document.getElementById(`notes-${id}`)?.value || '';
-      if (status === 'rejected' && !notes.trim()) { showToast('Provide rejection notes.', 'error'); return; }
-      await supabaseClient.from('profiles').update({ validation_status: status, validation_notes: notes }).eq('id', id);
-      showToast(status === 'approved' ? 'Tutor profile approved.' : 'Tutor profile returned for revision.', 'success');
-      loadPendingTutors();
+      if (status === 'rejected' && !notes.trim()) {
+        showToast('Provide rejection notes.', 'error');
+        return;
+      }
+
+      if (status === 'approved') {
+        const { data: latestTutor, error: stripeStatusError } = await supabaseClient
+          .from('profiles')
+          .select('stripe_onboarding_complete')
+          .eq('id', id)
+          .single();
+
+        if (stripeStatusError) {
+          showToast(`Could not confirm Stripe status: ${stripeStatusError.message}`, 'error');
+          return;
+        }
+
+        if (latestTutor?.stripe_onboarding_complete !== true) {
+          showToast('Approval blocked. Stripe has not yet accepted this Tutor.', 'error');
+          await loadPendingTutors();
+          return;
+        }
+      }
+
+      const { error } = await supabaseClient
+        .from('profiles')
+        .update({ validation_status: status, validation_notes: notes })
+        .eq('id', id);
+
+      if (error) {
+        showToast(`Could not update Tutor: ${error.message}`, 'error');
+        return;
+      }
+
+      showToast(
+        status === 'approved'
+          ? 'Tutor approved after Stripe acceptance was confirmed.'
+          : 'Tutor profile returned for revision.',
+        'success'
+      );
+      await loadPendingTutors();
     }
 
     // --- TAB 2: ALL JOBS ---
@@ -527,7 +590,7 @@
       return Number.isFinite(lat) && Number.isFinite(lon) && !(lat === 0 && lon === 0);
     }
 
-    // --- TAB 4: USER DIRECTORY (WITH CONTACT, LOCATION, SKILLS, PROFESSIONAL CERTIFICATION, & DELETION) ---
+    // --- TAB 3: USER DIRECTORY (WITH CONTACT, LOCATION, SKILLS, DOCS, & DELETION) ---
     async function loadAllUsers() {
       const container = document.getElementById('admin-users-list');
       const term = document.getElementById('user-search').value.trim().toLowerCase();
@@ -558,7 +621,7 @@
                 <div class="text-[10px] uppercase font-bold text-[#FF6B35] mt-1">Role: ${u.role} | Tier: ${u.tutor_tier || 'N/A'}</div>
               </div>
               <div class="flex items-center gap-2 w-full md:w-auto">
-                ${hasDocs ? `<button onclick="openUserDocsModal('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold" title="View Professional Certification">Pro Certificate</button>` : ''}
+                ${hasDocs ? `<button onclick="openUserDocsModal('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold" title="View Professional Documentation">Pro Docs</button>` : ''}
                 <select id="role-${u.id}" class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
                   <option value="learner" ${u.role==='learner'?'selected':''}>Learner</option>
                   <option value="tutor" ${u.role==='tutor'?'selected':''}>Tutor</option>
@@ -590,7 +653,7 @@
             ${isTutor ? `
               <div class="pt-3 border-t border-[#233554] grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
                 <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold"><i class="fa-solid fa-receipt mr-1 text-[#FF6B35]"></i>VAT number</span><div class="text-white mt-1">${escapeHTML(u.vat_number || 'Not supplied')}</div></div>
-                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold"><i class="fa-brands fa-stripe mr-1 text-[#FF6B35]"></i>Stripe payouts</span><div class="mt-1 ${u.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${u.stripe_onboarding_complete ? 'Setup complete' : 'Pending'}</div></div>
+                <div class="p-3 rounded-lg bg-[#112240] border border-[#233554]"><span class="text-[#8892B0] uppercase font-bold"><i class="fa-brands fa-stripe mr-1 text-[#FF6B35]"></i>Stripe payouts</span><div class="mt-1 ${u.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${u.stripe_onboarding_complete ? 'Accepted by Stripe' : 'Verification pending'}</div></div>
               </div>
             ` : ''}
 
@@ -627,7 +690,7 @@
           <div><span class="text-[#8892B0] font-bold uppercase">Phone:</span> <span class="text-white">${escapeHTML(user.phone || 'Not available')}</span></div>
           <div><span class="text-[#8892B0] font-bold uppercase">Address:</span> <span class="text-white">${escapeHTML([user.address_line1, user.address_line2, user.city, user.postcode, user.country].filter(Boolean).join(', ') || 'Not available')}</span></div>
           <div><span class="text-[#8892B0] font-bold uppercase">VAT:</span> <span class="text-white">${escapeHTML(user.vat_number || 'Not supplied')}</span></div>
-          <div><span class="text-[#8892B0] font-bold uppercase">Stripe payouts:</span> <span class="${user.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${user.stripe_onboarding_complete ? 'Setup complete' : 'Pending'}</span></div>
+          <div><span class="text-[#8892B0] font-bold uppercase">Stripe payouts:</span> <span class="${user.stripe_onboarding_complete ? 'text-emerald-400' : 'text-amber-400'}">${user.stripe_onboarding_complete ? 'Accepted by Stripe' : 'Verification pending'}</span></div>
         </div>
       `;
       if (user.trade_certificate_url) {
@@ -635,7 +698,7 @@
       }
 
       if (!user.trade_certificate_url) {
-        html += '<p class="text-xs text-[#8892B0] text-center italic py-4">No professional certification has been supplied for this Tutor.</p>';
+        html += '<p class="text-xs text-[#8892B0] text-center italic py-4">No professional documentation found for this Tutor.</p>';
       }
 
       document.getElementById('docs-modal-content').innerHTML = html;
