@@ -48,14 +48,14 @@
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
 
-  <!-- TUTOR DOCUMENT REVIEW MODAL -->
+  <!-- TUTOR PROFILE REVIEW MODAL -->
   <div id="user-docs-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
       <button onclick="document.getElementById('user-docs-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
-      <h3 class="text-lg font-bold text-white mb-1">Tutor Profile & Documents</h3>
+      <h3 class="text-lg font-bold text-white mb-1">Tutor Profile Review</h3>
       <p class="text-xs text-[#8892B0] mb-6">Reviewing profile information for <span id="docs-modal-name" class="font-bold text-white"></span></p>
       <div id="docs-modal-content" class="space-y-3">
-        <!-- Buttons injected here -->
+        <!-- Profile details and professional certification links are injected here -->
       </div>
     </div>
   </div>
@@ -527,7 +527,7 @@
       return Number.isFinite(lat) && Number.isFinite(lon) && !(lat === 0 && lon === 0);
     }
 
-    // --- TAB 3: USER DIRECTORY (WITH CONTACT, LOCATION, SKILLS, DOCS, & DELETION) ---
+    // --- TAB 4: USER DIRECTORY (WITH CONTACT, LOCATION, SKILLS, PROFESSIONAL CERTIFICATION, & DELETION) ---
     async function loadAllUsers() {
       const container = document.getElementById('admin-users-list');
       const term = document.getElementById('user-search').value.trim().toLowerCase();
@@ -558,7 +558,7 @@
                 <div class="text-[10px] uppercase font-bold text-[#FF6B35] mt-1">Role: ${u.role} | Tier: ${u.tutor_tier || 'N/A'}</div>
               </div>
               <div class="flex items-center gap-2 w-full md:w-auto">
-                ${hasDocs ? `<button onclick="openUserDocsModal('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold" title="View Professional Documentation">Pro Docs</button>` : ''}
+                ${hasDocs ? `<button onclick="openUserDocsModal('${u.id}')" class="px-3 py-1.5 bg-[#233554] hover:bg-[#FF6B35] transition text-white rounded text-xs font-bold" title="View Professional Certification">Pro Certificate</button>` : ''}
                 <select id="role-${u.id}" class="px-3 py-1.5 rounded bg-[#112240] border border-[#233554] text-white text-xs">
                   <option value="learner" ${u.role==='learner'?'selected':''}>Learner</option>
                   <option value="tutor" ${u.role==='tutor'?'selected':''}>Tutor</option>
@@ -635,7 +635,7 @@
       }
 
       if (!user.trade_certificate_url) {
-        html += '<p class="text-xs text-[#8892B0] text-center italic py-4">No professional documentation found for this Tutor.</p>';
+        html += '<p class="text-xs text-[#8892B0] text-center italic py-4">No professional certification has been supplied for this Tutor.</p>';
       }
 
       document.getElementById('docs-modal-content').innerHTML = html;
