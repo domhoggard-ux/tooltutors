@@ -121,10 +121,10 @@
       <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
         <i class="fa-brands fa-stripe text-3xl text-[#FF6B35]"></i>
       </div>
-      <h3 class="text-2xl font-extrabold text-white">Set Up Payouts</h3>
-      <p class="text-sm text-[#8892B0] max-w-md mx-auto">You have been approved! To start accepting jobs and receiving automated payouts, you must connect your bank account securely via Stripe Connect.</p>
+      <h3 class="text-2xl font-extrabold text-white">Set Up Your Tutor Account</h3>
+      <p class="text-sm text-[#8892B0] max-w-md mx-auto">Start with Stripe Connect to securely provide identity, address and payout information. After Stripe confirms setup, return to ToolTutors to add your profile picture, skills and any professional certification.</p>
       <button id="connect-stripe-btn" onclick="startStripeOnboarding()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg mt-4 inline-flex items-center gap-2">
-        <i class="fa-solid fa-building-columns"></i> Connect Bank Account
+        <i class="fa-solid fa-building-columns"></i> Continue to Stripe Setup
       </button>
     </section>
 
@@ -333,14 +333,29 @@
           }
 
           if (stripeSection) stripeSection.classList.add('hidden');
-          if (activeDashboard) activeDashboard.classList.remove('hidden');
 
-          await loadTutorWorkspace();
+          const latestStatus = currentProfile.validation_status || 'pending';
+          const onboardingSection = document.getElementById('tutor-onboarding-section');
+          const pendingReviewSection = document.getElementById('tutor-pending-review');
+
+          if (latestStatus === 'approved') {
+            if (activeDashboard) activeDashboard.classList.remove('hidden');
+            await loadTutorWorkspace();
+          } else if (latestStatus === 'submitted') {
+            if (activeDashboard) activeDashboard.classList.add('hidden');
+            if (pendingReviewSection) pendingReviewSection.classList.remove('hidden');
+          } else {
+            if (activeDashboard) activeDashboard.classList.add('hidden');
+            if (onboardingSection) onboardingSection.classList.remove('hidden');
+            configureProfessionalEvidenceField();
+            showRejectionNoteIfNeeded();
+          }
 
           if (showSuccessMessage) {
             showToast(
-              responseData?.message ||
-              'Stripe setup is complete. Your Tutor dashboard is now active!',
+              latestStatus === 'approved'
+                ? 'Stripe setup is complete. Your Tutor dashboard is now active!'
+                : 'Stripe setup is complete. Now finish and submit your ToolTutors profile.',
               'success'
             );
           }
@@ -355,7 +370,7 @@
         if (showSuccessMessage) {
           const capabilityStatus = responseData?.capabilityStatus || 'pending';
           const message = responseData?.message ||
-            'Stripe still needs more information. Select Connect Bank Account to continue setup.';
+            'Stripe still needs more information. Select Continue to Stripe Setup to continue setup.';
           showToast(message, capabilityStatus === 'restricted' ? 'error' : 'info');
         }
 
@@ -426,60 +441,52 @@
         }
 
         const status = currentProfile.validation_status || 'pending';
-        
-        if (status === 'approved') {
-          if (profile.stripe_onboarding_complete) {
-            const missingMarketplaceLocation =
-              profile.latitude === null ||
-              profile.latitude === undefined ||
-              profile.longitude === null ||
-              profile.longitude === undefined ||
-              (Number(profile.latitude) === 0 && Number(profile.longitude) === 0);
+        const stripeComplete = currentProfile.stripe_onboarding_complete === true;
 
-            if (missingMarketplaceLocation && !returnedFromStripe) {
-              await checkStripeOnboardingStatus({
+        if (!stripeComplete) {
+          const confirmedComplete = returnedFromStripe
+            ? currentProfile.stripe_onboarding_complete === true
+            : await checkStripeOnboardingStatus({
                 showSuccessMessage: false,
                 showLoadingMessage: false
               });
-            } else {
-              document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-              await loadTutorWorkspace();
-            }
-          } else if (!returnedFromStripe) {
-            const stripeComplete = await checkStripeOnboardingStatus({
-              showSuccessMessage: false,
-              showLoadingMessage: false
-            });
 
-            if (!stripeComplete) {
-              document.getElementById('tutor-stripe-section').classList.remove('hidden');
-            }
+          if (!confirmedComplete) {
+            document.getElementById('tutor-stripe-section').classList.remove('hidden');
           }
+        } else if (status === 'approved') {
+          document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+          await loadTutorWorkspace();
         } else if (status === 'submitted') {
           document.getElementById('tutor-pending-review').classList.remove('hidden');
         } else {
           document.getElementById('tutor-onboarding-section').classList.remove('hidden');
-          
-          if (currentProfile.tutor_tier === 'professional') {
-            const proContainer = document.getElementById('pro-cert-container');
-            const proInput = document.getElementById('tutor-pro-doc');
-            if (proContainer && proInput) {
-              proContainer.classList.remove('hidden');
-              proInput.setAttribute('required', 'true');
-            }
-          }
-
-          if (status === 'rejected' && currentProfile.validation_notes) {
-            const noteDiv = document.getElementById('tutor-rejected-note');
-            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
-            noteDiv.classList.remove('hidden');
-          }
+          configureProfessionalEvidenceField();
+          showRejectionNoteIfNeeded();
         }
       } catch (err) {
         console.error('Tutor initialisation error:', err);
         showToast(`Unable to load the tutor workspace: ${err.message || 'Unknown error'}`, 'error');
       }
     });
+
+    function configureProfessionalEvidenceField() {
+      if (currentProfile?.tutor_tier !== 'professional') return;
+      const proContainer = document.getElementById('pro-cert-container');
+      const proInput = document.getElementById('tutor-pro-doc');
+      if (proContainer && proInput) {
+        proContainer.classList.remove('hidden');
+        proInput.setAttribute('required', 'true');
+      }
+    }
+
+    function showRejectionNoteIfNeeded() {
+      if (currentProfile?.validation_status !== 'rejected' || !currentProfile.validation_notes) return;
+      const noteDiv = document.getElementById('tutor-rejected-note');
+      if (!noteDiv) return;
+      noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
+      noteDiv.classList.remove('hidden');
+    }
 
     // STRIPE ONBOARDING TRIGGER
     async function startStripeOnboarding() {
@@ -616,6 +623,12 @@
 
     async function submitTutorDocuments(e) {
       e.preventDefault();
+      if (currentProfile?.stripe_onboarding_complete !== true) {
+        showToast('Complete Stripe setup before submitting your Tutor profile.', 'error');
+        document.getElementById('tutor-onboarding-section').classList.add('hidden');
+        document.getElementById('tutor-stripe-section').classList.remove('hidden');
+        return;
+      }
       const btn = document.getElementById('submit-docs-btn');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading Securely...';
