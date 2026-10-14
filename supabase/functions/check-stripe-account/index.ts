@@ -119,14 +119,40 @@ Deno.serve(async (req: Request): Promise<Response> => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { data: profile, error: profileError } = await adminClient
+    let requestBody: { tutorId?: string } = {};
+    try {
+      requestBody = await req.json();
+    } catch {
+      requestBody = {};
+    }
+
+    const { data: callerProfile, error: callerProfileError } = await adminClient
       .from("profiles")
-      .select("id, role, stripe_account_id, stripe_onboarding_complete, latitude, longitude")
+      .select("id, role")
       .eq("id", user.id)
       .single();
 
+    if (callerProfileError || !callerProfile) {
+      return jsonResponse({ error: "Caller profile not found." }, 404);
+    }
+
+    const requestedTutorId = String(requestBody.tutorId || "").trim();
+    if (requestedTutorId && callerProfile.role !== "admin" && requestedTutorId !== user.id) {
+      return jsonResponse({ error: "Admin access is required to refresh another Tutor." }, 403);
+    }
+
+    const targetTutorId = requestedTutorId && callerProfile.role === "admin"
+      ? requestedTutorId
+      : user.id;
+
+    const { data: profile, error: profileError } = await adminClient
+      .from("profiles")
+      .select("id, role, stripe_account_id, stripe_onboarding_complete, latitude, longitude")
+      .eq("id", targetTutorId)
+      .single();
+
     if (profileError || !profile) return jsonResponse({ error: "Tutor profile not found." }, 404);
-    if (profile.role !== "tutor") return jsonResponse({ error: "Tutor account required." }, 403);
+    if (profile.role !== "tutor") return jsonResponse({ error: "Target account is not a Tutor." }, 400);
 
     if (!profile.stripe_account_id) {
       return jsonResponse({
@@ -251,7 +277,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { error: updateError } = await adminClient
       .from("profiles")
       .update(updateData)
-      .eq("id", user.id);
+      .eq("id", targetTutorId);
 
     if (updateError) {
       return jsonResponse({ error: `Tutor profile update failed: ${updateError.message}` }, 400);
@@ -278,6 +304,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     return jsonResponse({
+      tutorId: targetTutorId,
+      refreshedByAdmin: callerProfile.role === "admin" && targetTutorId !== user.id,
       complete: onboardingComplete,
       capabilityStatus,
       detailsSubmitted,
@@ -298,3 +326,4 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 });
+
