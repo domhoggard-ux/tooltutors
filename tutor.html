@@ -48,6 +48,7 @@
             <div id="header-user-name" class="text-xs font-semibold text-white leading-tight">Loading...</div>
             <div id="header-status-badge" class="text-[10px] text-[#8892B0] uppercase font-bold">Loading...</div>        
         </div>
+        <button type="button" onclick="openTutorAccountDetails()" class="w-9 h-9 rounded-lg text-xs border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Account details" title="Account details"><i class="fa-solid fa-gear"></i></button>
         <button onclick="handleLogout()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition duration-200">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
         </button>
@@ -56,6 +57,29 @@
   </header>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- TUTOR ACCOUNT DETAILS MODAL -->
+  <div id="tutor-account-modal" class="fixed inset-0 z-[300] hidden bg-[#0A192F]/95 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-2xl shadow-2xl p-6 relative my-auto">
+      <button type="button" onclick="closeTutorAccountDetails()" class="absolute top-4 right-4 w-10 h-10 rounded-xl text-[#8892B0] hover:text-[#FF6B35] hover:bg-[#0A192F] transition" aria-label="Close account details"><i class="fa-solid fa-xmark"></i></button>
+      <div class="pr-12 mb-6 pb-4 border-b border-[#233554]">
+        <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-user-gear text-[#FF6B35] mr-2"></i>Account Details</h2>
+        <p class="text-xs text-[#8892B0] mt-1">Tutor identity, address and payout details are managed through Stripe.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Full Name</p><p id="account-full-name" class="text-sm text-white font-semibold">Not provided</p></div>
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">ToolTutors Email</p><p id="account-email" class="text-sm text-white break-all">Not provided</p></div>
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Phone</p><p id="account-phone" class="text-sm text-white">Not provided</p></div>
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Stripe Status</p><p id="account-stripe-status" class="text-sm font-semibold">Not connected</p></div>
+        <div class="sm:col-span-2 p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Stripe-synchronised Address</p><p id="account-address" class="text-sm text-white leading-relaxed">Not provided</p></div>
+        <div class="sm:col-span-2 p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Last Stripe Details Sync</p><p id="account-stripe-synced" class="text-sm text-[#8892B0]">Not yet synchronised</p></div>
+      </div>
+      <div class="mt-5 p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-300 leading-relaxed"><i class="fa-solid fa-circle-info mr-1"></i>Use Stripe to update identity, address, bank and payout information. ToolTutors displays the latest information synchronised from Stripe.</div>
+      <button id="manage-stripe-account-btn" type="button" onclick="openStripeExpressDashboard()" class="w-full mt-5 py-3 bg-[#635BFF] hover:bg-[#5149e5] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition shadow-lg"><i class="fa-brands fa-stripe mr-2"></i>Manage Details & Payouts in Stripe</button>
+      <button id="refresh-stripe-details-btn" type="button" onclick="refreshStripeAccountDetails()" class="w-full mt-3 py-3 bg-[#233554] hover:bg-[#2d4265] disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-sm rounded-xl transition"><i class="fa-solid fa-rotate mr-2"></i>Refresh Details from Stripe</button>
+      <p id="manage-stripe-unavailable" class="hidden mt-3 text-xs text-amber-400 text-center">Complete Stripe onboarding before managing payout details.</p>
+    </div>
+  </div>
 
   <!-- FULL SCREEN IMAGE MODAL -->
   <div id="image-modal" class="fixed inset-0 z-[10000] hidden bg-[#0A192F]/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
@@ -121,10 +145,10 @@
       <div class="w-16 h-16 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#FF6B35]/30">
         <i class="fa-brands fa-stripe text-3xl text-[#FF6B35]"></i>
       </div>
-      <h3 class="text-2xl font-extrabold text-white">Set Up Your Tutor Account</h3>
-      <p class="text-sm text-[#8892B0] max-w-md mx-auto">Start with Stripe Connect to securely provide identity, address and payout information. After Stripe setup, return to ToolTutors to add your profile picture, skills and any professional certification.</p>
+      <h3 class="text-2xl font-extrabold text-white">Set Up Payouts</h3>
+      <p class="text-sm text-[#8892B0] max-w-md mx-auto">You have been approved! To start accepting jobs and receiving automated payouts, you must connect your bank account securely via Stripe Connect.</p>
       <button id="connect-stripe-btn" onclick="startStripeOnboarding()" class="px-8 py-3 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-xl transition shadow-lg mt-4 inline-flex items-center gap-2">
-        <i class="fa-solid fa-building-columns"></i> Continue to Stripe Setup
+        <i class="fa-solid fa-building-columns"></i> Connect Bank Account
       </button>
     </section>
 
@@ -333,17 +357,14 @@
           }
 
           if (stripeSection) stripeSection.classList.add('hidden');
-          if ((currentProfile.validation_status || 'pending') === 'approved') {
-            if (activeDashboard) activeDashboard.classList.remove('hidden');
-            await loadTutorWorkspace();
-          } else {
-            if (activeDashboard) activeDashboard.classList.add('hidden');
-          }
+          if (activeDashboard) activeDashboard.classList.remove('hidden');
+
+          await loadTutorWorkspace();
 
           if (showSuccessMessage) {
             showToast(
               responseData?.message ||
-              (currentProfile.validation_status === 'approved' ? 'Stripe setup is complete. Your Tutor dashboard is now active!' : 'Stripe setup is complete. Now finish your ToolTutors profile.'),
+              'Stripe setup is complete. Your Tutor dashboard is now active!',
               'success'
             );
           }
@@ -358,7 +379,7 @@
         if (showSuccessMessage) {
           const capabilityStatus = responseData?.capabilityStatus || 'pending';
           const message = responseData?.message ||
-            'Stripe still needs more information. Select Continue to Stripe Setup to continue setup.';
+            'Stripe still needs more information. Select Connect Bank Account to continue setup.';
           showToast(message, capabilityStatus === 'restricted' ? 'error' : 'info');
         }
 
@@ -429,17 +450,6 @@
         }
 
         const status = currentProfile.validation_status || 'pending';
-
-        // New Tutor flow: Stripe-hosted onboarding must happen before the
-        // ToolTutors profile and evidence form is displayed.
-        if (status === 'pending' && !returnedFromStripe) {
-          document.getElementById('tutor-onboarding-section').classList.add('hidden');
-          document.getElementById('tutor-pending-review').classList.add('hidden');
-          document.getElementById('tutor-active-dashboard').classList.add('hidden');
-          document.getElementById('tutor-stripe-section').classList.remove('hidden');
-          await startStripeOnboarding();
-          return;
-        }
         
         if (status === 'approved') {
           if (profile.stripe_onboarding_complete) {
@@ -498,11 +508,9 @@
     // STRIPE ONBOARDING TRIGGER
     async function startStripeOnboarding() {
       const btn = document.getElementById('connect-stripe-btn');
-      const originalHtml = btn?.innerHTML || '';
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Opening secure Stripe setup...';
-      }
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
 
       try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
@@ -528,11 +536,8 @@
       } catch (err) {
         console.error(err);
         showToast(`Stripe Error: ${err.message}`, 'error');
-        document.getElementById('tutor-stripe-section')?.classList.remove('hidden');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = originalHtml;
-        }
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
       }
     }
 
@@ -1312,6 +1317,116 @@
         showToast(`Failed to update picture: ${error.message || 'Unknown error'}`, 'error');
       } finally {
         e.target.value = '';
+      }
+    }
+
+    function formatTutorAddress(profile) {
+      const lines = [profile?.address_line1, profile?.address_line2, profile?.city, profile?.postcode, profile?.country]
+        .map(value => String(value || '').trim())
+        .filter(Boolean);
+      return lines.length ? lines.join(', ') : 'No Stripe address has been synchronised yet.';
+    }
+
+    function openTutorAccountDetails() {
+      if (!currentProfile) return;
+      document.getElementById('account-full-name').textContent = currentProfile.full_name || 'Not provided';
+      document.getElementById('account-email').textContent = currentProfile.email || 'Not provided';
+      document.getElementById('account-phone').textContent = currentProfile.phone || 'Not provided';
+      document.getElementById('account-address').textContent = formatTutorAddress(currentProfile);
+      const syncedAt = currentProfile.stripe_address_synced_at;
+      document.getElementById('account-stripe-synced').textContent = syncedAt
+        ? new Date(syncedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
+        : 'Not yet synchronised';
+      const isConnected = Boolean(currentProfile.stripe_account_id && currentProfile.stripe_onboarding_complete === true);
+      const statusEl = document.getElementById('account-stripe-status');
+      statusEl.textContent = isConnected ? 'Accepted by Stripe' : (currentProfile.stripe_account_id ? 'Verification pending' : 'Not connected');
+      statusEl.className = isConnected ? 'text-sm font-semibold text-emerald-400' : 'text-sm font-semibold text-amber-400';
+      document.getElementById('manage-stripe-account-btn').classList.toggle('hidden', !isConnected);
+      document.getElementById('refresh-stripe-details-btn').classList.toggle('hidden', !currentProfile.stripe_account_id);
+      document.getElementById('manage-stripe-unavailable').classList.toggle('hidden', Boolean(currentProfile.stripe_account_id));
+      const modal = document.getElementById('tutor-account-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeTutorAccountDetails() {
+      const modal = document.getElementById('tutor-account-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function openStripeExpressDashboard() {
+      const button = document.getElementById('manage-stripe-account-btn');
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Opening Stripe...';
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-stripe-login-link`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({})
+        });
+        let result = {};
+        try { result = await response.json(); } catch (parseError) { console.error('Stripe login-link response parse error:', parseError); }
+        if (!response.ok) throw new Error(result?.error || `Stripe link could not be created (${response.status}).`);
+        if (!result?.url) throw new Error('Stripe did not return a dashboard link.');
+        const stripeWindow = window.open(result.url, '_blank', 'noopener,noreferrer');
+        if (!stripeWindow) throw new Error('Your browser blocked the Stripe tab. Allow pop-ups for ToolTutors and try again.');
+        showToast('Stripe opened in a new tab. Return here and select Refresh Details from Stripe when finished.', 'info');
+      } catch (error) {
+        console.error('Stripe dashboard error:', error);
+        showToast(`Could not open Stripe: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+      }
+    }
+
+    async function refreshStripeAccountDetails() {
+      const button = document.getElementById('refresh-stripe-details-btn');
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Refreshing from Stripe...';
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-stripe-account-details`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({})
+        });
+        let result = {};
+        try { result = await response.json(); } catch (parseError) { console.error('Stripe sync response parse error:', parseError); }
+        if (!response.ok) throw new Error(result?.error || `Stripe details could not be synchronised (${response.status}).`);
+        if (result?.profile) {
+          currentProfile = result.profile;
+        } else {
+          const { data: refreshedProfile, error: refreshError } = await supabaseClient
+            .from('profiles').select('*').eq('id', currentProfile.id).single();
+          if (refreshError) throw refreshError;
+          currentProfile = refreshedProfile;
+        }
+        updateHeaderUI();
+        openTutorAccountDetails();
+        showToast(result?.message || 'Stripe account details synchronised.', 'success');
+      } catch (error) {
+        console.error('Stripe details sync error:', error);
+        showToast(`Could not refresh Stripe details: ${error.message || 'Unknown error'}`, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHtml;
       }
     }
 
