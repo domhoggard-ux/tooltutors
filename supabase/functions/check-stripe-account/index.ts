@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const STRIPE_API_VERSION = "2026-09-30.preview";
+const STRIPE_API_VERSION = "2026-09-30.endive";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,14 +145,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       Accept: "application/json",
     };
 
-    // Keep the already-working payout status check independent from address retrieval.
-    const accountUrl = new URL(`https://api.stripe.com/v2/core/accounts/${accountId}`);
-    accountUrl.searchParams.set("include[0]", "configuration.recipient");
-
-    const accountResponse = await fetch(accountUrl.toString(), {
-      method: "GET",
-      headers: stripeHeaders,
-    });
+    // Retrieve the connected account from Stripe's Accounts API. This exposes
+    // the verification, requirements and payout fields needed for an accurate
+    // ToolTutors onboarding decision.
+    const accountResponse = await fetch(
+      `https://api.stripe.com/v1/accounts/${accountId}`,
+      {
+        method: "GET",
+        headers: stripeHeaders,
+      },
+    );
     const account = await accountResponse.json();
 
     if (!accountResponse.ok) {
@@ -162,12 +164,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const capabilityStatus =
-      account?.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status
-      || account?.configuration?.recipient?.capabilities?.stripe_transfers?.status
-      || "pending";
+    const currentlyDue = Array.isArray(account?.requirements?.currently_due)
+      ? account.requirements.currently_due
+      : [];
+    const pendingVerification = Array.isArray(account?.requirements?.pending_verification)
+      ? account.requirements.pending_verification
+      : [];
+    const disabledReason = cleanText(account?.requirements?.disabled_reason);
+    const detailsSubmitted = account?.details_submitted === true;
+    const payoutsEnabled = account?.payouts_enabled === true;
 
-    const onboardingComplete = capabilityStatus === "active";
+    const onboardingComplete =
+      detailsSubmitted &&
+      payoutsEnabled &&
+      currentlyDue.length === 0 &&
+      pendingVerification.length === 0 &&
+      !disabledReason;
+
+    let capabilityStatus = "pending";
+    if (onboardingComplete) capabilityStatus = "active";
+    else if (disabledReason?.startsWith("rejected.")) capabilityStatus = "rejected";
+    else if (disabledReason === "under_review" || pendingVerification.length > 0) capabilityStatus = "under_review";
+    else if (currentlyDue.length > 0 || disabledReason) capabilityStatus = "action_required";
 
     // Persons v2 contains the individual's residential address and phone number.
     let person: any | null = null;
@@ -245,7 +263,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
 
     let message = "Stripe verification is still being processed.";
-    if (onboardingComplete && addressFound && finalCoordinatesAvailable) {
+    if (capabilityStatus === "action_required") {
+      message = "Stripe needs more information before this Tutor can receive payouts.";
+    } else if (capabilityStatus === "under_review") {
+      message = "Stripe is reviewing the submitted information.";
+    } else if (capabilityStatus === "rejected") {
+      message = "Stripe has not accepted this connected account.";
+    } else if (onboardingComplete && addressFound && finalCoordinatesAvailable) {
       message = "Stripe verification and marketplace location setup are complete.";
     } else if (onboardingComplete && !addressFound) {
       message = "Stripe verification is complete, but Stripe did not return a complete Person address.";
@@ -256,6 +280,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return jsonResponse({
       complete: onboardingComplete,
       capabilityStatus,
+      detailsSubmitted,
+      payoutsEnabled,
+      currentlyDue,
+      pendingVerification,
+      disabledReason,
       addressSynced: addressFound && finalCoordinatesAvailable,
       phoneSynced: Boolean(phone),
       coordinatesFound: finalCoordinatesAvailable,
