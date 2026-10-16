@@ -21,6 +21,15 @@
     ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #FF6B35; }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .proposal-tool-checkbox:checked + .proposal-tool-card {
+      border-color: rgba(255, 107, 53, 0.8);
+      background: rgba(255, 107, 53, 0.12);
+    }
+    .proposal-tool-checkbox:checked + .proposal-tool-card .proposal-tool-check {
+      background: #FF6B35;
+      border-color: #FF6B35;
+      color: white;
+    }
   </style>
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans antialiased flex flex-col min-h-screen">
@@ -204,32 +213,60 @@
     </div>
 
     <!-- PROPOSE TIME & TOOLS MODAL -->
-    <div id="propose-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
-        <button onclick="document.getElementById('propose-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
-        <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
-        <p class="text-xs text-[#8892B0] mb-6">Propose the appointment time and list the tools the Learner needs to prepare.</p>
-        <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-4">
-          <input type="hidden" id="propose-job-id">
-          
-          <div>
-            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-2">Proposed Appointment</label>
-            <div class="grid grid-cols-2 gap-4">
-              <input type="date" id="propose-date" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
-              <input type="time" id="propose-time-only" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+  <div id="propose-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-4xl shadow-2xl p-6 relative my-auto max-h-[92vh] overflow-y-auto custom-scrollbar">
+      <button type="button" onclick="closeProposeModal()" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition" aria-label="Close proposal"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-lg font-bold text-white mb-1">Finalise Proposal</h3>
+      <p class="text-xs text-[#8892B0] mb-6">Propose the appointment and select the reusable tools the Learner needs for this project.</p>
+      <form id="propose-form" onsubmit="submitProposal(event)" class="space-y-5">
+        <input type="hidden" id="propose-job-id">
+        <div>
+          <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-2">Proposed Appointment</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="date" id="propose-date" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+            <input type="time" id="propose-time-only" onchange="this.blur()" required class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+        <div id="proposal-tool-selector" class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-[#8892B0] uppercase">Required reusable tools</label>
+              <p id="proposal-category-note" class="text-[11px] text-[#8892B0] mt-1">Loading the tool catalogue...</p>
+            </div>
+            <div class="text-xs font-bold text-[#FF6B35]"><span id="proposal-selected-count">0</span> selected</div>
+          </div>
+          <label class="relative block" for="proposal-tool-search">
+            <span class="sr-only">Search the tool catalogue</span>
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[#8892B0]"></i>
+            <input id="proposal-tool-search" type="search" autocomplete="off" placeholder="Search the tool catalogue" oninput="renderProposalTools()" class="w-full pl-11 pr-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-[#FF6B35] focus:outline-none">
+          </label>
+          <div id="proposal-category-filters" class="flex flex-wrap gap-2"></div>
+          <div id="proposal-tools-loading" class="p-6 bg-[#0A192F] border border-[#233554] rounded-xl text-center text-xs text-[#8892B0]"><i class="fa-solid fa-spinner fa-spin text-[#FF6B35] mr-2"></i>Loading tools...</div>
+          <div id="proposal-tools-list" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[330px] overflow-y-auto pr-1 custom-scrollbar"></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <p class="text-[10px] font-bold uppercase text-emerald-400 mb-2">Learner already has</p>
+              <div id="proposal-owned-summary" class="text-xs text-[#E6F1FF]">No selected tools confirmed yet.</div>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <p class="text-[10px] font-bold uppercase text-amber-400 mb-2">Learner still needs</p>
+              <div id="proposal-missing-summary" class="text-xs text-[#E6F1FF]">No selected tools confirmed yet.</div>
             </div>
           </div>
-          
-          <div id="propose-tools-container">
-            <label class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required Tools for Learner</label>
-            <textarea id="propose-tools" required rows="3" placeholder="e.g. Adjustable spanner, old towels, bucket..." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-emerald-500 focus:outline-none"></textarea>
-          </div>
-          <button type="submit" id="submit-proposal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Send Proposal to Learner</button>
-        </form>
-      </div>
+        </div>
+        <div>
+          <label for="proposal-additional-tools" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Other tools or notes <span class="normal-case font-normal">(optional)</span></label>
+          <textarea id="proposal-additional-tools" rows="2" maxlength="1000" placeholder="Add an unusual tool that is not in the catalogue, or any special preparation note." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-[#FF6B35] focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label for="proposal-materials" class="block text-xs font-semibold text-[#8892B0] uppercase mb-1">Required materials or consumables <span class="normal-case font-normal">(optional)</span></label>
+          <textarea id="proposal-materials" rows="2" maxlength="1000" placeholder="e.g. PTFE tape, replacement washers, paint, screws or old towels." class="w-full px-4 py-2.5 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm focus:border-[#FF6B35] focus:outline-none"></textarea>
+        </div>
+        <button type="submit" id="submit-proposal-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition mt-2 shadow-lg">Send Proposal to Learner</button>
+      </form>
     </div>
-
-    <!-- JOB CARD MODAL -->
+  </div>
+  <!-- JOB CARD MODAL -->
     <div id="job-card-modal" class="fixed inset-0 z-50 hidden bg-[#0A192F]/90 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-[#112240] border border-[#233554] rounded-2xl w-full max-w-lg shadow-2xl p-6 relative">
         <button onclick="document.getElementById('job-card-modal').classList.add('hidden')" class="absolute top-4 right-4 text-[#8892B0] hover:text-[#FF6B35] text-lg transition"><i class="fa-solid fa-xmark"></i></button>
@@ -290,6 +327,12 @@
     let chatPollInterval = null;
     let loadedJobsData = [];
     let loadedLearnersMap = {};
+    let proposalToolCategories = [];
+    let proposalTools = [];
+    let proposalSelectedToolIds = new Set();
+    let proposalLearnerToolIds = new Set();
+    let proposalActiveCategory = 'all';
+    let proposalCurrentJob = null;
 
     async function checkStripeOnboardingStatus(options = {}) {
       const {
@@ -949,73 +992,156 @@
       }
     }
 
-    function openProposeModal(jobId) {
-      const job = loadedJobsData.find(j => j.id === jobId);
+    function closeProposeModal() {
+      document.getElementById('propose-modal').classList.add('hidden');
+    }
+    function normaliseCategory(value) {
+      return String(value || '').trim().toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+    async function loadProposalToolData(job) {
+      const loading = document.getElementById('proposal-tools-loading');
+      const list = document.getElementById('proposal-tools-list');
+      loading.classList.remove('hidden');
+      list.classList.add('hidden');
+      const [categoriesResult, toolsResult, ownedResult, requiredResult] = await Promise.all([
+        supabaseClient.from('tool_categories').select('id, name, slug, display_order').eq('is_active', true).order('display_order'),
+        supabaseClient.from('tools').select('id, category_id, name, description, is_safety_item, display_order').eq('is_active', true).order('display_order'),
+        supabaseClient.from('learner_tools').select('tool_id').eq('learner_id', job.learner_id),
+        supabaseClient.from('job_required_tools').select('tool_id').eq('job_id', job.id)
+      ]);
+      if (categoriesResult.error) throw categoriesResult.error;
+      if (toolsResult.error) throw toolsResult.error;
+      if (ownedResult.error) throw ownedResult.error;
+      if (requiredResult.error) throw requiredResult.error;
+      proposalToolCategories = categoriesResult.data || [];
+      proposalTools = toolsResult.data || [];
+      proposalLearnerToolIds = new Set((ownedResult.data || []).map(row => String(row.tool_id)));
+      proposalSelectedToolIds = new Set((requiredResult.data || []).map(row => String(row.tool_id)));
+      const matchedCategory = proposalToolCategories.find(category => normaliseCategory(category.name) === normaliseCategory(job.category));
+      proposalActiveCategory = matchedCategory ? String(matchedCategory.id) : 'all';
+      document.getElementById('proposal-category-note').textContent = matchedCategory
+        ? `${matchedCategory.name} tools are shown first for this ${job.category} project.`
+        : `Showing the complete catalogue for this ${job.category || 'project'}.`;
+      loading.classList.add('hidden');
+      list.classList.remove('hidden');
+      renderProposalCategoryFilters();
+      renderProposalTools();
+    }
+    function renderProposalCategoryFilters() {
+      const container = document.getElementById('proposal-category-filters');
+      const entries = [{ id: 'all', name: 'All' }, ...proposalToolCategories.map(category => ({ id: String(category.id), name: category.name }))];
+      container.innerHTML = entries.map(entry => {
+        const active = proposalActiveCategory === entry.id;
+        return `<button type="button" onclick="setProposalCategory('${entry.id}')" class="px-3 py-1.5 rounded-lg border text-[10px] font-bold transition ${active ? 'bg-[#FF6B35] border-[#FF6B35] text-white' : 'bg-[#0A192F] border-[#233554] text-[#8892B0] hover:text-white'}">${escapeHTML(entry.name)}</button>`;
+      }).join('');
+    }
+    function setProposalCategory(categoryId) {
+      proposalActiveCategory = categoryId;
+      renderProposalCategoryFilters();
+      renderProposalTools();
+    }
+    function renderProposalTools() {
+      const list = document.getElementById('proposal-tools-list');
+      const search = document.getElementById('proposal-tool-search').value.trim().toLowerCase();
+      const visible = proposalTools.filter(tool => {
+        const categoryMatch = proposalActiveCategory === 'all' || String(tool.category_id) === proposalActiveCategory;
+        const searchMatch = !search || `${tool.name || ''} ${tool.description || ''}`.toLowerCase().includes(search);
+        return categoryMatch && searchMatch;
+      });
+      list.innerHTML = visible.length ? visible.map(tool => {
+        const id = String(tool.id);
+        const checked = proposalSelectedToolIds.has(id);
+        const owned = proposalLearnerToolIds.has(id);
+        return `<label class="relative cursor-pointer group">
+          <input type="checkbox" class="proposal-tool-checkbox sr-only" ${checked ? 'checked' : ''} onchange="toggleProposalTool('${id}', this.checked)">
+          <span class="proposal-tool-card min-h-[92px] h-full flex items-start gap-3 p-3 rounded-xl bg-[#0A192F] border border-[#233554] group-hover:border-[#FF6B35]/60 transition">
+            <span class="proposal-tool-check w-6 h-6 flex-shrink-0 rounded-lg border border-[#455978] text-transparent flex items-center justify-center transition"><i class="fa-solid fa-check text-xs"></i></span>
+            <span class="min-w-0"><span class="block text-xs font-bold text-white">${escapeHTML(tool.name)}</span><span class="block text-[10px] mt-1 ${owned ? 'text-emerald-400' : 'text-amber-400'}"><i class="fa-solid ${owned ? 'fa-circle-check' : 'fa-circle-exclamation'} mr-1"></i>${owned ? 'Learner has this' : 'Learner needs this'}</span></span>
+          </span>
+        </label>`;
+      }).join('') : '<div class="sm:col-span-2 lg:col-span-3 p-5 text-center text-xs text-[#8892B0] border border-dashed border-[#233554] rounded-xl">No matching tools found.</div>';
+      updateProposalComparison();
+    }
+    function toggleProposalTool(toolId, checked) {
+      if (checked) proposalSelectedToolIds.add(String(toolId));
+      else proposalSelectedToolIds.delete(String(toolId));
+      updateProposalComparison();
+    }
+    function updateProposalComparison() {
+      const selectedTools = proposalTools.filter(tool => proposalSelectedToolIds.has(String(tool.id)));
+      const owned = selectedTools.filter(tool => proposalLearnerToolIds.has(String(tool.id)));
+      const missing = selectedTools.filter(tool => !proposalLearnerToolIds.has(String(tool.id)));
+      document.getElementById('proposal-selected-count').textContent = selectedTools.length;
+      document.getElementById('proposal-owned-summary').innerHTML = owned.length ? owned.map(tool => `<div class="mb-1"><i class="fa-solid fa-check text-emerald-400 mr-1"></i>${escapeHTML(tool.name)}</div>`).join('') : 'None of the selected tools are recorded in the Learner’s Tool Check.';
+      document.getElementById('proposal-missing-summary').innerHTML = missing.length ? missing.map(tool => `<div class="mb-1"><i class="fa-solid fa-exclamation text-amber-400 mr-1"></i>${escapeHTML(tool.name)}</div>`).join('') : 'No selected tools are currently missing.';
+    }
+    async function openProposeModal(jobId) {
+      const job = loadedJobsData.find(item => item.id === jobId);
       if (!job) {
         showToast('This project could not be found. Refresh and try again.', 'error');
         return;
       }
+      proposalCurrentJob = job;
       setProposalDateMinimum();
+      document.getElementById('propose-form').reset();
       document.getElementById('propose-job-id').value = jobId;
-      
-      const toolsContainer = document.getElementById('propose-tools-container');
-      const toolsInput = document.getElementById('propose-tools');
-      
-      if (job && job.job_type === 'complete_for_me') {
-        toolsContainer.classList.add('hidden');
-        toolsInput.removeAttribute('required');
-        toolsInput.value = 'N/A - Complete For Me service';
-      } else {
-        toolsContainer.classList.remove('hidden');
-        toolsInput.setAttribute('required', 'true');
-        toolsInput.value = '';
-      }
-      
+      document.getElementById('proposal-additional-tools').value = '';
+      document.getElementById('proposal-materials').value = job.materials || '';
+      document.getElementById('proposal-tool-search').value = '';
       document.getElementById('propose-modal').classList.remove('hidden');
+      try {
+        await loadProposalToolData(job);
+      } catch (error) {
+        console.error('Proposal tool data error:', error);
+        closeProposeModal();
+        showToast(`Could not load the tool selector: ${error.message || 'Unknown error'}`, 'error');
+      }
     }
-
     async function submitProposal(e) {
       e.preventDefault();
       const btn = document.getElementById('submit-proposal-btn');
+      const originalHtml = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
-
       const jobId = document.getElementById('propose-job-id').value;
       const date = document.getElementById('propose-date').value;
       const time = document.getElementById('propose-time-only').value;
-      const tools = document.getElementById('propose-tools').value;
-      
+      const additionalTools = document.getElementById('proposal-additional-tools').value.trim();
+      const materials = document.getElementById('proposal-materials').value.trim();
       try {
         const proposedDate = new Date(`${date}T${time}`);
-        if (Number.isNaN(proposedDate.getTime()) || proposedDate <= new Date()) {
-          throw new Error('Choose a valid future date and time.');
+        if (Number.isNaN(proposedDate.getTime()) || proposedDate <= new Date()) throw new Error('Choose a valid future date and time.');
+        if (proposalCurrentJob?.job_type !== 'complete_for_me' && proposalSelectedToolIds.size === 0 && !additionalTools) throw new Error('Select at least one required tool or add an Other tool note.');
+        const selectedTools = proposalTools.filter(tool => proposalSelectedToolIds.has(String(tool.id)));
+        const summaryParts = selectedTools.map(tool => tool.name);
+        if (additionalTools) summaryParts.push(additionalTools);
+        const readableSummary = proposalCurrentJob?.job_type === 'complete_for_me' && !summaryParts.length ? 'Tutor supplying tools for Complete For Me service' : (summaryParts.join(', ') || 'No reusable tools required');
+        const { error: jobError } = await supabaseClient.from('job_requests').update({
+          appointment_time: proposedDate.toISOString(),
+          required_tools: readableSummary,
+          materials: materials || null,
+          status: 'pending_payment'
+        }).eq('id', jobId).eq('tutor_id', currentProfile.id);
+        if (jobError) throw jobError;
+        const { error: deleteError } = await supabaseClient.from('job_required_tools').delete().eq('job_id', jobId);
+        if (deleteError) throw deleteError;
+        if (proposalSelectedToolIds.size) {
+          const rows = [...proposalSelectedToolIds].map(toolId => ({ job_id: jobId, tool_id: Number(toolId), selected_by: currentProfile.id }));
+          const { error: insertError } = await supabaseClient.from('job_required_tools').insert(rows);
+          if (insertError) throw insertError;
         }
-        const combinedDateTime = proposedDate.toISOString();
-
-        const { error } = await supabaseClient
-          .from('job_requests')
-          .update({ 
-            appointment_time: combinedDateTime, 
-            required_tools: tools, 
-            status: 'pending_payment' 
-          })
-          .eq('id', jobId);
-        
-        if (error) throw error;
-        
-        document.getElementById('propose-modal').classList.add('hidden');
+        closeProposeModal();
         document.getElementById('propose-form').reset();
-        showToast('Proposal sent to learner!', 'success');
-        loadTutorWorkspace();
-
+        showToast('Proposal and required tools sent to the Learner!', 'success');
+        await loadTutorWorkspace();
       } catch (error) {
-        showToast(`Database Error: ${error.message || error.details || 'Unknown error'}`, 'error');
+        console.error('Proposal submission error:', error);
+        showToast(`Proposal failed: ${error.message || error.details || 'Unknown error'}`, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = 'Send Proposal to Learner';
+        btn.innerHTML = originalHtml;
       }
     }
-
     function openJobCard(jobId) {
       const job = loadedJobsData.find(j => j.id === jobId);
       if(!job) return;
