@@ -943,14 +943,14 @@
     async function updateUnreadNotifications() {
       if (!currentProfile?.id) return;
       try {
-        const { data, error } = await supabaseClient.from('messages').select('id, job_id').eq('receiver_id', currentProfile.id).is('read_at', null);
+        const { data, error } = await supabaseClient.rpc('get_my_unread_message_counts');
         if (error) throw error;
         unreadMessagesByJob = (data || []).reduce((counts, message) => {
           const key = String(message.job_id);
-          counts[key] = (counts[key] || 0) + 1;
+          counts[key] = Number(message.unread_count || 0);
           return counts;
         }, {});
-        totalUnreadMessages = (data || []).length;
+        totalUnreadMessages = Object.values(unreadMessagesByJob).reduce((total, count) => total + count, 0);
         updateHeaderUnreadIndicator();
         decorateChatButtons();
       } catch (error) {
@@ -960,8 +960,10 @@
     async function markCurrentChatRead() {
       if (!currentProfile?.id || !currentChatJobId || !currentChatReceiverId) return;
       try {
-        const { error } = await supabaseClient.from('messages').update({ read_at: new Date().toISOString() })
-          .eq('job_id', currentChatJobId).eq('sender_id', currentChatReceiverId).eq('receiver_id', currentProfile.id).is('read_at', null);
+        const { error } = await supabaseClient.rpc('mark_chat_messages_read', {
+          target_job_id: currentChatJobId,
+          target_sender_id: currentChatReceiverId
+        });
         if (error) throw error;
         await updateUnreadNotifications();
       } catch (error) {
