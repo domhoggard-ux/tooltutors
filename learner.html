@@ -40,6 +40,7 @@
             </div>
           </div>
           <a href="tool-check.html" class="h-11 px-3 sm:px-4 rounded-xl text-sm border border-[#FF6B35]/40 bg-[#FF6B35]/10 text-[#FF6B35] hover:bg-[#FF6B35] hover:text-white transition inline-flex items-center justify-center font-semibold" aria-label="Open Tool Check" title="Tool Check"><i class="fa-solid fa-screwdriver-wrench"></i><span class="hidden md:inline ml-2">Tool Check</span></a>
+          <button id="header-message-indicator" type="button" onclick="focusUnreadMessages()" class="relative h-11 px-3 rounded-xl border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition inline-flex items-center justify-center" aria-label="Unread messages" title="Unread messages"><i class="fa-solid fa-comments"></i><span id="header-unread-count" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold items-center justify-center border-2 border-[#0A192F]">0</span></button>
           <button type="button" onclick="openAccountSettings()" class="w-11 h-11 rounded-xl text-sm border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Account settings" title="Account settings"><i class="fa-solid fa-gear"></i></button>
           <button type="button" onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition" aria-label="Sign out"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span></button>
         </div>
@@ -291,7 +292,10 @@
     let currentProfile = null;
     let currentChatJobId = null;
     let currentChatReceiverId = null; 
-    let chatPollInterval = null;
+    let chatPollInterval = null;  
+    let notificationPollInterval = null;
+    let unreadMessagesByJob = {};
+    let totalUnreadMessages = 0;
     let loadedJobsData = [];
     let loadedAcceptedOffers = {};
     let loadedTutorsMap = {};
@@ -301,7 +305,10 @@
       if (!session) return window.location.href = 'login.html';
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
-      updateHeaderUI(); 
+      updateHeaderUI();  
+      await updateUnreadNotifications();
+      clearInterval(notificationPollInterval);
+      notificationPollInterval = setInterval(updateUnreadNotifications, 5000); 
       document.getElementById('learner-welcome-name').textContent = `Welcome, ${profile.full_name.split(' ')[0]}`;
       const paymentParams = new URLSearchParams(window.location.search);
       const paymentSucceeded = paymentParams.get('payment_success') === 'true';
@@ -581,6 +588,8 @@
           </div>
         `).join('') : '<p class="text-xs text-[#8892B0] text-center italic py-4">No archived jobs found.</p>';
 
+        decorateChatButtons();
+        updateHeaderUnreadIndicator();
       } catch (err) {
         console.error("Dashboard Load Error:", err);
         document.getElementById('learner-requests-list').innerHTML = `<p class="text-xs text-rose-400 text-center py-6">Error loading jobs: ${err.message}. Check console.</p>`;
@@ -908,12 +917,78 @@
         btn.innerHTML = originalHtml;
       }
     }
+    function unreadBadgeHTML(jobId) {
+      const count = Number(unreadMessagesByJob[String(jobId)] || 0);
+      return count > 0 ? `<span class="chat-unread-badge ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold inline-flex items-center justify-center">${count > 99 ? '99+' : count}</span>` : '';
+    }
+    function decorateChatButtons() {
+      document.querySelectorAll('button[onclick^="openChat("]').forEach(button => {
+        const match = button.getAttribute('onclick')?.match(/^openChat\('([^']+)'/);
+        if (!match) return;
+        button.querySelectorAll('.chat-unread-badge').forEach(badge => badge.remove());
+        const badgeMarkup = unreadBadgeHTML(match[1]);
+        if (badgeMarkup) button.insertAdjacentHTML('beforeend', badgeMarkup);
+      });
+    }
+    function updateHeaderUnreadIndicator() {
+      const badge = document.getElementById('header-unread-count');
+      const indicator = document.getElementById('header-message-indicator');
+      if (!badge || !indicator) return;
+      badge.textContent = totalUnreadMessages > 99 ? '99+' : String(totalUnreadMessages);
+      badge.classList.toggle('hidden', totalUnreadMessages === 0);
+      badge.classList.toggle('flex', totalUnreadMessages > 0);
+      indicator.classList.toggle('text-[#FF6B35]', totalUnreadMessages > 0);
+      indicator.title = totalUnreadMessages ? `${totalUnreadMessages} unread message${totalUnreadMessages === 1 ? '' : 's'}` : 'No unread messages';
+    }
+    async function updateUnreadNotifications() {
+      if (!currentProfile?.id) return;
+      try {
+        const { data, error } = await supabaseClient.from('messages').select('id, job_id').eq('receiver_id', currentProfile.id).is('read_at', null);
+        if (error) throw error;
+        unreadMessagesByJob = (data || []).reduce((counts, message) => {
+          const key = String(message.job_id);
+          counts[key] = (counts[key] || 0) + 1;
+          return counts;
+        }, {});
+        totalUnreadMessages = (data || []).length;
+        updateHeaderUnreadIndicator();
+        decorateChatButtons();
+      } catch (error) {
+        console.error('Unread message notification error:', error);
+      }
+    }
+    async function markCurrentChatRead() {
+      if (!currentProfile?.id || !currentChatJobId || !currentChatReceiverId) return;
+      try {
+        const { error } = await supabaseClient.from('messages').update({ read_at: new Date().toISOString() })
+          .eq('job_id', currentChatJobId).eq('sender_id', currentChatReceiverId).eq('receiver_id', currentProfile.id).is('read_at', null);
+        if (error) throw error;
+        await updateUnreadNotifications();
+      } catch (error) {
+        console.error('Mark chat read error:', error);
+      }
+    }
+    function focusUnreadMessages() {
+      if (!totalUnreadMessages) {
+        showToast('You have no unread messages.', 'info');
+        return;
+      }
+      const firstJobId = Object.keys(unreadMessagesByJob).find(jobId => unreadMessagesByJob[jobId] > 0);
+      const button = Array.from(document.querySelectorAll('button[onclick^="openChat("]')).find(item => item.getAttribute('onclick')?.startsWith(`openChat('${firstJobId}'`));
+      if (button) {
+        button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        button.classList.add('ring-2', 'ring-rose-500');
+        setTimeout(() => button.classList.remove('ring-2', 'ring-rose-500'), 2200);
+      }
+    }
     function openChat(jobId, jobTitle, participantName, receiverId) {
       currentChatJobId = jobId;
       currentChatReceiverId = receiverId; 
       document.getElementById('chat-job-title').textContent = jobTitle;
       document.getElementById('chat-participant').textContent = `Chatting with ${participantName}`;
       document.getElementById('chat-modal').classList.remove('hidden');
+      clearInterval(chatPollInterval);
+      markCurrentChatRead();
       loadMessages();
       chatPollInterval = setInterval(loadMessages, 3000);
     }
@@ -929,6 +1004,7 @@
       if (!currentChatJobId || !currentChatReceiverId) return;
       
       const { data } = await supabaseClient.from('messages').select('*').eq('job_id', currentChatJobId).order('created_at', { ascending: true });
+      if ((data || []).some(message => message.receiver_id === currentProfile.id && !message.read_at)) await markCurrentChatRead();
       const c = document.getElementById('chat-messages');
       
       const filteredData = (data || []).filter(m => 
