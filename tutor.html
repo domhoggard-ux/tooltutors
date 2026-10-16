@@ -861,7 +861,10 @@
           if (j.status === 'accepted') {
             actionHtml = `<button onclick="openProposeModal('${j.id}')" class="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 font-bold rounded-lg transition text-xs"><i class="fa-solid fa-calendar-plus mr-1"></i> Propose Time & Tools</button>`;
           } else if (j.status === 'pending_payment') {
-            actionHtml = `<div class="w-full py-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold rounded-lg text-center"><i class="fa-solid fa-hourglass-half mr-1"></i> Awaiting Learner Payment</div>`;
+            actionHtml = `<div class="space-y-2">
+                            <div class="w-full py-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold rounded-lg text-center"><i class="fa-solid fa-hourglass-half mr-1"></i> Awaiting Learner Payment</div>
+                            <button type="button" onclick="openProposeModal('${j.id}')" class="w-full py-2 bg-[#233554] hover:bg-[#FF6B35] text-white font-bold rounded-lg transition text-xs"><i class="fa-solid fa-calendar-days mr-1"></i> Change Date & Time</button>
+                          </div>`;
           } else if (['scheduled', 'completed', 'cancelled'].includes(j.status)) {
             actionHtml = `<button onclick="openJobCard('${j.id}')" class="w-full py-2 bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold rounded-lg transition text-xs shadow-lg"><i class="fa-solid fa-address-card mr-1"></i> Open Job Card</button>`;
           }
@@ -1083,11 +1086,25 @@
       }
       proposalCurrentJob = job;
       setProposalDateMinimum();
+      const proposalHeading = document.querySelector('#propose-modal h3');
+      const proposalIntro = document.querySelector('#propose-modal h3 + p');
+      if (proposalHeading) proposalHeading.textContent = job.status === 'pending_payment' ? 'Revise Proposal' : 'Finalise Proposal';
+      if (proposalIntro) proposalIntro.textContent = job.status === 'pending_payment'
+        ? 'Update the proposed appointment if the Learner has requested a different date or time. Existing tool selections are retained.'
+        : 'Propose the appointment and select the reusable tools the Learner needs for this project.';
       document.getElementById('propose-form').reset();
       document.getElementById('propose-job-id').value = jobId;
       document.getElementById('proposal-additional-tools').value = '';
       document.getElementById('proposal-materials').value = job.materials || '';
       document.getElementById('proposal-tool-search').value = '';
+      if (job.appointment_time) {
+        const appointment = new Date(job.appointment_time);
+        if (!Number.isNaN(appointment.getTime())) {
+          const localAppointment = new Date(appointment.getTime() - appointment.getTimezoneOffset() * 60000);
+          document.getElementById('propose-date').value = localAppointment.toISOString().split('T')[0];
+          document.getElementById('propose-time-only').value = localAppointment.toISOString().slice(11, 16);
+        }
+      }
       document.getElementById('propose-modal').classList.remove('hidden');
       try {
         await loadProposalToolData(job);
