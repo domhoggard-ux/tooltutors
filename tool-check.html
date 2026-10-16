@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#0A192F]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolTutors - Tool Check</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }</script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A192F; }
+    ::-webkit-scrollbar-thumb { background: #233554; border-radius: 4px; }
+    .tool-checkbox:checked + .tool-card {
+      border-color: rgba(255, 107, 53, 0.8);
+      background: rgba(255, 107, 53, 0.12);
+    }
+    .tool-checkbox:checked + .tool-card .tool-check-icon {
+      background: #FF6B35;
+      border-color: #FF6B35;
+      color: white;
+    }
+  </style>
+</head>
+<body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans flex flex-col min-h-screen">
+  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="min-h-20 py-3 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <a href="learner.html" aria-label="Return to Learner Portal">
+            <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
+          </a>
+          <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Tool Check</span>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="hidden md:block text-right mr-1">
+            <div id="header-user-name" class="text-sm font-semibold text-white leading-tight">Loading...</div>
+            <div class="text-xs text-[#FF6B35] uppercase font-semibold mt-0.5">My Tools</div>
+          </div>
+          <a href="learner.html" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#233554] bg-[#112240] text-[#E6F1FF] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Return to Learner Portal">
+            <i class="fa-solid fa-arrow-left"></i><span class="hidden sm:inline ml-2">Portal</span>
+          </a>
+          <button type="button" onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition" aria-label="Sign out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <section class="bg-[#112240] p-6 rounded-2xl border border-[#233554] shadow-xl">
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+        <div>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30 mb-3">
+            <i class="fa-solid fa-toolbox"></i> Learner inventory
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white">My Tool Check</h1>
+          <p class="text-sm text-[#8892B0] mt-2 max-w-2xl">Select the reusable tools you already own. Your Tutor will later be able to compare these with the tools required for an assigned project.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 min-w-[240px]">
+          <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-3 text-center">
+            <div id="owned-count" class="text-2xl font-extrabold text-[#FF6B35]">0</div>
+            <div class="text-[10px] uppercase font-bold text-[#8892B0]">Tools owned</div>
+          </div>
+          <div class="bg-[#0A192F] border border-[#233554] rounded-xl p-3 text-center">
+            <div id="catalogue-count" class="text-2xl font-extrabold text-white">0</div>
+            <div class="text-[10px] uppercase font-bold text-[#8892B0]">In catalogue</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-[#112240] p-4 sm:p-5 rounded-2xl border border-[#233554] shadow-xl">
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+        <label class="relative block" for="tool-search">
+          <span class="sr-only">Search tools</span>
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[#8892B0]"></i>
+          <input id="tool-search" type="search" autocomplete="off" placeholder="Search tools, such as drill, spanner or safety glasses" class="w-full pl-11 pr-4 py-3 rounded-xl bg-[#0A192F] border border-[#233554] text-white text-sm placeholder:text-[#8892B0] focus:outline-none focus:border-[#FF6B35]" oninput="applyFilters()">
+        </label>
+        <div class="flex flex-wrap gap-2" id="category-filter" aria-label="Tool categories"></div>
+      </div>
+    </section>
+
+    <section id="loading-state" class="bg-[#112240] p-10 rounded-2xl border border-[#233554] text-center shadow-xl">
+      <i class="fa-solid fa-spinner fa-spin text-3xl text-[#FF6B35]"></i>
+      <p class="text-sm text-[#8892B0] mt-4">Loading your Tool Check...</p>
+    </section>
+
+    <section id="error-state" class="hidden bg-rose-500/10 p-6 rounded-2xl border border-rose-500/30 text-center">
+      <i class="fa-solid fa-circle-exclamation text-2xl text-rose-400"></i>
+      <h2 class="text-white font-bold mt-3">Tool Check could not be loaded</h2>
+      <p id="error-message" class="text-sm text-rose-300 mt-2"></p>
+      <button type="button" onclick="loadToolCheck()" class="mt-4 px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 transition">Try Again</button>
+    </section>
+
+    <section id="empty-state" class="hidden bg-[#112240] p-10 rounded-2xl border border-[#233554] text-center shadow-xl">
+      <i class="fa-solid fa-magnifying-glass text-3xl text-[#233554]"></i>
+      <h2 class="text-white font-bold mt-3">No matching tools</h2>
+      <p class="text-sm text-[#8892B0] mt-2">Try another search or category.</p>
+    </section>
+
+    <section id="tool-groups" class="hidden space-y-6" aria-live="polite"></section>
+
+    <div id="save-bar" class="hidden sticky bottom-4 z-40">
+      <div class="max-w-3xl mx-auto bg-[#112240]/95 backdrop-blur-xl border border-[#FF6B35]/40 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div>
+          <p class="text-sm font-bold text-white">You have unsaved changes</p>
+          <p class="text-xs text-[#8892B0]">Save your Tool Check before leaving this page.</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button type="button" onclick="resetChanges()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#233554] text-white text-sm font-bold hover:bg-[#31476f] transition">Undo</button>
+          <button id="save-tools-btn" type="button" onclick="saveToolCheck()" class="flex-[2] sm:flex-none px-6 py-2.5 rounded-xl bg-[#FF6B35] text-white text-sm font-bold hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed transition shadow-lg">
+            <i class="fa-solid fa-floppy-disk mr-2"></i>Save Tool Check
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-[#233554] mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-[#8892B0]">ToolTutors Tool Check helps you keep a simple record of reusable DIY tools you own.</div>
+  </footer>
+
+  <script>
+    const SUPABASE_URL = 'https://gfygaqbxhcggnkqimzrg.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_VardWWRCXO6ogwO_nSd7UA_70YCwJ7j';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let currentProfile = null;
+    let categories = [];
+    let tools = [];
+    let savedToolIds = new Set();
+    let selectedToolIds = new Set();
+    let activeCategory = 'all';
+
+    window.addEventListener('DOMContentLoaded', initialisePage);
+
+    async function initialisePage() {
+      try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        currentUser = session.user;
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('id, full_name, role')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (profileError) throw profileError;
+        if (!profile || String(profile.role || '').toLowerCase() !== 'learner') {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        currentProfile = profile;
+        document.getElementById('header-user-name').textContent = profile.full_name || 'Learner';
+        await loadToolCheck();
+      } catch (error) {
+        showLoadError(error);
+      }
+    }
+
+    async function loadToolCheck() {
+      setLoading(true);
+      try {
+        const [categoryResult, toolResult, ownedResult] = await Promise.all([
+          supabaseClient.from('tool_categories').select('id, name, slug, display_order, is_active').eq('is_active', true).order('display_order'),
+          supabaseClient.from('tools').select('id, category_id, name, description, is_safety_item, display_order, is_active').eq('is_active', true).order('display_order'),
+          supabaseClient.from('learner_tools').select('tool_id').eq('learner_id', currentUser.id)
+        ]);
+
+        if (categoryResult.error) throw categoryResult.error;
+        if (toolResult.error) throw toolResult.error;
+        if (ownedResult.error) throw ownedResult.error;
+
+        categories = categoryResult.data || [];
+        tools = toolResult.data || [];
+        savedToolIds = new Set((ownedResult.data || []).map(item => String(item.tool_id)));
+        selectedToolIds = new Set(savedToolIds);
+
+        renderCategoryFilters();
+        renderTools();
+        updateSummary();
+        updateDirtyState();
+        setLoading(false);
+      } catch (error) {
+        showLoadError(error);
+      }
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('category-filter');
+      const buttons = [
+        { slug: 'all', name: 'All' },
+        ...categories.map(category => ({ slug: String(category.id), name: category.name }))
+      ];
+
+      container.innerHTML = buttons.map(item => {
+        const active = activeCategory === item.slug;
+        return `<button type="button" onclick="setCategory('${escapeAttribute(item.slug)}')" class="px-3 py-2 rounded-xl border text-xs font-bold transition ${active ? 'bg-[#FF6B35] border-[#FF6B35] text-white' : 'bg-[#0A192F] border-[#233554] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/60'}">${escapeHtml(item.name)}</button>`;
+      }).join('');
+    }
+
+    function setCategory(categoryId) {
+      activeCategory = categoryId;
+      renderCategoryFilters();
+      renderTools();
+    }
+
+    function applyFilters() {
+      renderTools();
+    }
+
+    function renderTools() {
+      const search = document.getElementById('tool-search').value.trim().toLowerCase();
+      const filteredTools = tools.filter(tool => {
+        const categoryMatch = activeCategory === 'all' || String(tool.category_id) === activeCategory;
+        const haystack = `${tool.name || ''} ${tool.description || ''}`.toLowerCase();
+        return categoryMatch && (!search || haystack.includes(search));
+      });
+
+      const groupsContainer = document.getElementById('tool-groups');
+      const emptyState = document.getElementById('empty-state');
+
+      if (!filteredTools.length) {
+        groupsContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      groupsContainer.classList.remove('hidden');
+
+      const categoryMap = new Map(categories.map(category => [String(category.id), category]));
+      const grouped = new Map();
+
+      filteredTools.forEach(tool => {
+        const key = String(tool.category_id);
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(tool);
+      });
+
+      groupsContainer.innerHTML = Array.from(grouped.entries()).map(([categoryId, categoryTools]) => {
+        const category = categoryMap.get(categoryId);
+        const categoryName = category?.name || 'Other Tools';
+        const selectedInCategory = categoryTools.filter(tool => selectedToolIds.has(String(tool.id))).length;
+
+        return `
+          <article class="bg-[#112240] rounded-2xl border border-[#233554] shadow-xl overflow-hidden">
+            <div class="p-5 border-b border-[#233554] flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-bold text-white">${escapeHtml(categoryName)}</h2>
+                <p class="text-xs text-[#8892B0] mt-1">${selectedInCategory} selected in this view</p>
+              </div>
+              <i class="fa-solid ${categoryName === 'Safety Equipment' ? 'fa-shield-halved' : 'fa-screwdriver-wrench'} text-[#FF6B35] text-xl"></i>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 sm:p-5">
+              ${categoryTools.map(renderToolCard).join('')}
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function renderToolCard(tool) {
+      const toolId = String(tool.id);
+      const checked = selectedToolIds.has(toolId);
+      return `
+        <label class="relative cursor-pointer group">
+          <input class="tool-checkbox sr-only" type="checkbox" data-tool-id="${escapeAttribute(toolId)}" ${checked ? 'checked' : ''} onchange="toggleTool('${escapeAttribute(toolId)}', this.checked)">
+          <span class="tool-card h-full min-h-[94px] flex items-start gap-3 p-4 rounded-xl bg-[#0A192F] border border-[#233554] group-hover:border-[#FF6B35]/60 transition">
+            <span class="tool-check-icon w-6 h-6 flex-shrink-0 rounded-lg border border-[#455978] text-transparent flex items-center justify-center transition mt-0.5">
+              <i class="fa-solid fa-check text-xs"></i>
+            </span>
+            <span class="min-w-0">
+              <span class="flex items-center gap-2">
+                <span class="block text-sm font-bold text-white">${escapeHtml(tool.name)}</span>
+                ${tool.is_safety_item ? '<i class="fa-solid fa-shield-halved text-emerald-400 text-xs" title="Safety equipment"></i>' : ''}
+              </span>
+              <span class="block text-xs text-[#8892B0] mt-1 leading-relaxed">${escapeHtml(tool.description || 'Select this if you own it.')}</span>
+            </span>
+          </span>
+        </label>`;
+    }
+
+    function toggleTool(toolId, isChecked) {
+      if (isChecked) selectedToolIds.add(String(toolId));
+      else selectedToolIds.delete(String(toolId));
+      updateSummary();
+      updateDirtyState();
+    }
+
+    function updateSummary() {
+      document.getElementById('owned-count').textContent = selectedToolIds.size;
+      document.getElementById('catalogue-count').textContent = tools.length;
+    }
+
+    function setsEqual(first, second) {
+      if (first.size !== second.size) return false;
+      for (const value of first) if (!second.has(value)) return false;
+      return true;
+    }
+
+    function updateDirtyState() {
+      document.getElementById('save-bar').classList.toggle('hidden', setsEqual(savedToolIds, selectedToolIds));
+    }
+
+    function resetChanges() {
+      selectedToolIds = new Set(savedToolIds);
+      renderTools();
+      updateSummary();
+      updateDirtyState();
+    }
+
+    async function saveToolCheck() {
+      const button = document.getElementById('save-tools-btn');
+      const originalHtml = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...';
+
+      const additions = [...selectedToolIds].filter(id => !savedToolIds.has(id));
+      const removals = [...savedToolIds].filter(id => !selectedToolIds.has(id));
+
+      try {
+        if (additions.length) {
+          const rows = additions.map(toolId => ({ learner_id: currentUser.id, tool_id: Number(toolId) }));
+          const { error } = await supabaseClient.from('learner_tools').insert(rows);
+          if (error) throw error;
+        }
+
+        if (removals.length) {
+          const { error } = await supabaseClient
+            .from('learner_tools')
+            .delete()
+            .eq('learner_id', currentUser.id)
+            .in('tool_id', removals.map(Number));
+          if (error) throw error;
+        }
+
+        savedToolIds = new Set(selectedToolIds);
+        updateDirtyState();
+        showToast('Your Tool Check has been saved.', 'success');
+      } catch (error) {
+        console.error('Tool Check save error:', error);
+        showToast(`Could not save your Tool Check: ${error.message || 'Unknown error'}`, 'error');
+        await reloadOwnedTools();
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHtml;
+      }
+    }
+
+    async function reloadOwnedTools() {
+      const { data, error } = await supabaseClient.from('learner_tools').select('tool_id').eq('learner_id', currentUser.id);
+      if (!error) {
+        savedToolIds = new Set((data || []).map(item => String(item.tool_id)));
+        selectedToolIds = new Set(savedToolIds);
+        renderTools();
+        updateSummary();
+        updateDirtyState();
+      }
+    }
+
+    function setLoading(isLoading) {
+      document.getElementById('loading-state').classList.toggle('hidden', !isLoading);
+      if (isLoading) {
+        document.getElementById('error-state').classList.add('hidden');
+        document.getElementById('empty-state').classList.add('hidden');
+        document.getElementById('tool-groups').classList.add('hidden');
+      }
+    }
+
+    function showLoadError(error) {
+      console.error('Tool Check load error:', error);
+      setLoading(false);
+      document.getElementById('tool-groups').classList.add('hidden');
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+      document.getElementById('error-message').textContent = error?.message || 'An unexpected error occurred.';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value);
+    }
+
+    async function handleLogout() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'login.html';
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const isError = type === 'error';
+      toast.className = `p-4 rounded-xl bg-[#112240] border ${isError ? 'border-rose-500/50 text-rose-400' : 'border-emerald-500/50 text-emerald-400'} text-sm font-bold shadow-2xl`;
+      const row = document.createElement('div');
+      row.className = 'flex items-start';
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${isError ? 'fa-circle-exclamation' : 'fa-circle-check'} mt-0.5 mr-2`;
+      const text = document.createElement('span');
+      text.textContent = message;
+      row.append(icon, text);
+      toast.appendChild(row);
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
+    }
+  </script>
+</body>
+</html>
