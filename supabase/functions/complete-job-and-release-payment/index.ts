@@ -452,7 +452,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const { data: tutor, error: tutorError } = await admin
       .from("profiles")
-      .select("id, full_name, email, address_line1, address_line2, city, postcode, country, stripe_account_id, stripe_onboarding_complete, vat_registered, vat_number, vat_rate, invoice_authority_agreed_at")
+      .select("id, full_name, company_name, email, address_line1, address_line2, city, postcode, country, stripe_account_id, stripe_onboarding_complete, vat_registered, vat_number, vat_rate, invoice_authority_agreed_at")
       .eq("id", job.tutor_id)
       .single();
 
@@ -469,6 +469,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (tutor.vat_registered && (!tutor.vat_number || tutor.vat_rate === null)) {
       return json({ error: "The Tutor VAT details are incomplete." }, 409);
     }
+    const tutorLegalName = String(tutor.full_name || "Tutor").trim() || "Tutor";
+    const tutorCompanyName = String(tutor.company_name || "").trim() || null;
+    const tutorInvoiceName = tutorCompanyName
+      ? `${tutorCompanyName} | ${tutorLegalName}`
+      : tutorLegalName;
 
     const { data: learner, error: learnerError } = await admin
       .from("profiles")
@@ -564,7 +569,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         documentType: "tutor_learner_invoice",
         supplier: {
           profileId: tutor.id,
-          name: tutor.full_name,
+          name: tutorInvoiceName,
           email: tutor.email,
           addressLine1: tutor.address_line1,
           addressLine2: tutor.address_line2,
@@ -618,7 +623,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         },
         customer: {
           profileId: tutor.id,
-          name: tutor.full_name,
+          name: tutorInvoiceName,
           email: tutor.email,
           addressLine1: tutor.address_line1,
           addressLine2: tutor.address_line2,
