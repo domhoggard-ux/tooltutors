@@ -340,109 +340,88 @@
     let proposalActiveCategory = 'all';
     let proposalCurrentJob = null;
 
+    function hideTutorStageSections() {
+      document.getElementById('tutor-onboarding-section')?.classList.add('hidden');
+      document.getElementById('tutor-pending-review')?.classList.add('hidden');
+      document.getElementById('tutor-stripe-section')?.classList.add('hidden');
+      document.getElementById('tutor-active-dashboard')?.classList.add('hidden');
+    }
+
+    async function renderTutorStageAfterStripe() {
+      hideTutorStageSections();
+      const status = currentProfile.validation_status || 'pending';
+
+      if (status === 'approved') {
+        document.getElementById('tutor-active-dashboard').classList.remove('hidden');
+        await loadTutorWorkspace();
+        return;
+      }
+
+      if (status === 'submitted') {
+        document.getElementById('tutor-pending-review').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('tutor-onboarding-section').classList.remove('hidden');
+      if (currentProfile.tutor_tier === 'professional') {
+        const proContainer = document.getElementById('pro-cert-container');
+        const proInput = document.getElementById('tutor-pro-doc');
+        if (proContainer && proInput) {
+          proContainer.classList.remove('hidden');
+          proInput.setAttribute('required', 'true');
+        }
+      }
+
+      if (status === 'rejected' && currentProfile.validation_notes) {
+        const noteDiv = document.getElementById('tutor-rejected-note');
+        noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
+        noteDiv.classList.remove('hidden');
+      }
+    }
+
     async function checkStripeOnboardingStatus(options = {}) {
-      const {
-        showSuccessMessage = false,
-        showLoadingMessage = false
-      } = options;
-
+      const { showSuccessMessage = false, showLoadingMessage = false } = options;
       try {
-        if (showLoadingMessage) {
-          showToast('Checking your Stripe account status...', 'info');
-        }
-
-        const {
-          data: { session },
-          error: sessionError
-        } = await supabaseClient.auth.getSession();
-
+        if (showLoadingMessage) showToast('Checking your Stripe account status...', 'info');
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError) throw sessionError;
-        if (!session?.access_token) {
-          throw new Error('Your session has expired. Please sign in again.');
-        }
+        if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
 
-        const response = await fetch(
-          `${SUPABASE_URL}/functions/v1/check-stripe-account`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-              'apikey': SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({})
-          }
-        );
-
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/check-stripe-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({})
+        });
         let responseData = {};
-        try {
-          responseData = await response.json();
-        } catch (jsonError) {
-          console.error('Could not read Stripe status response:', jsonError);
-        }
-
-        if (!response.ok) {
-          throw new Error(
-            responseData?.error ||
-            `Stripe status check failed with status ${response.status}.`
-          );
-        }
-
-        const stripeSection = document.getElementById('tutor-stripe-section');
-        const activeDashboard = document.getElementById('tutor-active-dashboard');
+        try { responseData = await response.json(); } catch (jsonError) { console.error('Could not read Stripe status response:', jsonError); }
+        if (!response.ok) throw new Error(responseData?.error || `Stripe status check failed with status ${response.status}.`);
 
         if (responseData?.complete === true) {
-          currentProfile.stripe_onboarding_complete = true;
-
           const { data: syncedProfile, error: syncedProfileError } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', currentProfile.id)
-            .single();
-
-          if (!syncedProfileError && syncedProfile) {
-            currentProfile = syncedProfile;
-            updateHeaderUI();
-          }
-
-          if (stripeSection) stripeSection.classList.add('hidden');
-          if (activeDashboard) activeDashboard.classList.remove('hidden');
-
-          await loadTutorWorkspace();
-
-          if (showSuccessMessage) {
-            showToast(
-              responseData?.message ||
-              'Stripe setup is complete. Your Tutor dashboard is now active!',
-              'success'
-            );
-          }
-
+            .from('profiles').select('*').eq('id', currentProfile.id).single();
+          if (syncedProfileError) throw syncedProfileError;
+          currentProfile = syncedProfile;
+          currentProfile.stripe_onboarding_complete = true;
+          updateHeaderUI();
+          await renderTutorStageAfterStripe();
+          if (showSuccessMessage) showToast(responseData?.message || 'Stripe setup is complete. Please complete your Tutor profile.', 'success');
           return true;
         }
 
         currentProfile.stripe_onboarding_complete = false;
-        if (stripeSection) stripeSection.classList.remove('hidden');
-        if (activeDashboard) activeDashboard.classList.add('hidden');
-
-        if (showSuccessMessage) {
-          const capabilityStatus = responseData?.capabilityStatus || 'pending';
-          const message = responseData?.message ||
-            'Stripe still needs more information. Select Connect Bank Account to continue setup.';
-          showToast(message, capabilityStatus === 'restricted' ? 'error' : 'info');
-        }
-
+        hideTutorStageSections();
+        document.getElementById('tutor-stripe-section').classList.remove('hidden');
+        if (showSuccessMessage) showToast(responseData?.message || 'Stripe still needs more information. Continue the secure onboarding below.', 'info');
         return false;
       } catch (error) {
         console.error('Stripe status check error:', error);
-
-        if (showSuccessMessage || showLoadingMessage) {
-          showToast(
-            `Could not confirm Stripe status: ${error?.message || 'Please try again.'}`,
-            'error'
-          );
-        }
-
+        hideTutorStageSections();
+        document.getElementById('tutor-stripe-section').classList.remove('hidden');
+        if (showSuccessMessage || showLoadingMessage) showToast(`Could not confirm Stripe status: ${error?.message || 'Please try again.'}`, 'error');
         return false;
       }
     }
@@ -452,103 +431,42 @@
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return window.location.href = 'login.html';
-
-        const user = session.user;
         const { data: profile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
+          .from('profiles').select('*').eq('id', session.user.id).single();
         if (profileError) throw profileError;
-        if (!profile || profile.role !== 'tutor') {
-          window.location.href = 'login.html';
-          return;
-        }
+        if (!profile || profile.role !== 'tutor') return window.location.href = 'login.html';
 
         currentProfile = profile;
         updateHeaderUI();
         await initialiseMessageNotifications();
         document.getElementById('header-tier-tag').textContent = `${(profile.tutor_tier || 'self_taught').replaceAll('_', ' ')} tier`;
 
-        // Handle return from Stripe onboarding
         const urlParams = new URLSearchParams(window.location.search);
         const returnedFromStripe = urlParams.get('stripe_return') === 'true';
         const refreshedFromStripe = urlParams.get('stripe_refresh') === 'true';
 
         if (returnedFromStripe) {
           window.history.replaceState({}, document.title, window.location.pathname);
+          await checkStripeOnboardingStatus({ showSuccessMessage: true, showLoadingMessage: true });
+          return;
+        }
 
-          await checkStripeOnboardingStatus({
-            showSuccessMessage: true,
-            showLoadingMessage: true
-          });
-
-          const { data: refreshedProfile, error: refreshedProfileError } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (!refreshedProfileError && refreshedProfile) {
-            currentProfile = refreshedProfile;
-            profile.stripe_onboarding_complete = refreshedProfile.stripe_onboarding_complete;
-          }
-        } else if (refreshedFromStripe) {
+        if (refreshedFromStripe) {
           window.history.replaceState({}, document.title, window.location.pathname);
+          hideTutorStageSections();
+          document.getElementById('tutor-stripe-section').classList.remove('hidden');
           showToast('Your Stripe link expired or was interrupted. A new secure link can be created below.', 'error');
+          return;
         }
 
-        const status = currentProfile.validation_status || 'pending';
-        
-        if (status === 'approved') {
-          if (profile.stripe_onboarding_complete) {
-            const missingMarketplaceLocation =
-              profile.latitude === null ||
-              profile.latitude === undefined ||
-              profile.longitude === null ||
-              profile.longitude === undefined ||
-              (Number(profile.latitude) === 0 && Number(profile.longitude) === 0);
-
-            if (missingMarketplaceLocation && !returnedFromStripe) {
-              await checkStripeOnboardingStatus({
-                showSuccessMessage: false,
-                showLoadingMessage: false
-              });
-            } else {
-              document.getElementById('tutor-active-dashboard').classList.remove('hidden');
-              await loadTutorWorkspace();
-            }
-          } else if (!returnedFromStripe) {
-            const stripeComplete = await checkStripeOnboardingStatus({
-              showSuccessMessage: false,
-              showLoadingMessage: false
-            });
-
-            if (!stripeComplete) {
-              document.getElementById('tutor-stripe-section').classList.remove('hidden');
-            }
-          }
-        } else if (status === 'submitted') {
-          document.getElementById('tutor-pending-review').classList.remove('hidden');
-        } else {
-          document.getElementById('tutor-onboarding-section').classList.remove('hidden');
-          
-          if (currentProfile.tutor_tier === 'professional') {
-            const proContainer = document.getElementById('pro-cert-container');
-            const proInput = document.getElementById('tutor-pro-doc');
-            if (proContainer && proInput) {
-              proContainer.classList.remove('hidden');
-              proInput.setAttribute('required', 'true');
-            }
-          }
-
-          if (status === 'rejected' && currentProfile.validation_notes) {
-            const noteDiv = document.getElementById('tutor-rejected-note');
-            noteDiv.innerHTML = `<strong>Revision Required:</strong> ${escapeHTML(currentProfile.validation_notes)}`;
-            noteDiv.classList.remove('hidden');
-          }
+        if (currentProfile.stripe_onboarding_complete !== true) {
+          hideTutorStageSections();
+          document.getElementById('tutor-stripe-section').classList.remove('hidden');
+          await startStripeOnboarding(true);
+          return;
         }
+
+        await renderTutorStageAfterStripe();
       } catch (err) {
         console.error('Tutor initialisation error:', err);
         showToast(`Unable to load the tutor workspace: ${err.message || 'Unknown error'}`, 'error');
@@ -556,11 +474,14 @@
     });
 
     // STRIPE ONBOARDING TRIGGER
-    async function startStripeOnboarding() {
+    async function startStripeOnboarding(automatic = false) {
       const btn = document.getElementById('connect-stripe-btn');
-      const originalHtml = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
+      const originalHtml = btn?.innerHTML || '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Generating secure link...';
+      }
+      if (automatic) showToast('Opening secure Stripe onboarding...', 'info');
 
       try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
