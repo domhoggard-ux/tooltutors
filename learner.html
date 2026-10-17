@@ -18,37 +18,48 @@
 </head>
 <body class="h-full bg-[#0A192F] text-[#E6F1FF] font-sans flex flex-col min-h-screen">
 
-  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/90 backdrop-blur-xl">
+  <header class="sticky top-0 z-50 border-b border-[#233554]/80 bg-[#0A192F]/95 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-20 flex items-center justify-between gap-4">
+      <div class="h-16 sm:h-20 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
-          <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Learner Portal</span>
+          <img src="logo.svg" alt="ToolTutors Logo" class="h-11 sm:h-14 w-auto flex-shrink-0">
+          <span class="hidden md:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Learner Portal</span>
         </div>
-        <div class="flex items-center gap-2 sm:gap-4">
-          <div class="flex items-center gap-3">
-            <div class="relative group cursor-pointer flex-shrink-0" onclick="document.getElementById('global-avatar-upload').click()" title="Update Profile Picture">
-              <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-[#FF6B35] to-amber-500 p-0.5">
-                <div id="header-user-initials" class="w-full h-full rounded-full bg-[#0A192F] flex items-center justify-center font-bold text-sm text-white overflow-hidden">--</div>
-              </div>
-              <div class="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-200"><i class="fa-solid fa-camera text-white text-xs"></i></div>
-            </div>
-            <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
-            <div class="hidden sm:block text-left">
-              <div id="header-user-name" class="text-sm font-semibold text-white leading-tight">Loading...</div>
-              <div class="text-xs text-[#FF6B35] uppercase font-semibold mt-0.5">My Workspace</div>
+        <div class="flex items-center gap-2">
+          <a href="tool-check.html" class="relative w-11 h-11 rounded-xl border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-[#FF6B35] hover:border-[#FF6B35]/70 transition inline-flex items-center justify-center" aria-label="Open Tool Chest" title="Tool Chest"><i class="fa-solid fa-toolbox"></i><span id="header-tool-chest-dot" class="hidden absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#0A192F]"></span></a>
+          <button id="header-message-indicator" type="button" onclick="focusUnreadMessages()" class="relative w-11 h-11 rounded-xl border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition inline-flex items-center justify-center" aria-label="Unread messages" title="Unread messages"><i class="fa-solid fa-comments"></i><span id="header-unread-count" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold items-center justify-center border-2 border-[#0A192F]">0</span></button>
+          <div class="relative">
+            <button id="profile-menu-button" type="button" onclick="toggleProfileMenu(event)" class="h-11 pl-1 pr-2 sm:pr-3 rounded-xl border border-[#233554] bg-[#112240] hover:border-[#FF6B35]/70 transition flex items-center gap-2" aria-haspopup="true" aria-expanded="false">
+              <span id="header-user-initials" class="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#FF6B35] to-amber-500 flex items-center justify-center font-bold text-xs text-white overflow-hidden">--</span>
+              <span class="hidden sm:block text-left max-w-[150px]"><span id="header-user-name" class="block text-xs font-semibold text-white truncate">Loading...</span><span class="block text-[9px] text-[#8892B0] uppercase font-bold">My account</span></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-[#8892B0]"></i>
+            </button>
+            <div id="profile-menu" class="hidden absolute right-0 mt-2 w-56 rounded-xl border border-[#233554] bg-[#112240] shadow-2xl overflow-hidden z-[100]">
+              <button type="button" onclick="closeProfileMenu(); openAccountSettings()" class="w-full px-4 py-3 text-left text-xs text-[#E6F1FF] hover:bg-[#0A192F] transition"><i class="fa-solid fa-user-gear w-5 text-[#FF6B35]"></i>Account details</button>
+              <a href="tool-check.html" class="block px-4 py-3 text-xs text-[#E6F1FF] hover:bg-[#0A192F] transition"><i class="fa-solid fa-toolbox w-5 text-[#FF6B35]"></i>Tool Chest</a>
+              <button type="button" onclick="document.getElementById('global-avatar-upload').click(); closeProfileMenu()" class="w-full px-4 py-3 text-left text-xs text-[#E6F1FF] hover:bg-[#0A192F] transition"><i class="fa-solid fa-camera w-5 text-[#FF6B35]"></i>Update profile picture</button>
+              <div class="border-t border-[#233554]"></div>
+              <button type="button" onclick="handleLogout()" class="w-full px-4 py-3 text-left text-xs text-rose-400 hover:bg-rose-500/10 transition"><i class="fa-solid fa-arrow-right-from-bracket w-5"></i>Sign out</button>
             </div>
           </div>
-          <a href="tool-check.html" class="h-11 px-3 sm:px-4 rounded-xl text-sm border border-[#FF6B35]/40 bg-[#FF6B35]/10 text-[#FF6B35] hover:bg-[#FF6B35] hover:text-white transition inline-flex items-center justify-center font-semibold" aria-label="Open Tool Check" title="Tool Check"><i class="fa-solid fa-screwdriver-wrench"></i><span class="hidden md:inline ml-2">Tool Check</span></a>
-          <button id="header-message-indicator" type="button" onclick="focusUnreadMessages()" class="relative h-11 px-3 rounded-xl border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition inline-flex items-center justify-center" aria-label="Unread messages" title="Unread messages"><i class="fa-solid fa-comments"></i><span id="header-unread-count" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold items-center justify-center border-2 border-[#0A192F]">0</span></button>
-          <button type="button" onclick="openAccountSettings()" class="w-11 h-11 rounded-xl text-sm border border-[#233554] bg-[#112240] text-[#8892B0] hover:text-white hover:border-[#FF6B35]/70 transition" aria-label="Account settings" title="Account settings"><i class="fa-solid fa-gear"></i></button>
-          <button type="button" onclick="handleLogout()" class="px-3 sm:px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition" aria-label="Sign out"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="hidden sm:inline ml-2">Sign Out</span></button>
+          <input type="file" id="global-avatar-upload" class="hidden" accept="image/*" onchange="handleGlobalAvatarUpload(event)">
         </div>
       </div>
     </div>
   </header>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-[9999] flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4 sm:px-0"></div>
+
+  <!-- TOOL CHEST ONBOARDING MODAL -->
+  <div id="tool-chest-onboarding-modal" class="fixed inset-0 z-[400] hidden bg-[#0A192F]/95 backdrop-blur-md items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-2xl border border-[#FF6B35]/40 bg-[#112240] p-6 sm:p-8 shadow-2xl text-center">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF6B35] flex items-center justify-center text-3xl mb-5"><i class="fa-solid fa-toolbox"></i></div>
+      <h2 class="text-2xl font-extrabold text-white">Set up your Tool Chest</h2>
+      <p class="mt-3 text-sm text-[#8892B0] leading-relaxed">Tell ToolTutors which reusable tools you already have. Tutors can then see what is available and identify anything else needed for a project.</p>
+      <a href="tool-check.html?onboarding=1" class="mt-6 w-full py-3.5 rounded-xl bg-[#FF6B35] hover:bg-[#E05A2B] text-white font-bold inline-flex items-center justify-center transition shadow-lg"><i class="fa-solid fa-screwdriver-wrench mr-2"></i>Complete my Tool Chest</a>
+      <p class="mt-3 text-[10px] text-[#8892B0]">This is shown once for new Learners. You can update your Tool Chest later from the profile menu.</p>
+    </div>
+  </div>
 
   <!-- ACCOUNT SETTINGS MODAL -->
   <div id="account-settings-modal" class="fixed inset-0 z-[300] hidden bg-[#0A192F]/95 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
@@ -305,7 +316,8 @@
       if (!session) return window.location.href = 'login.html';
       const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
       currentProfile = profile;
-      updateHeaderUI();  
+      updateHeaderUI();
+      showToolChestOnboardingIfNeeded();  
       await updateUnreadNotifications();
       clearInterval(notificationPollInterval);
       notificationPollInterval = setInterval(updateUnreadNotifications, 5000); 
@@ -1080,6 +1092,30 @@
       }
     } 
     
+    function toggleProfileMenu(event) {
+      event?.stopPropagation();
+      const menu = document.getElementById('profile-menu');
+      const button = document.getElementById('profile-menu-button');
+      const opening = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', !opening);
+      button?.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    }
+    function closeProfileMenu() {
+      document.getElementById('profile-menu')?.classList.add('hidden');
+      document.getElementById('profile-menu-button')?.setAttribute('aria-expanded', 'false');
+    }
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('#profile-menu') && !event.target.closest('#profile-menu-button')) closeProfileMenu();
+    });
+    function showToolChestOnboardingIfNeeded() {
+      const complete = Boolean(currentProfile?.tool_chest_completed_at);
+      document.getElementById('header-tool-chest-dot')?.classList.toggle('hidden', complete);
+      if (!complete) {
+        const modal = document.getElementById('tool-chest-onboarding-modal');
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+      }
+    }
     function openAccountSettings() {
       if (!currentProfile) return;
       document.getElementById('settings-full-name').value = currentProfile.full_name || '';
