@@ -144,9 +144,9 @@ async function createInvoicePdf(invoice: PdfInvoice): Promise<Uint8Array> {
 
   const drawParty = (heading: string, party: InvoiceParty, x: number) => {
     page.drawText(heading, { x, y: 705, size: 9, font: bold, color: orange });
-    const partyNameLines = pdfSafe(party.name)
-      .split("\n")
-      .map((line) => line.trim())
+    const partyNameLines = String(party.name ?? "")
+      .split(/\r?\n/)
+      .map((line) => pdfSafe(line).trim())
       .filter(Boolean)
       .slice(0, 2);
     let y = 685;
