@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolTutors - Tool Check</title>
+  <title>ToolTutors - Tool Chest</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,7 +32,7 @@
           <a href="learner.html" aria-label="Return to Learner Portal">
             <img src="logo.svg" alt="ToolTutors Logo" class="h-14 sm:h-16 w-auto flex-shrink-0">
           </a>
-          <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Tool Check</span>
+          <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30">Tool Chest</span>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
           <div class="hidden md:block text-right mr-1">
@@ -59,7 +59,7 @@
           <span class="inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#FF6B35]/10 text-[#FF6B35] border border-[#FF6B35]/30 mb-3">
             <i class="fa-solid fa-toolbox"></i> Learner inventory
           </span>
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-white">My Tool Check</h1>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white">My Tool Chest</h1>
           <p class="text-sm text-[#8892B0] mt-2 max-w-2xl">Select the reusable tools you already own. Your Tutor will later be able to compare these with the tools required for an assigned project.</p>
         </div>
         <div class="grid grid-cols-2 gap-3 min-w-[240px]">
@@ -88,12 +88,12 @@
 
     <section id="loading-state" class="bg-[#112240] p-10 rounded-2xl border border-[#233554] text-center shadow-xl">
       <i class="fa-solid fa-spinner fa-spin text-3xl text-[#FF6B35]"></i>
-      <p class="text-sm text-[#8892B0] mt-4">Loading your Tool Check...</p>
+      <p class="text-sm text-[#8892B0] mt-4">Loading your Tool Chest...</p>
     </section>
 
     <section id="error-state" class="hidden bg-rose-500/10 p-6 rounded-2xl border border-rose-500/30 text-center">
       <i class="fa-solid fa-circle-exclamation text-2xl text-rose-400"></i>
-      <h2 class="text-white font-bold mt-3">Tool Check could not be loaded</h2>
+      <h2 class="text-white font-bold mt-3">Tool Chest could not be loaded</h2>
       <p id="error-message" class="text-sm text-rose-300 mt-2"></p>
       <button type="button" onclick="loadToolCheck()" class="mt-4 px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 transition">Try Again</button>
     </section>
@@ -110,12 +110,12 @@
       <div class="max-w-3xl mx-auto bg-[#112240]/95 backdrop-blur-xl border border-[#FF6B35]/40 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
         <div>
           <p class="text-sm font-bold text-white">You have unsaved changes</p>
-          <p class="text-xs text-[#8892B0]">Save your Tool Check before leaving this page.</p>
+          <p class="text-xs text-[#8892B0]">Save your Tool Chest before leaving this page.</p>
         </div>
         <div class="flex gap-2 w-full sm:w-auto">
           <button type="button" onclick="resetChanges()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#233554] text-white text-sm font-bold hover:bg-[#31476f] transition">Undo</button>
           <button id="save-tools-btn" type="button" onclick="saveToolCheck()" class="flex-[2] sm:flex-none px-6 py-2.5 rounded-xl bg-[#FF6B35] text-white text-sm font-bold hover:bg-[#E05A2B] disabled:opacity-60 disabled:cursor-not-allowed transition shadow-lg">
-            <i class="fa-solid fa-floppy-disk mr-2"></i>Save Tool Check
+            <i class="fa-solid fa-floppy-disk mr-2"></i>Save Tool Chest
           </button>
         </div>
       </div>
@@ -123,7 +123,7 @@
   </main>
 
   <footer class="border-t border-[#233554] mt-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-[#8892B0]">ToolTutors Tool Check helps you keep a simple record of reusable DIY tools you own.</div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-[#8892B0]">ToolTutors Tool Chest helps you keep a simple record of reusable DIY tools you own.</div>
   </footer>
 
   <script>
@@ -153,7 +153,7 @@
         currentUser = session.user;
         const { data: profile, error: profileError } = await supabaseClient
           .from('profiles')
-          .select('id, full_name, role')
+          .select('id, full_name, role, tool_chest_completed_at')
           .eq('id', currentUser.id)
           .single();
 
@@ -347,12 +347,21 @@
           if (error) throw error;
         }
 
+        const completedAt = new Date().toISOString();
+        const { error: profileUpdateError } = await supabaseClient
+          .from('profiles')
+          .update({ tool_chest_completed_at: completedAt })
+          .eq('id', currentUser.id);
+        if (profileUpdateError) throw profileUpdateError;
+
+        currentProfile.tool_chest_completed_at = completedAt;
         savedToolIds = new Set(selectedToolIds);
         updateDirtyState();
-        showToast('Your Tool Check has been saved.', 'success');
+        showToast('Your Tool Chest has been saved. Returning to your portal...', 'success');
+        setTimeout(() => { window.location.href = 'learner.html'; }, 900);
       } catch (error) {
-        console.error('Tool Check save error:', error);
-        showToast(`Could not save your Tool Check: ${error.message || 'Unknown error'}`, 'error');
+        console.error('Tool Chest save error:', error);
+        showToast(`Could not save your Tool Chest: ${error.message || 'Unknown error'}`, 'error');
         await reloadOwnedTools();
       } finally {
         button.disabled = false;
@@ -381,7 +390,7 @@
     }
 
     function showLoadError(error) {
-      console.error('Tool Check load error:', error);
+      console.error('Tool Chest load error:', error);
       setLoading(false);
       document.getElementById('tool-groups').classList.add('hidden');
       document.getElementById('empty-state').classList.add('hidden');
