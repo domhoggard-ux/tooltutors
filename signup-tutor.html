@@ -22,6 +22,7 @@
 
       <form id="signup-form" class="space-y-5" novalidate>
         <div><label for="full-name" class="label">Full name</label><input id="full-name" type="text" autocomplete="name" required maxlength="120" class="field"></div>
+        <div><label for="company-name" class="label">Company name <span class="normal-case font-normal">(if applicable)</span></label><input id="company-name" type="text" autocomplete="organization" maxlength="150" class="field" placeholder="Your company or trading name"><p class="hint">Leave blank if you trade only under your own name.</p></div>
         <div><label for="email" class="label">Email address</label><input id="email" type="email" autocomplete="email" required maxlength="254" class="field"></div>
         <div><label for="password" class="label">Password</label><input id="password" type="password" autocomplete="new-password" required minlength="8" class="field"><p class="hint">Use at least 8 characters.</p></div>
         <div>
@@ -118,6 +119,7 @@
       try {
         const metadata = {
           full_name: document.getElementById('full-name').value.trim(),
+          company_name: document.getElementById('company-name').value.trim() || null,
           role: 'tutor',
           tutor_tier: document.getElementById('tutor-tier').value,
           vat_registered: vatRegistered,

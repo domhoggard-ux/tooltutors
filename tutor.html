@@ -78,6 +78,7 @@
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Full Name</p><p id="account-full-name" class="text-sm text-white font-semibold">Not provided</p></div>
+        <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Company / Trading Name</p><p id="account-company-name" class="text-sm text-white font-semibold">Not provided</p></div>
         <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">ToolTutors Email</p><p id="account-email" class="text-sm text-white break-all">Not provided</p></div>
         <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Phone</p><p id="account-phone" class="text-sm text-white">Not provided</p></div>
         <div class="p-4 bg-[#0A192F] border border-[#233554] rounded-xl"><p class="text-[10px] text-[#8892B0] uppercase font-bold mb-1">Stripe Status</p><p id="account-stripe-status" class="text-sm font-semibold">Not connected</p></div>
@@ -1511,6 +1512,7 @@
     function openTutorAccountDetails() {
       if (!currentProfile) return;
       document.getElementById('account-full-name').textContent = currentProfile.full_name || 'Not provided';
+      document.getElementById('account-company-name').textContent = currentProfile.company_name || 'Not provided';
       document.getElementById('account-email').textContent = currentProfile.email || 'Not provided';
       document.getElementById('account-phone').textContent = currentProfile.phone || 'Not provided';
       document.getElementById('account-address').textContent = formatTutorAddress(currentProfile);
