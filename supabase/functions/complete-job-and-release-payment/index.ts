@@ -144,8 +144,17 @@ async function createInvoicePdf(invoice: PdfInvoice): Promise<Uint8Array> {
 
   const drawParty = (heading: string, party: InvoiceParty, x: number) => {
     page.drawText(heading, { x, y: 705, size: 9, font: bold, color: orange });
-    page.drawText(pdfSafe(party.name), { x, y: 685, size: 11, font: bold, color: navy });
-    let y = 669;
+    const partyNameLines = pdfSafe(party.name)
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 2);
+    let y = 685;
+    for (const line of partyNameLines) {
+      page.drawText(line, { x, y, size: 11, font: bold, color: navy });
+      y -= 16;
+    }
+    if (!partyNameLines.length) y -= 16;
     for (const line of partyAddress(party)) {
       page.drawText(line, { x, y, size: 9, font: regular, color: muted });
       y -= 13;
@@ -472,7 +481,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const tutorLegalName = String(tutor.full_name || "Tutor").trim() || "Tutor";
     const tutorCompanyName = String(tutor.company_name || "").trim() || null;
     const tutorInvoiceName = tutorCompanyName
-      ? `${tutorCompanyName} | ${tutorLegalName}`
+      ? `${tutorCompanyName}\n${tutorLegalName}`
       : tutorLegalName;
 
     const { data: learner, error: learnerError } = await admin
